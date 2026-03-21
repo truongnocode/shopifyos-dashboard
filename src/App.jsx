@@ -8,7 +8,7 @@ import {
   TrendingUp, ShoppingBag, Eye, ExternalLink,
   Sparkles, BarChart3, Globe, Heart, Lightbulb,
   FileText, Image, Video, Hash, Rocket,
-  Store, Gem, Lamp
+  Store, Gem, Menu, X, ChevronRight
 } from 'lucide-react';
 
 // --- REAL DATA ---
@@ -45,46 +45,46 @@ const stats = {
 };
 
 const recentRuns = [
-  { id: 1, store: 'Heart To Soul', skill: 'optimize-products', type: 'SEO Optimize', status: 'success', time: 'Last session' },
-  { id: 2, store: 'Heart To Soul', skill: 'ads-content-creator', type: 'Ad Campaign Generate', status: 'success', time: '2 days ago' },
-  { id: 3, store: 'Heart To Soul', skill: 'social-content-creator', type: 'Social Posts', status: 'success', time: '3 days ago' },
-  { id: 4, store: 'Lume Vibe', skill: 'winning-product-hunter', type: 'Product Research', status: 'pending', time: 'Planned' },
+  { id: 1, store: 'Heart To Soul', skill: 'optimize-products', type: 'SEO Optimize', status: 'success', time: 'Phiên trước' },
+  { id: 2, store: 'Heart To Soul', skill: 'ads-content-creator', type: 'Tạo Ads', status: 'success', time: '2 ngày trước' },
+  { id: 3, store: 'Heart To Soul', skill: 'social-content-creator', type: 'Social Posts', status: 'success', time: '3 ngày trước' },
+  { id: 4, store: 'Lume Vibe', skill: 'winning-product-hunter', type: 'Nghiên cứu SP', status: 'pending', time: 'Dự kiến' },
 ];
 
 const productsData = [
-  { id: 1, name: 'Infinity Love Necklace', store: 'Heart To Soul', type: 'Necklace', price: '$39.99', tags: 8, images: 5, status: 'Optimized' },
-  { id: 2, name: 'Eternal Bond Bracelet', store: 'Heart To Soul', type: 'Bracelet', price: '$29.99', tags: 6, images: 4, status: 'Optimized' },
-  { id: 3, name: 'Soulmate Ring Set', store: 'Heart To Soul', type: 'Ring', price: '$49.99', tags: 10, images: 6, status: 'Optimized' },
-  { id: 4, name: 'Heart Pendant Collection', store: 'Heart To Soul', type: 'Pendant', price: '$34.99', tags: 7, images: 3, status: 'Pending' },
-  { id: 5, name: 'Promise Earrings', store: 'Heart To Soul', type: 'Earrings', price: '$24.99', tags: 5, images: 4, status: 'Pending' },
+  { id: 1, name: 'Infinity Love Necklace', type: 'Necklace', price: '$39.99', tags: 8, images: 5, status: 'Optimized' },
+  { id: 2, name: 'Eternal Bond Bracelet', type: 'Bracelet', price: '$29.99', tags: 6, images: 4, status: 'Optimized' },
+  { id: 3, name: 'Soulmate Ring Set', type: 'Ring', price: '$49.99', tags: 10, images: 6, status: 'Optimized' },
+  { id: 4, name: 'Heart Pendant Collection', type: 'Pendant', price: '$34.99', tags: 7, images: 3, status: 'Pending' },
+  { id: 5, name: 'Promise Earrings', type: 'Earrings', price: '$24.99', tags: 5, images: 4, status: 'Pending' },
 ];
 
 const skillsConfig = [
-  { id: 'optimize-products', name: 'Product Optimizer', icon: Package, color: 'indigo', desc: 'AI optimize titles, descriptions, SEO, tags via Shopify API' },
-  { id: 'ads-content-creator', name: 'Ads Creator', icon: Megaphone, color: 'rose', desc: 'Generate ad campaigns for Meta, Google, TikTok' },
-  { id: 'social-content-creator', name: 'Social Content', icon: Share2, color: 'emerald', desc: 'Create social media posts, captions, image/video prompts' },
-  { id: 'winning-product-hunter', name: 'Winning Products', icon: TrendingUp, color: 'amber', desc: 'Find trending products, spy competitor ads, micro-trends' },
-  { id: 'shopify-pipeline', name: 'Pipeline Manager', icon: Rocket, color: 'purple', desc: 'Unified store management: crawl, optimize, convert, setup' },
+  { id: 'optimize-products', name: 'Product Optimizer', icon: Package, color: 'indigo', desc: 'Tối ưu title, SEO, tags qua Shopify API' },
+  { id: 'ads-content-creator', name: 'Ads Creator', icon: Megaphone, color: 'rose', desc: 'Tạo chiến dịch Meta, Google, TikTok' },
+  { id: 'social-content-creator', name: 'Social Content', icon: Share2, color: 'emerald', desc: 'Tạo bài đăng, caption, prompt hình/video' },
+  { id: 'winning-product-hunter', name: 'Winning Products', icon: TrendingUp, color: 'amber', desc: 'Tìm SP trend, spy ads đối thủ' },
+  { id: 'shopify-pipeline', name: 'Pipeline Manager', icon: Rocket, color: 'purple', desc: 'Quản lý toàn bộ: crawl, optimize, setup' },
 ];
 
 const insightsData = [
-  { id: 1, type: 'Trend', title: 'Personalized jewelry trending on TikTok Shop', impact: 'High', source: 'winning-product-hunter' },
-  { id: 2, type: 'SEO', title: 'Heart To Soul: 12 products need meta description update', impact: 'Medium', source: 'optimize-products' },
-  { id: 3, type: 'Ads', title: 'Valentine campaign CTR above industry average', impact: 'High', source: 'ads-content-creator' },
-  { id: 4, type: 'Social', title: '3 posts scheduled, 2 need image prompts', impact: 'Medium', source: 'social-content-creator' },
+  { id: 1, type: 'Trend', title: 'Personalized jewelry đang trend trên TikTok Shop', impact: 'Cao', source: 'winning-product-hunter' },
+  { id: 2, type: 'SEO', title: '12 SP cần cập nhật meta description', impact: 'TB', source: 'optimize-products' },
+  { id: 3, type: 'Ads', title: 'CTR chiến dịch Valentine cao hơn TB ngành', impact: 'Cao', source: 'ads-content-creator' },
+  { id: 4, type: 'Social', title: '3 bài lên lịch, 2 bài cần prompt hình', impact: 'TB', source: 'social-content-creator' },
 ];
 
 // --- CORE COMPONENTS ---
-const GlassCard = ({ children, className = '', noPadding = false, hoverEffect = false }) => (
-  <div className={`
+const GlassCard = ({ children, className = '', noPadding = false, hoverEffect = false, onClick }) => (
+  <div onClick={onClick} className={`
     relative overflow-hidden
     bg-white/40 dark:bg-slate-900/40
     backdrop-blur-3xl
     border border-white/60 dark:border-white/10
     shadow-[0_8px_32px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)]
-    rounded-[32px]
+    rounded-[24px] md:rounded-[32px]
     ${hoverEffect ? 'hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all duration-300 hover:shadow-[0_16px_48px_rgba(0,0,0,0.1)]' : ''}
-    ${noPadding ? '' : 'p-8'}
+    ${noPadding ? '' : 'p-5 md:p-8'}
     ${className}
   `}>
     <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent dark:via-white/10"></div>
@@ -92,16 +92,19 @@ const GlassCard = ({ children, className = '', noPadding = false, hoverEffect = 
   </div>
 );
 
-const GlassButton = ({ children, variant = 'primary', className = '', icon: Icon, onClick }) => {
-  const baseStyle = "flex items-center space-x-2 px-6 py-3 rounded-full font-medium transition-all duration-300 active:scale-95 shadow-sm cursor-pointer";
+const GlassButton = ({ children, variant = 'primary', className = '', icon: Icon, onClick, size = 'md' }) => {
+  const baseStyle = "flex items-center justify-center space-x-2 font-medium transition-all duration-300 active:scale-95 shadow-sm cursor-pointer";
+  const sizes = {
+    sm: 'px-4 py-2 text-sm rounded-2xl',
+    md: 'px-5 py-2.5 md:px-6 md:py-3 rounded-full text-sm',
+  };
   const variants = {
     primary: "bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-indigo-500/30 shadow-lg backdrop-blur-md border border-indigo-400/50",
     glass: "bg-white/50 dark:bg-slate-800/50 hover:bg-white/80 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 backdrop-blur-md border border-white/60 dark:border-white/10",
-    danger: "bg-rose-500/90 hover:bg-rose-500 text-white shadow-rose-500/30 shadow-lg backdrop-blur-md border border-rose-400/50"
   };
   return (
-    <button onClick={onClick} className={`${baseStyle} ${variants[variant]} ${className}`}>
-      {Icon && <Icon size={18} />}
+    <button onClick={onClick} className={`${baseStyle} ${sizes[size]} ${variants[variant]} ${className}`}>
+      {Icon && <Icon size={size === 'sm' ? 16 : 18} />}
       <span>{children}</span>
     </button>
   );
@@ -109,280 +112,264 @@ const GlassButton = ({ children, variant = 'primary', className = '', icon: Icon
 
 const Badge = ({ type, text }) => {
   const styles = {
-    success: 'bg-emerald-100/80 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border-emerald-200/50 dark:border-emerald-500/30',
-    processing: 'bg-purple-100/80 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 border-purple-200/50 dark:border-purple-500/30',
-    failed: 'bg-rose-100/80 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300 border-rose-200/50 dark:border-rose-500/30',
-    pending: 'bg-amber-100/80 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300 border-amber-200/50 dark:border-amber-500/30',
-    neutral: 'bg-slate-100/80 text-slate-700 dark:bg-slate-500/20 dark:text-slate-300 border-slate-200/50 dark:border-slate-500/30',
-    high: 'bg-rose-100/80 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300 border-rose-200/50 dark:border-rose-500/30',
-    medium: 'bg-amber-100/80 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300 border-amber-200/50 dark:border-amber-500/30',
-    active: 'bg-emerald-100/80 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border-emerald-200/50 dark:border-emerald-500/30',
-    setup: 'bg-blue-100/80 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300 border-blue-200/50 dark:border-blue-500/30',
+    success: 'bg-emerald-100/80 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border-emerald-200/50',
+    pending: 'bg-amber-100/80 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300 border-amber-200/50',
+    failed: 'bg-rose-100/80 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300 border-rose-200/50',
+    neutral: 'bg-slate-100/80 text-slate-700 dark:bg-slate-500/20 dark:text-slate-300 border-slate-200/50',
+    active: 'bg-emerald-100/80 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border-emerald-200/50',
+    setup: 'bg-blue-100/80 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300 border-blue-200/50',
   };
-  const mappedType = { 'Optimized': 'success', 'Pending': 'pending', 'Error': 'failed', 'High': 'high', 'Medium': 'medium' }[text] || type;
-  return <span className={`px-4 py-1.5 text-xs font-semibold rounded-full border backdrop-blur-sm ${styles[mappedType] || styles.neutral}`}>{text}</span>;
+  const mappedType = { 'Optimized': 'success', 'Pending': 'pending', 'Cao': 'failed', 'TB': 'pending', 'High': 'failed', 'Medium': 'pending', 'Đã tối ưu': 'success', 'Đang đợi': 'pending' }[text] || type;
+  return <span className={`px-3 py-1 text-[11px] font-semibold rounded-full border backdrop-blur-sm ${styles[mappedType] || styles.neutral}`}>{text}</span>;
+};
+
+const colorMap = {
+  blue: { bg: 'bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400', pill: 'bg-blue-100 dark:bg-blue-500/20' },
+  indigo: { bg: 'bg-indigo-500/10', text: 'text-indigo-600 dark:text-indigo-400', pill: 'bg-indigo-100 dark:bg-indigo-500/20' },
+  purple: { bg: 'bg-purple-500/10', text: 'text-purple-600 dark:text-purple-400', pill: 'bg-purple-100 dark:bg-purple-500/20' },
+  amber: { bg: 'bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', pill: 'bg-amber-100 dark:bg-amber-500/20' },
+  rose: { bg: 'bg-rose-500/10', text: 'text-rose-600 dark:text-rose-400', pill: 'bg-rose-100 dark:bg-rose-500/20' },
+  emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', pill: 'bg-emerald-100 dark:bg-emerald-500/20' },
 };
 
 // --- VIEWS ---
 const CommandCenter = () => (
-  <div className="space-y-8 animate-fade-in pb-10">
+  <div className="space-y-6 md:space-y-8 animate-fade-in">
     <div>
-      <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Command Center</h1>
-      <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">ShopifyOS automation overview</p>
+      <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Trung tâm điều khiển</h1>
+      <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">ShopifyOS &middot; Tổng quan hệ thống</p>
     </div>
 
-    {/* Stats */}
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    {/* Stats - 2x2 on mobile */}
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
       {[
         { icon: Store, label: 'Stores', value: stats.stores, color: 'blue', badge: '2 niches' },
-        { icon: Package, label: 'Products', value: stats.products, color: 'indigo', badge: null },
+        { icon: Package, label: 'Sản phẩm', value: stats.products, color: 'indigo', badge: null },
         { icon: Sparkles, label: 'AI Skills', value: stats.skills, color: 'purple', badge: 'Active' },
-        { icon: Zap, label: 'Automations', value: stats.automations, color: 'amber', badge: 'n8n ready' },
+        { icon: Zap, label: 'Automations', value: stats.automations, color: 'amber', badge: null },
       ].map((stat, i) => (
-        <GlassCard key={i} className="flex flex-col justify-center space-y-4">
+        <GlassCard key={i} className="flex flex-col justify-center space-y-3 md:space-y-4 !p-4 md:!p-8">
           <div className="flex items-center justify-between">
-            <div className={`p-4 rounded-[1.25rem] ${
-              stat.color === 'blue' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
-              stat.color === 'indigo' ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' :
-              stat.color === 'purple' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400' :
-              'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-            }`}>
-              <stat.icon size={28} />
+            <div className={`p-2.5 md:p-4 rounded-2xl ${colorMap[stat.color].bg} ${colorMap[stat.color].text}`}>
+              <stat.icon size={20} className="md:w-7 md:h-7" />
             </div>
             {stat.badge && <Badge type="neutral" text={stat.badge} />}
           </div>
           <div>
-            <p className="text-4xl font-bold text-slate-800 dark:text-white">{stat.value}</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">{stat.label}</p>
+            <p className="text-2xl md:text-4xl font-bold text-slate-800 dark:text-white">{stat.value}</p>
+            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">{stat.label}</p>
           </div>
         </GlassCard>
       ))}
     </div>
 
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {/* Stores */}
-      <div className="lg:col-span-2 space-y-8">
-        <GlassCard>
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-white">My Stores</h2>
+    {/* Quick Actions - horizontal scroll on mobile */}
+    <div>
+      <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Thao tác nhanh</h2>
+      <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2">
+        {[
+          { icon: Package, label: 'Tối ưu SP', color: 'indigo', skill: '/optimize-products' },
+          { icon: Megaphone, label: 'Tạo Ads', color: 'rose', skill: '/ads-content-creator' },
+          { icon: Share2, label: 'Social', color: 'emerald', skill: '/social-content-creator' },
+          { icon: TrendingUp, label: 'Tìm SP Win', color: 'amber', skill: '/winning-product-hunter' },
+          { icon: Rocket, label: 'Pipeline', color: 'purple', skill: '/shopify-pipeline' },
+        ].map((action, i) => (
+          <div key={i} className="flex-shrink-0 flex flex-col items-center gap-2 p-3 md:p-4 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl rounded-2xl border border-white/40 dark:border-white/5 min-w-[80px] md:min-w-[100px] cursor-pointer hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+            <div className={`p-2.5 rounded-xl ${colorMap[action.color].bg} ${colorMap[action.color].text}`}>
+              <action.icon size={20} />
+            </div>
+            <span className="text-[11px] md:text-xs font-semibold text-slate-600 dark:text-slate-300 text-center whitespace-nowrap">{action.label}</span>
           </div>
-          <div className="space-y-4">
-            {stores.map((store) => (
-              <div key={store.id} className="group flex items-center justify-between p-5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-[24px] border border-white/40 dark:border-white/5 hover:shadow-lg transition-all">
-                <div className="flex items-center space-x-5">
-                  <div className={`w-14 h-14 rounded-[18px] bg-gradient-to-br ${store.gradient} flex items-center justify-center text-2xl shadow-inner`}>
-                    {store.icon}
-                  </div>
-                  <div>
-                    <span className="block font-bold text-slate-700 dark:text-slate-200 text-lg">{store.name}</span>
-                    <span className="text-sm text-slate-500 dark:text-slate-400">{store.domain}</span>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge type={store.status} text={store.status === 'active' ? 'Active' : 'Setting up'} />
-                      <span className="text-xs text-slate-400">{store.niche}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-slate-700 dark:text-slate-300">{store.products}</p>
-                  <p className="text-xs text-slate-400">products</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </GlassCard>
-
-        {/* Insights */}
-        <GlassCard>
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center">
-              <Lightbulb className="mr-3 text-amber-500" /> Smart Insights
-            </h2>
-          </div>
-          <div className="space-y-3">
-            {insightsData.map((insight) => (
-              <div key={insight.id} className="flex items-center justify-between p-4 bg-white/50 dark:bg-slate-800/50 rounded-[20px] border border-white/40 dark:border-white/5">
-                <div className="flex items-center space-x-3">
-                  <span className={`px-3 py-1 text-xs font-bold rounded-full ${
-                    insight.type === 'Trend' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600' :
-                    insight.type === 'SEO' ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600' :
-                    insight.type === 'Ads' ? 'bg-rose-100 dark:bg-rose-500/20 text-rose-600' :
-                    'bg-purple-100 dark:bg-purple-500/20 text-purple-600'
-                  }`}>{insight.type}</span>
-                  <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{insight.title}</p>
-                </div>
-                <Badge type="neutral" text={insight.impact} />
-              </div>
-            ))}
-          </div>
-        </GlassCard>
-      </div>
-
-      {/* Right column */}
-      <div className="space-y-8">
-        {/* AI Skills */}
-        <GlassCard>
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">AI Skills</h2>
-          <div className="space-y-3">
-            {skillsConfig.map((skill) => (
-              <div key={skill.id} className="flex items-center space-x-3 p-3 bg-white/40 dark:bg-slate-800/40 rounded-[16px] border border-white/30 dark:border-white/5">
-                <div className={`p-2.5 rounded-full ${
-                  skill.color === 'indigo' ? 'bg-indigo-100 dark:bg-indigo-500/20' :
-                  skill.color === 'rose' ? 'bg-rose-100 dark:bg-rose-500/20' :
-                  skill.color === 'emerald' ? 'bg-emerald-100 dark:bg-emerald-500/20' :
-                  skill.color === 'amber' ? 'bg-amber-100 dark:bg-amber-500/20' :
-                  'bg-purple-100 dark:bg-purple-500/20'
-                }`}>
-                  <skill.icon size={18} className={
-                    skill.color === 'indigo' ? 'text-indigo-600 dark:text-indigo-400' :
-                    skill.color === 'rose' ? 'text-rose-600 dark:text-rose-400' :
-                    skill.color === 'emerald' ? 'text-emerald-600 dark:text-emerald-400' :
-                    skill.color === 'amber' ? 'text-amber-600 dark:text-amber-400' :
-                    'text-purple-600 dark:text-purple-400'
-                  } />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{skill.name}</p>
-                  <p className="text-xs text-slate-400 truncate">{skill.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </GlassCard>
-
-        {/* Recent Runs */}
-        <GlassCard>
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">Recent Runs</h2>
-          <div className="space-y-3">
-            {recentRuns.map((run) => (
-              <div key={run.id} className="flex items-center justify-between p-4 bg-white/50 dark:bg-slate-800/50 rounded-[20px] border border-white/40 dark:border-white/5">
-                <div className="flex items-center space-x-3">
-                  <div className={`p-2.5 rounded-full ${run.status === 'success' ? 'bg-emerald-100 dark:bg-emerald-500/20' : 'bg-amber-100 dark:bg-amber-500/20'}`}>
-                    {run.status === 'success' ? <CheckCircle2 size={18} className="text-emerald-500" /> : <Clock size={18} className="text-amber-500" />}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{run.type}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{run.store} &middot; {run.time}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </GlassCard>
-      </div>
-    </div>
-  </div>
-);
-
-const ProductsView = () => (
-  <div className="space-y-8 animate-fade-in pb-10">
-    <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
-      <div>
-        <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Products</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">Heart To Soul &middot; Shopify Admin API</p>
-      </div>
-      <div className="flex space-x-3">
-        <GlassButton variant="glass" icon={Filter}>Filter</GlassButton>
-        <GlassButton variant="primary" icon={Zap}>Bulk Optimize</GlassButton>
+        ))}
       </div>
     </div>
 
-    <div className="grid grid-cols-3 gap-6">
-      <GlassCard className="!p-6 flex items-center justify-between">
-        <div><p className="text-sm text-slate-500 font-medium mb-1">Optimized</p><p className="text-3xl font-bold text-emerald-600">36</p></div>
-        <div className="p-4 bg-emerald-100/50 dark:bg-emerald-500/20 rounded-full"><CheckCircle2 size={24} className="text-emerald-500" /></div>
-      </GlassCard>
-      <GlassCard className="!p-6 flex items-center justify-between">
-        <div><p className="text-sm text-slate-500 font-medium mb-1">Pending</p><p className="text-3xl font-bold text-amber-600">12</p></div>
-        <div className="p-4 bg-amber-100/50 dark:bg-amber-500/20 rounded-full"><Clock size={24} className="text-amber-500" /></div>
-      </GlassCard>
-      <GlassCard className="!p-6 flex items-center justify-between">
-        <div><p className="text-sm text-slate-500 font-medium mb-1">Total</p><p className="text-3xl font-bold text-indigo-600">48</p></div>
-        <div className="p-4 bg-indigo-100/50 dark:bg-indigo-500/20 rounded-full"><Package size={24} className="text-indigo-500" /></div>
-      </GlassCard>
-    </div>
+    {/* Stores */}
+    <GlassCard>
+      <h2 className="text-lg md:text-2xl font-bold text-slate-800 dark:text-white mb-4 md:mb-6">Cửa hàng</h2>
+      <div className="space-y-3">
+        {stores.map((store) => (
+          <div key={store.id} className="flex items-center justify-between p-3.5 md:p-5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl md:rounded-[24px] border border-white/40 dark:border-white/5">
+            <div className="flex items-center space-x-3 md:space-x-5 min-w-0">
+              <div className={`w-11 h-11 md:w-14 md:h-14 rounded-2xl md:rounded-[18px] bg-gradient-to-br ${store.gradient} flex items-center justify-center text-xl md:text-2xl shadow-inner flex-shrink-0`}>
+                {store.icon}
+              </div>
+              <div className="min-w-0">
+                <span className="block font-bold text-slate-700 dark:text-slate-200 text-sm md:text-lg truncate">{store.name}</span>
+                <span className="text-xs md:text-sm text-slate-500 dark:text-slate-400">{store.domain}</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge type={store.status} text={store.status === 'active' ? 'Active' : 'Đang setup'} />
+                  <span className="text-[10px] md:text-xs text-slate-400 hidden sm:inline">{store.niche}</span>
+                </div>
+              </div>
+            </div>
+            <div className="text-right flex-shrink-0 ml-2">
+              <p className="text-xl md:text-2xl font-bold text-slate-700 dark:text-slate-300">{store.products}</p>
+              <p className="text-[10px] md:text-xs text-slate-400">SP</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </GlassCard>
 
-    <GlassCard className="!p-2">
-      <div className="p-6 border-b border-white/40 dark:border-white/5 flex justify-between items-center">
-        <div className="relative w-72">
-          <Search size={18} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" />
-          <input type="text" placeholder="Search products..." className="w-full bg-white/50 dark:bg-slate-900/50 border border-white/60 dark:border-white/10 rounded-full py-3 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-md text-slate-800 dark:text-slate-200" />
+    {/* 2 columns: Skills + Recent Runs */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+      <GlassCard>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">AI Skills</h2>
+        <div className="space-y-2.5">
+          {skillsConfig.map((skill) => (
+            <div key={skill.id} className="flex items-center space-x-3 p-3 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/30 dark:border-white/5">
+              <div className={`p-2.5 rounded-xl ${colorMap[skill.color].pill} flex-shrink-0`}>
+                <skill.icon size={18} className={colorMap[skill.color].text} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{skill.name}</p>
+                <p className="text-[11px] text-slate-400 truncate">{skill.desc}</p>
+              </div>
+              <ChevronRight size={16} className="text-slate-300 flex-shrink-0" />
+            </div>
+          ))}
         </div>
-        <Badge type="neutral" text="Heart To Soul" />
-      </div>
-      <div className="overflow-x-auto p-4">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              <th className="p-4 pl-6">Product</th><th className="p-4">Store</th><th className="p-4">Type</th><th className="p-4">Price</th><th className="p-4">Status</th><th className="p-4 pr-6">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {productsData.map((prod) => (
-              <tr key={prod.id} className="bg-white/40 dark:bg-slate-800/40 hover:bg-white/70 dark:hover:bg-slate-700/50 backdrop-blur-sm transition-colors">
-                <td className="p-4 pl-6 rounded-l-[24px]">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 rounded-[16px] bg-gradient-to-br from-rose-200 to-pink-300 dark:from-rose-800 dark:to-pink-900 flex items-center justify-center flex-shrink-0">
-                      <Heart size={20} className="text-rose-500" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-slate-800 dark:text-white">{prod.name}</p>
-                      <p className="text-xs text-slate-500 mt-1">{prod.tags} tags &middot; {prod.images} images</p>
-                    </div>
-                  </div>
-                </td>
-                <td className="p-4"><span className="inline-flex items-center px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-500/10 text-xs font-medium text-rose-600 dark:text-rose-300">{prod.store}</span></td>
-                <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{prod.type}</td>
-                <td className="p-4 text-sm font-semibold text-slate-700 dark:text-slate-200">{prod.price}</td>
-                <td className="p-4"><Badge type="neutral" text={prod.status} /></td>
-                <td className="p-4 pr-6 rounded-r-[24px]"><button className="p-2 rounded-full hover:bg-white/80 dark:hover:bg-slate-600 text-slate-400 hover:text-indigo-600 transition-colors"><MoreVertical size={20} /></button></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      </GlassCard>
+
+      <GlassCard>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Hoạt động gần đây</h2>
+        <div className="space-y-2.5">
+          {recentRuns.map((run) => (
+            <div key={run.id} className="flex items-center space-x-3 p-3 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-white/40 dark:border-white/5">
+              <div className={`p-2 rounded-xl flex-shrink-0 ${run.status === 'success' ? 'bg-emerald-100 dark:bg-emerald-500/20' : 'bg-amber-100 dark:bg-amber-500/20'}`}>
+                {run.status === 'success' ? <CheckCircle2 size={18} className="text-emerald-500" /> : <Clock size={18} className="text-amber-500" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{run.type}</p>
+                <p className="text-[11px] text-slate-500">{run.store} &middot; {run.time}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </GlassCard>
+    </div>
+
+    {/* Insights */}
+    <GlassCard>
+      <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center mb-4">
+        <Lightbulb className="mr-2 text-amber-500" size={20} /> Nhận định thông minh
+      </h2>
+      <div className="space-y-2.5">
+        {insightsData.map((insight) => (
+          <div key={insight.id} className="flex items-center justify-between p-3 md:p-4 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-white/40 dark:border-white/5">
+            <div className="flex items-center space-x-2.5 min-w-0 flex-1">
+              <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full flex-shrink-0 ${
+                insight.type === 'Trend' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600' :
+                insight.type === 'SEO' ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600' :
+                insight.type === 'Ads' ? 'bg-rose-100 dark:bg-rose-500/20 text-rose-600' :
+                'bg-purple-100 dark:bg-purple-500/20 text-purple-600'
+              }`}>{insight.type}</span>
+              <p className="text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{insight.title}</p>
+            </div>
+            <Badge type="neutral" text={insight.impact} />
+          </div>
+        ))}
       </div>
     </GlassCard>
   </div>
 );
 
-const AdsView = () => (
-  <div className="space-y-8 animate-fade-in pb-10">
+const ProductsView = () => (
+  <div className="space-y-6 md:space-y-8 animate-fade-in">
     <div>
-      <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Ads Creator</h1>
-      <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">AI-generated ad campaigns for Meta, Google, TikTok</p>
+      <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Sản phẩm</h1>
+      <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Heart To Soul &middot; Shopify Admin API</p>
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <div className="grid grid-cols-3 gap-3 md:gap-6">
       {[
-        { platform: 'Meta Ads', icon: Eye, color: 'blue', desc: 'Image prompts, ad copy, targeting guides', count: '12 creatives' },
-        { platform: 'Google Ads', icon: Globe, color: 'emerald', desc: 'Search ads, keyword analysis, extensions', count: '8 ads' },
-        { platform: 'TikTok Ads', icon: Video, color: 'rose', desc: 'Video prompts, scripts, hook sequences', count: '5 scripts' },
-      ].map((p, i) => (
-        <GlassCard key={i} hoverEffect className="cursor-pointer">
-          <div className={`p-4 rounded-[1.25rem] w-fit mb-4 ${
-            p.color === 'blue' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
-            p.color === 'emerald' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-            'bg-rose-500/10 text-rose-600 dark:text-rose-400'
-          }`}>
-            <p.icon size={28} />
+        { label: 'Đã tối ưu', value: 36, icon: CheckCircle2, color: 'emerald' },
+        { label: 'Đang đợi', value: 12, icon: Clock, color: 'amber' },
+        { label: 'Tổng', value: 48, icon: Package, color: 'indigo' },
+      ].map((s, i) => (
+        <GlassCard key={i} className="!p-4 md:!p-6 flex items-center justify-between">
+          <div>
+            <p className="text-[11px] md:text-sm text-slate-500 font-medium mb-0.5">{s.label}</p>
+            <p className={`text-xl md:text-3xl font-bold ${colorMap[s.color].text}`}>{s.value}</p>
           </div>
-          <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">{p.platform}</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{p.desc}</p>
-          <Badge type="neutral" text={p.count} />
+          <div className={`p-2.5 md:p-4 ${colorMap[s.color].bg} rounded-full hidden sm:block`}>
+            <s.icon size={20} className={colorMap[s.color].text} />
+          </div>
         </GlassCard>
       ))}
     </div>
+
+    <div className="flex space-x-3">
+      <GlassButton variant="primary" icon={Zap} size="sm">Tối ưu hàng loạt</GlassButton>
+      <GlassButton variant="glass" icon={Filter} size="sm">Lọc</GlassButton>
+    </div>
+
+    <div className="space-y-3">
+      {productsData.map((prod) => (
+        <GlassCard key={prod.id} className="!p-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-200 to-pink-300 dark:from-rose-800 dark:to-pink-900 flex items-center justify-center flex-shrink-0">
+              <Heart size={18} className="text-rose-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <p className="font-bold text-sm text-slate-800 dark:text-white truncate pr-2">{prod.name}</p>
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 flex-shrink-0">{prod.price}</span>
+              </div>
+              <div className="flex items-center justify-between mt-1.5">
+                <p className="text-[11px] text-slate-500">{prod.type} &middot; {prod.tags} tags &middot; {prod.images} ảnh</p>
+                <Badge type="neutral" text={prod.status === 'Optimized' ? 'Đã tối ưu' : 'Đang đợi'} />
+              </div>
+            </div>
+          </div>
+        </GlassCard>
+      ))}
+    </div>
+  </div>
+);
+
+const AdsView = () => (
+  <div className="space-y-6 md:space-y-8 animate-fade-in">
+    <div>
+      <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Tạo Quảng cáo</h1>
+      <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">AI tạo chiến dịch cho Meta, Google, TikTok</p>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
+      {[
+        { platform: 'Meta Ads', icon: Eye, color: 'blue', desc: 'Image prompts, ad copy, targeting', count: '12 creatives' },
+        { platform: 'Google Ads', icon: Globe, color: 'emerald', desc: 'Search ads, keywords, extensions', count: '8 ads' },
+        { platform: 'TikTok Ads', icon: Video, color: 'rose', desc: 'Video prompts, scripts, hooks', count: '5 scripts' },
+      ].map((p, i) => (
+        <GlassCard key={i} hoverEffect className="cursor-pointer !p-5">
+          <div className="flex items-center space-x-3 md:block">
+            <div className={`p-3 md:p-4 rounded-2xl w-fit md:mb-4 ${colorMap[p.color].bg} ${colorMap[p.color].text}`}>
+              <p.icon size={22} />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-base md:text-xl font-bold text-slate-800 dark:text-white">{p.platform}</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 md:mt-2 md:mb-4">{p.desc}</p>
+              <Badge type="neutral" text={p.count} />
+            </div>
+          </div>
+        </GlassCard>
+      ))}
+    </div>
+
     <GlassCard>
-      <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4">How it works</h2>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Quy trình</h2>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { step: '1', title: 'Research', desc: 'Analyze competitor ads & winning hooks' },
-          { step: '2', title: 'Generate', desc: 'AI creates image prompts, copy, scripts' },
-          { step: '3', title: 'Review', desc: 'Output saved to ~/Documents/ad-campaigns/' },
-          { step: '4', title: 'Evolve', desc: 'Feed performance data back to improve' },
+          { step: '1', title: 'Nghiên cứu', desc: 'Phân tích ads đối thủ' },
+          { step: '2', title: 'Tạo nội dung', desc: 'AI tạo prompt, copy, script' },
+          { step: '3', title: 'Xuất file', desc: 'Lưu vào ~/Documents/' },
+          { step: '4', title: 'Tự tiến hóa', desc: 'Học từ kết quả thực tế' },
         ].map((s, i) => (
-          <div key={i} className="p-4 bg-white/40 dark:bg-slate-800/40 rounded-[20px] border border-white/30 dark:border-white/5 text-center">
-            <div className="w-10 h-10 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-3 font-bold text-lg">{s.step}</div>
-            <p className="font-bold text-slate-700 dark:text-slate-200 text-sm">{s.title}</p>
-            <p className="text-xs text-slate-500 mt-1">{s.desc}</p>
+          <div key={i} className="p-3 md:p-4 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/30 dark:border-white/5 text-center">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-2 font-bold text-sm md:text-lg">{s.step}</div>
+            <p className="font-bold text-slate-700 dark:text-slate-200 text-xs md:text-sm">{s.title}</p>
+            <p className="text-[10px] md:text-xs text-slate-500 mt-0.5">{s.desc}</p>
           </div>
         ))}
       </div>
@@ -391,62 +378,54 @@ const AdsView = () => (
 );
 
 const SocialView = () => (
-  <div className="space-y-8 animate-fade-in pb-10">
+  <div className="space-y-6 md:space-y-8 animate-fade-in">
     <div>
-      <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Social Content</h1>
-      <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">Multi-store social media content generation</p>
+      <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Social Content</h1>
+      <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Tạo nội dung đa nền tảng</p>
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
       {[
-        { icon: FileText, label: 'Posts Generated', value: '24', color: 'indigo' },
-        { icon: Image, label: 'Image Prompts', value: '18', color: 'purple' },
-        { icon: Video, label: 'Video Concepts', value: '6', color: 'rose' },
-        { icon: Hash, label: 'Hashtag Sets', value: '12', color: 'emerald' },
+        { icon: FileText, label: 'Bài đăng', value: '24', color: 'indigo' },
+        { icon: Image, label: 'Prompt hình', value: '18', color: 'purple' },
+        { icon: Video, label: 'Video concepts', value: '6', color: 'rose' },
+        { icon: Hash, label: 'Hashtag sets', value: '12', color: 'emerald' },
       ].map((s, i) => (
-        <GlassCard key={i} className="!p-6">
-          <div className={`p-3 rounded-full w-fit mb-3 ${
-            s.color === 'indigo' ? 'bg-indigo-100 dark:bg-indigo-500/20' :
-            s.color === 'purple' ? 'bg-purple-100 dark:bg-purple-500/20' :
-            s.color === 'rose' ? 'bg-rose-100 dark:bg-rose-500/20' :
-            'bg-emerald-100 dark:bg-emerald-500/20'
-          }`}>
-            <s.icon size={20} className={
-              s.color === 'indigo' ? 'text-indigo-600 dark:text-indigo-400' :
-              s.color === 'purple' ? 'text-purple-600 dark:text-purple-400' :
-              s.color === 'rose' ? 'text-rose-600 dark:text-rose-400' :
-              'text-emerald-600 dark:text-emerald-400'
-            } />
+        <GlassCard key={i} className="!p-4 md:!p-6">
+          <div className={`p-2.5 rounded-xl w-fit mb-2 ${colorMap[s.color].pill}`}>
+            <s.icon size={18} className={colorMap[s.color].text} />
           </div>
-          <p className="text-2xl font-bold text-slate-800 dark:text-white">{s.value}</p>
-          <p className="text-sm text-slate-500 mt-1">{s.label}</p>
+          <p className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white">{s.value}</p>
+          <p className="text-[11px] md:text-sm text-slate-500 mt-0.5">{s.label}</p>
         </GlassCard>
       ))}
     </div>
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
       <GlassCard>
-        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Content Types</h2>
-        <div className="space-y-3">
-          {['Educational & Tips', 'Emotional & Storytelling', 'Product Showcase', 'Behind the Scenes', 'User-Generated Style', 'Seasonal & Trending'].map((type, i) => (
-            <div key={i} className="flex items-center space-x-3 p-3 bg-white/40 dark:bg-slate-800/40 rounded-[16px] border border-white/30 dark:border-white/5">
-              <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{type}</span>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Loại nội dung</h2>
+        <div className="space-y-2">
+          {['Giáo dục & Tips', 'Cảm xúc & Storytelling', 'Giới thiệu SP', 'Hậu trường', 'Phong cách UGC', 'Theo mùa & Trending'].map((type, i) => (
+            <div key={i} className="flex items-center space-x-3 p-2.5 bg-white/40 dark:bg-slate-800/40 rounded-xl border border-white/30 dark:border-white/5">
+              <div className="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0"></div>
+              <span className="text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200">{type}</span>
             </div>
           ))}
         </div>
       </GlassCard>
       <GlassCard>
-        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Active Stores</h2>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Stores đang hoạt động</h2>
         <div className="space-y-3">
           {stores.map((store) => (
-            <div key={store.id} className="flex items-center justify-between p-4 bg-white/50 dark:bg-slate-800/50 rounded-[20px] border border-white/40 dark:border-white/5">
+            <div key={store.id} className="flex items-center justify-between p-3 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-white/40 dark:border-white/5">
               <div className="flex items-center space-x-3">
-                <span className="text-2xl">{store.icon}</span>
+                <span className="text-xl">{store.icon}</span>
                 <div>
-                  <p className="font-bold text-slate-700 dark:text-slate-200">{store.name}</p>
-                  <p className="text-xs text-slate-500">{store.niche}</p>
+                  <p className="font-bold text-sm text-slate-700 dark:text-slate-200">{store.name}</p>
+                  <p className="text-[11px] text-slate-500">{store.niche}</p>
                 </div>
               </div>
-              <Badge type={store.status} text={store.status === 'active' ? 'Content active' : 'Pending'} />
+              <Badge type={store.status} text={store.status === 'active' ? 'Đang chạy' : 'Chờ'} />
             </div>
           ))}
         </div>
@@ -456,56 +435,58 @@ const SocialView = () => (
 );
 
 const WinningProductsView = () => (
-  <div className="space-y-8 animate-fade-in pb-10">
+  <div className="space-y-6 md:space-y-8 animate-fade-in">
     <div>
-      <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Winning Products</h1>
-      <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">Product research, trend detection & competitor ads spy</p>
+      <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Săn SP Win</h1>
+      <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Nghiên cứu SP, phát hiện trend, spy ads</p>
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
       {[
-        { icon: TrendingUp, title: 'Trend Scanner', desc: 'Detect micro-trends from TikTok, Amazon, Google Trends', color: 'emerald' },
-        { icon: Eye, title: 'Ads Spy', desc: 'Analyze competitor ads on Meta, TikTok, Google', color: 'blue' },
-        { icon: ShoppingBag, title: 'Product Validator', desc: 'Score products by demand, competition, margin potential', color: 'amber' },
+        { icon: TrendingUp, title: 'Quét Trend', desc: 'Phát hiện micro-trends từ TikTok, Amazon, Google', color: 'emerald' },
+        { icon: Eye, title: 'Spy Ads', desc: 'Phân tích ads đối thủ trên Meta, TikTok, Google', color: 'blue' },
+        { icon: ShoppingBag, title: 'Chấm điểm SP', desc: 'Score theo demand, cạnh tranh, biên lợi', color: 'amber' },
       ].map((f, i) => (
-        <GlassCard key={i} hoverEffect className="cursor-pointer">
-          <div className={`p-4 rounded-[1.25rem] w-fit mb-4 ${
-            f.color === 'emerald' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-            f.color === 'blue' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
-            'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-          }`}>
-            <f.icon size={28} />
+        <GlassCard key={i} hoverEffect className="cursor-pointer !p-5">
+          <div className="flex items-center space-x-3 md:block">
+            <div className={`p-3 md:p-4 rounded-2xl w-fit md:mb-4 ${colorMap[f.color].bg} ${colorMap[f.color].text}`}>
+              <f.icon size={22} />
+            </div>
+            <div>
+              <h3 className="text-base md:text-xl font-bold text-slate-800 dark:text-white">{f.title}</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{f.desc}</p>
+            </div>
           </div>
-          <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">{f.title}</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400">{f.desc}</p>
         </GlassCard>
       ))}
     </div>
+
     <GlassCard>
-      <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Reports Location</h2>
-      <div className="p-4 bg-white/40 dark:bg-slate-800/40 rounded-[20px] border border-white/30 dark:border-white/5 font-mono text-sm text-slate-600 dark:text-slate-300">
+      <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Báo cáo</h2>
+      <div className="p-3 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/30 dark:border-white/5 font-mono text-xs md:text-sm text-slate-600 dark:text-slate-300">
         ~/Documents/winning-product-reports/
       </div>
-      <p className="text-sm text-slate-500 mt-3">Run <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-mono">/winning-product-hunter</code> in Claude Code to generate new reports.</p>
+      <p className="text-xs text-slate-500 mt-2">Chạy <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[11px] font-mono">/winning-product-hunter</code> trong Claude Code.</p>
     </GlassCard>
   </div>
 );
 
 const IntelligenceView = () => (
-  <div className="space-y-8 animate-fade-in pb-10">
+  <div className="space-y-6 md:space-y-8 animate-fade-in">
     <div>
-      <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Intelligence</h1>
-      <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">Market analysis & competitor tracking</p>
+      <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Intelligence</h1>
+      <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Phân tích thị trường & theo dõi đối thủ</p>
     </div>
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
       <GlassCard>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center"><BrainCircuit className="mr-3 text-purple-500" /> Latest Insights</h2>
-        </div>
-        <div className="space-y-4">
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center mb-4">
+          <BrainCircuit className="mr-2 text-purple-500" size={20} /> Nhận định mới
+        </h2>
+        <div className="space-y-3">
           {insightsData.map((insight) => (
-            <div key={insight.id} className="p-5 bg-white/50 dark:bg-slate-800/50 hover:bg-white/80 dark:hover:bg-slate-700/50 rounded-[24px] border border-white/40 dark:border-white/5 cursor-pointer group transition-colors">
-              <div className="flex justify-between items-start mb-2">
-                <span className={`px-3 py-1 text-xs font-bold rounded-full ${
+            <div key={insight.id} className="p-3.5 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-white/40 dark:border-white/5">
+              <div className="flex justify-between items-start mb-1.5">
+                <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full ${
                   insight.type === 'Trend' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600' :
                   insight.type === 'SEO' ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600' :
                   insight.type === 'Ads' ? 'bg-rose-100 dark:bg-rose-500/20 text-rose-600' :
@@ -513,32 +494,32 @@ const IntelligenceView = () => (
                 }`}>{insight.type}</span>
                 <Badge type="neutral" text={insight.impact} />
               </div>
-              <p className="text-lg font-bold text-slate-800 dark:text-white mt-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{insight.title}</p>
-              <p className="text-xs text-slate-400 mt-2">Source: {insight.source}</p>
+              <p className="text-sm font-bold text-slate-800 dark:text-white mt-2">{insight.title}</p>
+              <p className="text-[10px] text-slate-400 mt-1">Nguồn: {insight.source}</p>
             </div>
           ))}
         </div>
       </GlassCard>
       <GlassCard>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center"><Target className="mr-3 text-rose-500" /> Competitor Watch</h2>
-        </div>
-        <div className="space-y-4 mb-6">
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center mb-4">
+          <Target className="mr-2 text-rose-500" size={20} /> Theo dõi đối thủ
+        </h2>
+        <div className="space-y-3 mb-4">
           {[
-            { domain: 'Jewelry niche competitors', stores: 'Heart To Soul', status: 'Monitoring' },
-            { domain: 'LED Art niche competitors', stores: 'Lume Vibe', status: 'Planned' },
+            { domain: 'Niche Jewelry', stores: 'Heart To Soul', status: 'Đang theo' },
+            { domain: 'Niche LED Art', stores: 'Lume Vibe', status: 'Dự kiến' },
           ].map((comp, idx) => (
-            <div key={idx} className="flex items-center justify-between p-5 bg-white/50 dark:bg-slate-800/50 rounded-[24px] border border-white/40 dark:border-white/5">
-              <div>
-                <h3 className="font-bold text-slate-800 dark:text-white">{comp.domain}</h3>
-                <p className="text-sm text-slate-500">For: {comp.stores}</p>
+            <div key={idx} className="flex items-center justify-between p-3.5 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-white/40 dark:border-white/5">
+              <div className="min-w-0">
+                <h3 className="font-bold text-sm text-slate-800 dark:text-white">{comp.domain}</h3>
+                <p className="text-xs text-slate-500">Cho: {comp.stores}</p>
               </div>
-              <Badge type={comp.status === 'Monitoring' ? 'success' : 'pending'} text={comp.status} />
+              <Badge type={comp.status === 'Đang theo' ? 'success' : 'pending'} text={comp.status} />
             </div>
           ))}
         </div>
-        <div className="p-4 bg-white/40 dark:bg-slate-800/40 rounded-[20px] border border-white/30 dark:border-white/5">
-          <p className="text-sm text-slate-500">Run <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-mono">/shopify-pipeline</code> for full competitor crawl & analysis.</p>
+        <div className="p-3 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/30 dark:border-white/5">
+          <p className="text-xs text-slate-500">Chạy <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[11px] font-mono">/shopify-pipeline</code> để crawl & phân tích.</p>
         </div>
       </GlassCard>
     </div>
@@ -546,63 +527,76 @@ const IntelligenceView = () => (
 );
 
 const ThemesView = () => (
-  <div className="space-y-8 animate-fade-in pb-10">
+  <div className="space-y-6 md:space-y-8 animate-fade-in">
     <div>
-      <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Themes</h1>
-      <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">Liquid theme management for all stores</p>
+      <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Themes</h1>
+      <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Quản lý Liquid theme</p>
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
       {[
-        { name: 'hearttosoul-liquid', store: 'Heart To Soul', status: 'Active', desc: 'Custom jewelry theme with love/soul branding' },
-        { name: 'lume-vibe-liquid', store: 'Lume Vibe', status: 'In Development', desc: 'LED art showcase theme with dark aesthetic' },
+        { name: 'hearttosoul-liquid', store: 'Heart To Soul', status: 'Active', desc: 'Theme jewelry với branding love/soul' },
+        { name: 'lume-vibe-liquid', store: 'Lume Vibe', status: 'Đang phát triển', desc: 'Theme LED art với dark aesthetic' },
       ].map((theme, i) => (
-        <GlassCard key={i} hoverEffect className="cursor-pointer">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-purple-100 dark:bg-purple-500/20 rounded-[1rem]">
-              <Palette size={24} className="text-purple-600 dark:text-purple-400" />
+        <GlassCard key={i} hoverEffect className="cursor-pointer !p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-2.5 bg-purple-100 dark:bg-purple-500/20 rounded-xl">
+              <Palette size={20} className="text-purple-600 dark:text-purple-400" />
             </div>
             <Badge type={theme.status === 'Active' ? 'success' : 'pending'} text={theme.status} />
           </div>
-          <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-1 font-mono">{theme.name}</h3>
-          <p className="text-sm text-slate-500 mb-2">Store: {theme.store}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">{theme.desc}</p>
+          <h3 className="text-base md:text-xl font-bold text-slate-800 dark:text-white mb-1 font-mono">{theme.name}</h3>
+          <p className="text-xs text-slate-500 mb-1">Store: {theme.store}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{theme.desc}</p>
         </GlassCard>
       ))}
     </div>
   </div>
 );
 
-// --- MAIN APP ---
+// --- SIDEBAR ITEM ---
 const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
-  <button onClick={onClick} className={`w-full flex items-center space-x-3 px-4 py-3 mb-1 rounded-full transition-all duration-300 ${active ? 'bg-white/80 dark:bg-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.05)] text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-white/40 dark:hover:bg-white/5 font-medium'}`}>
-    <Icon size={20} strokeWidth={active ? 2.5 : 2} /><span>{label}</span>
+  <button onClick={onClick} className={`w-full flex items-center space-x-3 px-4 py-2.5 mb-0.5 rounded-2xl transition-all duration-300 ${active ? 'bg-white/80 dark:bg-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.05)] text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-white/40 dark:hover:bg-white/5 font-medium'}`}>
+    <Icon size={20} strokeWidth={active ? 2.5 : 2} /><span className="text-sm">{label}</span>
   </button>
 );
 
+// --- MAIN APP ---
 export default function App() {
   const [activeTab, setActiveTab] = useState('command-center');
   const [isDark, setIsDark] = useState(false);
-  const [sidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
   }, [isDark]);
 
   const navItems = [
-    { group: 'Overview', items: [
-      { id: 'command-center', icon: LayoutDashboard, label: 'Command Center' },
-      { id: 'products', icon: Package, label: 'Products' },
+    { group: 'Tổng quan', items: [
+      { id: 'command-center', icon: LayoutDashboard, label: 'Dashboard' },
+      { id: 'products', icon: Package, label: 'Sản phẩm' },
       { id: 'themes', icon: Palette, label: 'Themes' },
     ]},
     { group: 'AI Skills', items: [
-      { id: 'ads', icon: Megaphone, label: 'Ads Creator' },
-      { id: 'social', icon: Share2, label: 'Social Content' },
-      { id: 'winning-products', icon: TrendingUp, label: 'Winning Products' },
+      { id: 'ads', icon: Megaphone, label: 'Tạo Ads' },
+      { id: 'social', icon: Share2, label: 'Social' },
+      { id: 'winning-products', icon: TrendingUp, label: 'Săn SP Win' },
     ]},
-    { group: 'Research', items: [
+    { group: 'Nghiên cứu', items: [
       { id: 'intelligence', icon: BrainCircuit, label: 'Intelligence' },
     ]},
   ];
+
+  const bottomNav = [
+    { id: 'command-center', icon: LayoutDashboard, label: 'Home' },
+    { id: 'products', icon: Package, label: 'SP' },
+    { id: 'ads', icon: Megaphone, label: 'Ads' },
+    { id: 'social', icon: Share2, label: 'Social' },
+  ];
+
+  const handleNav = (id) => {
+    setActiveTab(id);
+    setMobileMenuOpen(false);
+  };
 
   return (
     <div className={`min-h-screen transition-colors duration-500 ${isDark ? 'bg-[#0B1120] text-slate-200' : 'bg-[#F3F4F6] text-slate-800'} relative overflow-hidden font-sans`}>
@@ -613,20 +607,70 @@ export default function App() {
         <div className={`absolute -bottom-[20%] left-[20%] w-[60%] h-[50%] rounded-full mix-blend-multiply filter blur-[120px] opacity-70 animate-blob animation-delay-4000 ${isDark ? 'bg-purple-900/30' : 'bg-pink-200'}`}></div>
       </div>
 
+      {/* Mobile Header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50">
+        <div className="flex items-center justify-between px-4 py-3 bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border-b border-white/40 dark:border-white/10">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white shadow-lg">
+              <Zap size={16} />
+            </div>
+            <span className="text-base font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-indigo-600 dark:from-white dark:to-indigo-400">ShopifyOS</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button onClick={() => setIsDark(!isDark)} className="p-2 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-white/40 dark:border-white/10">
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-white/40 dark:border-white/10">
+              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Full Menu Overlay */}
+      {mobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-40 pt-14">
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}></div>
+          <div className="relative mx-4 mt-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl rounded-3xl border border-white/60 dark:border-white/10 shadow-2xl p-5 max-h-[70vh] overflow-y-auto">
+            {navItems.map((group) => (
+              <div key={group.group} className="mb-4">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 mb-2">{group.group}</p>
+                {group.items.map((item) => (
+                  <SidebarItem key={item.id} icon={item.icon} label={item.label} active={activeTab === item.id} onClick={() => handleNav(item.id)} />
+                ))}
+              </div>
+            ))}
+            <div className="pt-3 border-t border-white/30 dark:border-white/10 mt-2">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 mb-2">Stores</p>
+              {stores.map((store) => (
+                <div key={store.id} className="flex items-center space-x-3 p-2.5 rounded-xl">
+                  <span className="text-lg">{store.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{store.name}</p>
+                    <p className="text-[10px] text-slate-400 truncate">{store.domain}</p>
+                  </div>
+                  <span className={`w-2 h-2 rounded-full ${store.status === 'active' ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="relative z-10 flex h-screen overflow-hidden">
-        {/* Sidebar */}
-        <div className="my-6 ml-6 flex flex-col w-72">
+        {/* Desktop Sidebar */}
+        <div className="hidden md:flex my-6 ml-6 flex-col w-64 lg:w-72">
           <GlassCard className="h-full flex flex-col !p-5 shadow-2xl overflow-y-auto hide-scrollbar">
-            <div className="flex items-center space-x-3 mb-8 px-2">
+            <div className="flex items-center space-x-3 mb-6 px-2">
               <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white shadow-lg"><Zap size={22} /></div>
               <span className="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-indigo-600 dark:from-white dark:to-indigo-400">ShopifyOS</span>
             </div>
 
-            <div className="flex-1 space-y-6">
+            <div className="flex-1 space-y-5">
               {navItems.map((group) => (
                 <div key={group.group}>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-4 mb-3">{group.group}</p>
-                  <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4 mb-2">{group.group}</p>
+                  <div className="space-y-0.5">
                     {group.items.map((item) => (
                       <SidebarItem key={item.id} icon={item.icon} label={item.label} active={activeTab === item.id} onClick={() => setActiveTab(item.id)} />
                     ))}
@@ -635,9 +679,8 @@ export default function App() {
               ))}
             </div>
 
-            {/* Store switcher */}
-            <div className="mt-4 pt-4 border-t border-white/30 dark:border-white/10 px-2 space-y-2">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Stores</p>
+            <div className="mt-4 pt-3 border-t border-white/30 dark:border-white/10 px-2 space-y-2">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Stores</p>
               {stores.map((store) => (
                 <div key={store.id} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-white/40 dark:hover:bg-white/5 transition-colors cursor-pointer">
                   <span className="text-lg">{store.icon}</span>
@@ -650,18 +693,18 @@ export default function App() {
               ))}
             </div>
 
-            <div className="mt-4 pt-4 border-t border-white/40 dark:border-white/10 px-2">
-              <button onClick={() => setIsDark(!isDark)} className="w-full flex items-center justify-center p-3 rounded-full bg-white/50 dark:bg-slate-800/50 hover:bg-white/80 dark:hover:bg-slate-700/80 text-slate-600 dark:text-slate-300 transition-all border border-white/40 dark:border-white/10">
-                {isDark ? <Sun size={20} /> : <Moon size={20} />}
-                <span className="ml-3 font-medium">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+            <div className="mt-3 pt-3 border-t border-white/40 dark:border-white/10 px-2">
+              <button onClick={() => setIsDark(!isDark)} className="w-full flex items-center justify-center p-2.5 rounded-2xl bg-white/50 dark:bg-slate-800/50 hover:bg-white/80 dark:hover:bg-slate-700/80 text-slate-600 dark:text-slate-300 transition-all border border-white/40 dark:border-white/10">
+                {isDark ? <Sun size={18} /> : <Moon size={18} />}
+                <span className="ml-2 text-sm font-medium">{isDark ? 'Sáng' : 'Tối'}</span>
               </button>
             </div>
           </GlassCard>
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 p-6 overflow-y-auto hide-scrollbar">
-          <div className="max-w-7xl mx-auto h-full">
+        <div className="flex-1 pt-16 md:pt-0 pb-20 md:pb-0 p-4 md:p-6 overflow-y-auto hide-scrollbar">
+          <div className="max-w-7xl mx-auto">
             {activeTab === 'command-center' && <CommandCenter />}
             {activeTab === 'products' && <ProductsView />}
             {activeTab === 'ads' && <AdsView />}
@@ -670,6 +713,22 @@ export default function App() {
             {activeTab === 'intelligence' && <IntelligenceView />}
             {activeTab === 'themes' && <ThemesView />}
           </div>
+        </div>
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50">
+        <div className="mx-3 mb-3 flex items-center justify-around py-2 bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl rounded-2xl border border-white/50 dark:border-white/10 shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
+          {bottomNav.map((item) => (
+            <button key={item.id} onClick={() => handleNav(item.id)} className={`flex flex-col items-center py-1.5 px-3 rounded-xl transition-all ${activeTab === item.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`}>
+              <item.icon size={20} strokeWidth={activeTab === item.id ? 2.5 : 2} />
+              <span className="text-[10px] font-semibold mt-0.5">{item.label}</span>
+            </button>
+          ))}
+          <button onClick={() => setMobileMenuOpen(true)} className="flex flex-col items-center py-1.5 px-3 rounded-xl text-slate-400">
+            <Menu size={20} />
+            <span className="text-[10px] font-semibold mt-0.5">Menu</span>
+          </button>
         </div>
       </div>
     </div>
