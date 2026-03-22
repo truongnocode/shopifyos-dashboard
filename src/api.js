@@ -47,4 +47,5 @@ export const api = {
   deleteNiche: (id) => fetch(`${API_BASE}/api/shopify/niches?id=${id}`, { method: 'DELETE' }).then(r => r.json()),
   createStore: (data) => postJSON('/api/shopify/stores', data),
   deleteStore: (id) => fetch(`${API_BASE}/api/shopify/stores?id=${id}`, { method: 'DELETE' }).then(r => r.json()),
+  importCrawled: (storeId, sessionId) => postJSON('/api/shopify', { action: 'import-crawled', storeId, sessionId }),
 };

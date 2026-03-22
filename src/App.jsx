@@ -923,96 +923,236 @@ const ThemesView = ({ themes }) => {
 
 // --- PIPELINE VIEW ---
 const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
-  const storeList = stores.data || [];
-  const runList = runs.data || [];
+  const [mode, setMode] = useState('clone'); // 'clone' or 'full'
+  const [running, setRunning] = useState(false);
+  const [steps, setSteps] = useState([]);
+  const [cloneForm, setCloneForm] = useState({ url: '', storeName: '' });
+  const [fullForm, setFullForm] = useState({ url: '', repo: '', storeName: '', domain: '', tokenKey: '', niche: '' });
 
-  const pipelineSteps = [
-    { step: '1', title: 'Crawl đối thủ', desc: 'Thu thập SP, bộ sưu tập, giá từ store đối thủ', icon: Eye, color: 'blue' },
-    { step: '2', title: 'Phân tích niche', desc: 'Xác định personas, keywords, chiến lược giá', icon: BrainCircuit, color: 'purple' },
-    { step: '3', title: 'Tối ưu sản phẩm', desc: 'AI viết lại title, body, SEO, tags', icon: Sparkles, color: 'indigo' },
-    { step: '4', title: 'Convert Theme', desc: 'React/HTML → Shopify Liquid (12 phase)', icon: Palette, color: 'rose' },
-    { step: '5', title: 'Setup Store', desc: 'Menus, collections, settings, pages', icon: Settings, color: 'amber' },
-    { step: '6', title: 'Import SP', desc: 'Push SP đã tối ưu qua Admin API', icon: Package, color: 'emerald' },
-    { step: '7', title: 'Kiểm tra', desc: 'Check links, mobile, tốc độ, SEO', icon: CheckCircle2, color: 'blue' },
-  ];
+  const inputClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[14px] py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200 placeholder-slate-400";
+
+  const updateStep = (idx, status, detail) => {
+    setSteps(prev => prev.map((s, i) => i === idx ? { ...s, status, detail: detail || s.detail } : s));
+  };
+
+  const runClonePipeline = async () => {
+    if (!cloneForm.url) return addToast('Vui lòng nhập URL đối thủ', 'error');
+    const storeName = cloneForm.storeName || new URL(cloneForm.url.startsWith('http') ? cloneForm.url : `https://${cloneForm.url}`).hostname.split('.')[0];
+
+    setRunning(true);
+    setSteps([
+      { title: 'Crawl đối thủ', status: 'pending', detail: '' },
+      { title: 'Tạo store mới', status: 'pending', detail: '' },
+      { title: 'Import sản phẩm', status: 'pending', detail: '' },
+      { title: 'Tối ưu SEO', status: 'pending', detail: '' },
+    ]);
+
+    try {
+      // Step 1: Crawl
+      updateStep(0, 'running', 'Đang crawl sản phẩm...');
+      const crawlResult = await api.crawlCompetitor(cloneForm.url);
+      updateStep(0, 'done', `${crawlResult.productsCrawled} SP, ${crawlResult.collections?.length || 0} collections`);
+
+      // Step 2: Create store
+      updateStep(1, 'running', 'Đang tạo store...');
+      const store = await api.createStore({ name: storeName, domain: `${storeName.toLowerCase().replace(/\s+/g,'-')}.myshopify.com`, nicheName: storeName + ' Niche', envTokenKey: `SHOPIFY_ACCESS_TOKEN_${storeName.toUpperCase().replace(/[^A-Z0-9]/g,'')}` });
+      updateStep(1, 'done', store.name);
+
+      // Step 3: Import crawled products
+      updateStep(2, 'running', 'Đang import sản phẩm...');
+      let totalImported = 0;
+      let hasMore = true;
+      while (hasMore) {
+        const importResult = await api.importCrawled(store.id, crawlResult.sessionId);
+        totalImported += importResult.imported;
+        if (importResult.imported === 0) hasMore = false;
+        updateStep(2, 'running', `Đã import ${totalImported} SP...`);
+      }
+      updateStep(2, 'done', `${totalImported} SP đã import`);
+
+      // Step 4: Optimize
+      updateStep(3, 'running', 'Đang tối ưu SEO...');
+      let totalOptimized = 0;
+      let optMore = true;
+      while (optMore) {
+        try {
+          const optResult = await api.optimizeStore(store.id);
+          totalOptimized += optResult.optimized || 0;
+          if (!optResult.optimized || optResult.total === 0) optMore = false;
+          updateStep(3, 'running', `Đã tối ưu ${totalOptimized} SP...`);
+        } catch { optMore = false; }
+      }
+      updateStep(3, 'done', `${totalOptimized} SP đã tối ưu`);
+
+      addToast(`Clone hoàn tất! ${totalImported} SP đã import và ${totalOptimized} đã tối ưu.`, 'success');
+      stores.refetch(); runs.refetch();
+    } catch (e) {
+      const failIdx = steps.findIndex(s => s.status === 'running');
+      if (failIdx >= 0) updateStep(failIdx, 'failed', e.message);
+      addToast(`Lỗi: ${e.message}`, 'error');
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  const runFullPipeline = async () => {
+    if (!fullForm.url || !fullForm.storeName || !fullForm.domain || !fullForm.tokenKey || !fullForm.niche) return addToast('Vui lòng điền đầy đủ thông tin', 'error');
+
+    setRunning(true);
+    setSteps([
+      { title: 'Crawl đối thủ', status: 'pending', detail: '' },
+      { title: 'Tạo store', status: 'pending', detail: '' },
+      { title: 'Đồng bộ từ Shopify', status: 'pending', detail: '' },
+      { title: 'Tối ưu SEO', status: 'pending', detail: '' },
+    ]);
+
+    try {
+      // Step 1: Crawl
+      updateStep(0, 'running', 'Đang crawl đối thủ...');
+      const crawlResult = await api.crawlCompetitor(fullForm.url);
+      updateStep(0, 'done', `${crawlResult.productsCrawled} SP`);
+
+      // Step 2: Create store
+      updateStep(1, 'running', 'Đang tạo store...');
+      const store = await api.createStore({ name: fullForm.storeName, domain: fullForm.domain, nicheName: fullForm.niche, envTokenKey: fullForm.tokenKey });
+      updateStep(1, 'done', store.name);
+
+      // Step 3: Sync from Shopify
+      updateStep(2, 'running', 'Đang đồng bộ từ Shopify API...');
+      const syncResult = await api.syncStore(store.id);
+      updateStep(2, 'done', `${syncResult.synced} SP đã đồng bộ`);
+
+      // Step 4: Optimize
+      updateStep(3, 'running', 'Đang tối ưu SEO...');
+      let totalOpt = 0;
+      let more = true;
+      while (more) {
+        try {
+          const r = await api.optimizeStore(store.id);
+          totalOpt += r.optimized || 0;
+          if (!r.optimized || r.total === 0) more = false;
+          updateStep(3, 'running', `Đã tối ưu ${totalOpt} SP...`);
+        } catch { more = false; }
+      }
+      updateStep(3, 'done', `${totalOpt} SP đã tối ưu`);
+
+      addToast('Pipeline hoàn tất!', 'success');
+      stores.refetch(); runs.refetch();
+    } catch (e) {
+      const failIdx = steps.findIndex(s => s.status === 'running');
+      if (failIdx >= 0) updateStep(failIdx, 'failed', e.message);
+      addToast(`Lỗi: ${e.message}`, 'error');
+    } finally {
+      setRunning(false);
+    }
+  };
 
   return (
-    <div className="space-y-6 md:space-y-8 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Setup Store mới</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Pipeline tự động: crawl → tối ưu → convert → setup</p>
-        </div>
-        <button onClick={runs.refetch} className="p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/[0.15] transition-all active:scale-95">
-          <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${runs.loading ? 'animate-spin' : ''}`} />
+    <div className="space-y-6 animate-fade-in">
+      <div>
+        <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Setup Store mới</h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Tự động clone đối thủ hoặc setup store từ đầu</p>
+      </div>
+
+      {/* Mode Tabs */}
+      <div className="flex gap-2">
+        <button onClick={() => setMode('clone')} className={`px-4 py-2 rounded-[14px] text-sm font-semibold transition-all ${mode === 'clone' ? 'bg-indigo-600/85 text-white shadow-[0_4px_16px_rgba(99,102,241,0.3)]' : 'bg-white/[0.08] dark:bg-slate-800/[0.1] text-slate-600 dark:text-slate-300 border border-white/[0.1] dark:border-white/[0.04]'}`}>
+          Clone đối thủ
+        </button>
+        <button onClick={() => setMode('full')} className={`px-4 py-2 rounded-[14px] text-sm font-semibold transition-all ${mode === 'full' ? 'bg-indigo-600/85 text-white shadow-[0_4px_16px_rgba(99,102,241,0.3)]' : 'bg-white/[0.08] dark:bg-slate-800/[0.1] text-slate-600 dark:text-slate-300 border border-white/[0.1] dark:border-white/[0.04]'}`}>
+          Full Pipeline
         </button>
       </div>
 
-      {/* Pipeline Steps */}
-      <GlassCard>
-        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Quy trình Pipeline</h2>
-        <div className="space-y-2">
-          {pipelineSteps.map((s, i) => (
-            <div key={i} className="flex items-center space-x-3 p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
-              <div className={`w-8 h-8 rounded-full ${colorMap[s.color].bg} ${colorMap[s.color].text} flex items-center justify-center font-bold text-sm flex-shrink-0`}>{s.step}</div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-slate-800 dark:text-white">{s.title}</p>
-                <p className="text-[11px] text-slate-500">{s.desc}</p>
-              </div>
-              <s.icon size={16} className="text-slate-300 dark:text-slate-600 flex-shrink-0" />
+      {/* Clone Mode */}
+      {mode === 'clone' && (
+        <GlassCard>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Clone đối thủ</h2>
+          <p className="text-xs text-slate-500 mb-4">Nhập URL store Shopify đối thủ. Hệ thống sẽ tự động crawl, import và tối ưu tất cả sản phẩm.</p>
+          <div className="space-y-3">
+            <div>
+              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">URL đối thủ *</label>
+              <input className={inputClass} placeholder="vd: competitor-store.myshopify.com" value={cloneForm.url} onChange={e => setCloneForm({...cloneForm, url: e.target.value})} disabled={running} />
             </div>
-          ))}
-        </div>
-      </GlassCard>
+            <div>
+              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Tên store mới (tùy chọn)</label>
+              <input className={inputClass} placeholder="Để trống = tự tạo từ URL" value={cloneForm.storeName} onChange={e => setCloneForm({...cloneForm, storeName: e.target.value})} disabled={running} />
+            </div>
+            <GlassButton variant="primary" icon={Rocket} onClick={runClonePipeline} disabled={running}>
+              {running ? 'Đang chạy...' : 'Bắt đầu Clone'}
+            </GlassButton>
+          </div>
+        </GlassCard>
+      )}
 
-      {/* How to use */}
-      <GlassCard>
-        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Cách sử dụng</h2>
-        <div className="space-y-3">
-          <div className="p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
-            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">Bước 1: Chuẩn bị input</p>
-            <p className="text-[11px] text-slate-500">• URL GitHub repo (React/HTML theme)<br/>• URL store đối thủ để crawl<br/>• Thông tin niche & store mới</p>
+      {/* Full Pipeline Mode */}
+      {mode === 'full' && (
+        <GlassCard>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Full Pipeline</h2>
+          <p className="text-xs text-slate-500 mb-4">Setup store hoàn chỉnh: crawl đối thủ + đồng bộ từ Shopify API + tối ưu SEO.</p>
+          <div className="space-y-3">
+            <div>
+              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">URL đối thủ *</label>
+              <input className={inputClass} placeholder="vd: competitor.myshopify.com" value={fullForm.url} onChange={e => setFullForm({...fullForm, url: e.target.value})} disabled={running} />
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">GitHub repo (tùy chọn)</label>
+              <input className={inputClass} placeholder="vd: https://github.com/user/theme" value={fullForm.repo} onChange={e => setFullForm({...fullForm, repo: e.target.value})} disabled={running} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Tên store *</label>
+                <input className={inputClass} placeholder="My New Store" value={fullForm.storeName} onChange={e => setFullForm({...fullForm, storeName: e.target.value})} disabled={running} />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Niche *</label>
+                <input className={inputClass} placeholder="vd: Jewelry" value={fullForm.niche} onChange={e => setFullForm({...fullForm, niche: e.target.value})} disabled={running} />
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Domain Shopify *</label>
+              <input className={inputClass} placeholder="my-store.myshopify.com" value={fullForm.domain} onChange={e => setFullForm({...fullForm, domain: e.target.value})} disabled={running} />
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Env Token Key *</label>
+              <input className={inputClass} placeholder="SHOPIFY_ACCESS_TOKEN_MYSTORE" value={fullForm.tokenKey} onChange={e => setFullForm({...fullForm, tokenKey: e.target.value})} disabled={running} />
+            </div>
+            <GlassButton variant="primary" icon={Rocket} onClick={runFullPipeline} disabled={running}>
+              {running ? 'Đang chạy...' : 'Bắt đầu Pipeline'}
+            </GlassButton>
           </div>
-          <div className="p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
-            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">Bước 2: Chạy Pipeline</p>
-            <p className="text-[11px] text-slate-500">Trong Claude Code, gõ: <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[10px] font-mono">/shopify-pipeline</code></p>
-          </div>
-          <div className="p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
-            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">Bước 3: Theo dõi</p>
-            <p className="text-[11px] text-slate-500">Pipeline tự động chạy 7 bước. Theo dõi tiến trình trên dashboard.</p>
-          </div>
-        </div>
-      </GlassCard>
+        </GlassCard>
+      )}
 
-      {/* Recent Pipeline Runs */}
-      <GlassCard>
-        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Lịch sử chạy Pipeline</h2>
-        {runs.loading ? <LoadingSkeleton count={3} /> : (
+      {/* Pipeline Progress */}
+      {steps.length > 0 && (
+        <GlassCard className="border-l-4 border-indigo-500 !rounded-l-none">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center">
+            <Activity size={18} className="mr-2 text-indigo-500" /> Tiến trình
+          </h2>
           <div className="space-y-2">
-            {runList.filter(r => r.runType === 'FULL_PIPELINE' || r.runType === 'STORE_SETUP' || r.runType === 'IMPORT').map((run) => {
-              const isOk = run.status === 'COMPLETED';
-              const time = run.startedAt ? new Date(run.startedAt).toLocaleString('vi-VN') : '';
-              return (
-                <div key={run.id} className="flex items-center justify-between p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
-                  <div className="flex items-center space-x-3">
-                    <div className={`p-2 rounded-[10px] ${isOk ? 'bg-emerald-100/60 dark:bg-emerald-500/15' : 'bg-amber-100/60 dark:bg-amber-500/15'}`}>
-                      {isOk ? <CheckCircle2 size={16} className="text-emerald-500" /> : <Clock size={16} className="text-amber-500" />}
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-800 dark:text-white">{run.runType?.replace(/_/g, ' ')}</p>
-                      <p className="text-[11px] text-slate-500">{run.store?.name || 'N/A'} &middot; {time}</p>
-                    </div>
-                  </div>
-                  <Badge type={isOk ? 'success' : 'pending'} text={isOk ? 'Hoàn tất' : run.status} />
+            {steps.map((s, i) => (
+              <div key={i} className="flex items-center space-x-3 p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  s.status === 'done' ? 'bg-emerald-100/60 dark:bg-emerald-500/15' :
+                  s.status === 'running' ? 'bg-blue-100/60 dark:bg-blue-500/15' :
+                  s.status === 'failed' ? 'bg-rose-100/60 dark:bg-rose-500/15' :
+                  'bg-slate-100/60 dark:bg-slate-500/15'
+                }`}>
+                  {s.status === 'done' ? <CheckCircle2 size={16} className="text-emerald-500" /> :
+                   s.status === 'running' ? <RefreshCw size={16} className="text-blue-500 animate-spin" /> :
+                   s.status === 'failed' ? <AlertCircle size={16} className="text-rose-500" /> :
+                   <Clock size={16} className="text-slate-400" />}
                 </div>
-              );
-            })}
-            {runList.filter(r => ['FULL_PIPELINE','STORE_SETUP','IMPORT'].includes(r.runType)).length === 0 && (
-              <p className="text-xs text-slate-400 text-center py-4">Chưa chạy pipeline nào. Gõ /shopify-pipeline trong Claude Code để bắt đầu.</p>
-            )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-slate-800 dark:text-white">{s.title}</p>
+                  {s.detail && <p className="text-[11px] text-slate-500">{s.detail}</p>}
+                </div>
+              </div>
+            ))}
           </div>
-        )}
-      </GlassCard>
+        </GlassCard>
+      )}
     </div>
   );
 };
