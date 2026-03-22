@@ -1003,8 +1003,8 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
       </div>
 
       {/* Segmented Control - Apple Style */}
-      <div className="relative inline-flex p-[3px] bg-white/[0.08] dark:bg-slate-800/[0.12] backdrop-blur-[8px] rounded-[12px] border border-white/[0.1] dark:border-white/[0.04]">
-        <div className={`absolute top-[3px] bottom-[3px] rounded-[10px] bg-white/[0.6] dark:bg-white/[0.12] shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-300 ease-out ${pipeMode === 'auto' ? 'left-[3px] w-[calc(50%-3px)]' : 'left-[50%] w-[calc(50%-3px)]'}`}></div>
+      <div className="relative inline-flex p-[3px] bg-slate-200/70 dark:bg-slate-700/40 backdrop-blur-[8px] rounded-[12px]">
+        <div className={`absolute top-[3px] bottom-[3px] rounded-[10px] bg-white dark:bg-slate-600/60 shadow-[0_1px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ease-out ${pipeMode === 'auto' ? 'left-[3px] w-[calc(50%-3px)]' : 'left-[50%] w-[calc(50%-3px)]'}`}></div>
         <button onClick={() => setPipeMode('auto')} className={`relative z-10 px-6 py-2 rounded-[10px] text-sm font-semibold transition-colors duration-200 ${pipeMode === 'auto' ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
           Tự động
         </button>
