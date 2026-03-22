@@ -166,7 +166,7 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
       {/* Stats - 2x2 on mobile */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         {[
-          { icon: Store, label: 'Stores', value: dashData.stores, color: 'blue', badge: `${storeList.length} niches` },
+          { icon: Store, label: 'Stores', value: Array.isArray(dashData.stores) ? dashData.stores.length : (dashData.stores || 0), color: 'blue', badge: `${storeList.length} niches` },
           { icon: Package, label: 'Sản phẩm', value: dashData.productCount, color: 'indigo', badge: null },
           { icon: Sparkles, label: 'AI Skills', value: 5, color: 'purple', badge: 'Active' },
           { icon: Zap, label: 'Automations', value: 3, color: 'amber', badge: null },
@@ -223,7 +223,7 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
                     <span className="text-xs md:text-sm text-slate-500 dark:text-slate-400">{store.domain}</span>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge type={store.isActive ? 'active' : 'setup'} text={store.isActive ? 'Active' : 'Đang setup'} />
-                      <span className="text-[10px] md:text-xs text-slate-400 hidden sm:inline">{store.niche?.name || store.niche}</span>
+                      <span className="text-[10px] md:text-xs text-slate-400 hidden sm:inline">{store.niche?.name || (typeof store.niche === 'string' ? store.niche : '')}</span>
                     </div>
                   </div>
                 </div>
@@ -499,7 +499,7 @@ const SocialView = ({ stores, skillOutputs }) => {
                   <span className="text-xl">{store.icon || '\u{1F3EA}'}</span>
                   <div>
                     <p className="font-bold text-sm text-slate-700 dark:text-slate-200">{store.name}</p>
-                    <p className="text-[11px] text-slate-500">{store.niche?.name || store.niche}</p>
+                    <p className="text-[11px] text-slate-500">{store.niche?.name || (typeof store.niche === 'string' ? store.niche : '')}</p>
                   </div>
                 </div>
                 <Badge type={store.isActive ? 'active' : 'setup'} text={store.isActive ? 'Đang chạy' : 'Chờ'} />
