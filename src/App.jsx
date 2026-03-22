@@ -171,59 +171,11 @@ const TaskMonitor = ({ tasks }) => {
 };
 
 // --- VIEWS ---
-const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
+const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, handleQuickAction }) => {
   const storeList = stores.data || fallbackStores;
   const dashData = dashboard.data || { stores: storeList.length, productCount: storeList.reduce((sum, s) => sum + (s.productCount || 0), 0), runCount: 5, insightCount: 4 };
   const runList = runs.data || fallbackRuns;
   const insightList = insights.data || fallbackInsights;
-
-  const [tasks, setTasks] = useState([]);
-  const taskIdRef = React.useRef(0);
-
-  const addTask = (label) => {
-    const id = ++taskIdRef.current;
-    const task = { id, label, status: 'running', detail: 'Starting...', result: null, startedAt: new Date() };
-    setTasks(prev => [task, ...prev]);
-    return id;
-  };
-
-  const updateTask = (id, updates) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
-  };
-
-  const handleQuickAction = async (action, label) => {
-    const taskId = addTask(label);
-    addToast(`Running ${label}...`, 'info');
-    try {
-      let result;
-      if (action === 'optimize') {
-        updateTask(taskId, { detail: 'Optimizing products via Shopify API...' });
-        result = await api.optimizeStore(storeList[0]?.id);
-        updateTask(taskId, {
-          status: 'completed',
-          detail: `Done in ${Math.round((Date.now() - tasks.find(t=>t.id===taskId)?.startedAt?.getTime?.() || Date.now()) / 1000)}s`,
-          result: `${result.optimized || 0}/${result.total || 0} optimized`
-        });
-      } else if (action === 'sync') {
-        updateTask(taskId, { detail: 'Syncing products from Shopify...' });
-        result = await api.syncStore(storeList[0]?.id);
-        updateTask(taskId, {
-          status: 'completed',
-          detail: 'Sync complete',
-          result: `${result.synced || 0} products synced`
-        });
-      } else {
-        updateTask(taskId, { status: 'completed', detail: 'Triggered', result: 'OK' });
-      }
-      addToast(`${label} complete!`, 'success');
-      runs.refetch();
-      dashboard.refetch();
-      stores.refetch();
-    } catch (e) {
-      updateTask(taskId, { status: 'failed', detail: e.message });
-      addToast(`Error: ${e.message}`, 'error');
-    }
-  };
 
   return (
     <div className="space-y-6 md:space-y-8 animate-fade-in">
@@ -260,8 +212,8 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
         ))}
       </div>
 
-      {/* Quick Actions - horizontal scroll on mobile */}
-      <div>
+      {/* Quick Actions - shown on mobile/tablet only (right panel on desktop) */}
+      <div className="lg:hidden">
         <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Thao tác nhanh</h2>
         <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2">
           {[
@@ -281,8 +233,10 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
         </div>
       </div>
 
-      {/* Task Monitor */}
-      <TaskMonitor tasks={tasks} />
+      {/* Task Monitor - shown on mobile/tablet only */}
+      <div className="lg:hidden">
+        <TaskMonitor tasks={tasks} />
+      </div>
 
       {/* Stores */}
       <GlassCard>
@@ -314,8 +268,8 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
         )}
       </GlassCard>
 
-      {/* 2 columns: Skills + Recent Runs */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+      {/* AI Skills + Recent Runs (runs hidden on lg+ - shown in right panel) */}
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 md:gap-8">
         <GlassCard>
           <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">AI Skills</h2>
           <div className="space-y-2.5">
@@ -334,32 +288,35 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
           </div>
         </GlassCard>
 
-        <GlassCard>
-          <SectionHeader title="Hoạt động gần đây" onRefresh={runs.refetch} loading={runs.loading} />
-          {runs.loading ? <LoadingSkeleton count={4} /> : (
-            <div className="space-y-2.5 mt-4">
-              {runList.map((run) => {
-                const isSuccess = run.status === 'COMPLETED' || run.status === 'success';
-                const isFailed = run.status === 'FAILED';
-                const timeAgo = run.startedAt ? new Date(run.startedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
-                return (
-                  <div key={run.id} className="flex items-center space-x-3 p-3 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-white/40 dark:border-white/5">
-                    <div className={`p-2 rounded-xl flex-shrink-0 ${isSuccess ? 'bg-emerald-100 dark:bg-emerald-500/20' : isFailed ? 'bg-rose-100 dark:bg-rose-500/20' : 'bg-amber-100 dark:bg-amber-500/20'}`}>
-                      {isSuccess ? <CheckCircle2 size={18} className="text-emerald-500" /> : isFailed ? <AlertCircle size={18} className="text-rose-500" /> : <Clock size={18} className="text-amber-500" />}
+        {/* Recent Runs - hidden on lg+ (in right panel) */}
+        <div className="lg:hidden">
+          <GlassCard>
+            <SectionHeader title="Hoạt động gần đây" onRefresh={runs.refetch} loading={runs.loading} />
+            {runs.loading ? <LoadingSkeleton count={4} /> : (
+              <div className="space-y-2.5 mt-4">
+                {runList.map((run) => {
+                  const isSuccess = run.status === 'COMPLETED' || run.status === 'success';
+                  const isFailed = run.status === 'FAILED';
+                  const timeAgo = run.startedAt ? new Date(run.startedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+                  return (
+                    <div key={run.id} className="flex items-center space-x-3 p-3 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-white/40 dark:border-white/5">
+                      <div className={`p-2 rounded-xl flex-shrink-0 ${isSuccess ? 'bg-emerald-100 dark:bg-emerald-500/20' : isFailed ? 'bg-rose-100 dark:bg-rose-500/20' : 'bg-amber-100 dark:bg-amber-500/20'}`}>
+                        {isSuccess ? <CheckCircle2 size={18} className="text-emerald-500" /> : isFailed ? <AlertCircle size={18} className="text-rose-500" /> : <Clock size={18} className="text-amber-500" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{run.runType?.replace(/_/g, ' ')}</p>
+                        <p className="text-[11px] text-slate-500">{run.store?.name || 'Heart To Soul'} &middot; {timeAgo}</p>
+                      </div>
+                      {run.productsOptimized > 0 && (
+                        <span className="text-[10px] font-semibold text-emerald-600 flex-shrink-0">{run.productsOptimized}/{run.productsTotal}</span>
+                      )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{run.runType?.replace(/_/g, ' ')}</p>
-                      <p className="text-[11px] text-slate-500">{run.store?.name || 'Heart To Soul'} &middot; {timeAgo}</p>
-                    </div>
-                    {run.productsOptimized > 0 && (
-                      <span className="text-[10px] font-semibold text-emerald-600 flex-shrink-0">{run.productsOptimized}/{run.productsTotal}</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </GlassCard>
+                  );
+                })}
+              </div>
+            )}
+          </GlassCard>
+        </div>
       </div>
 
       {/* Insights */}
@@ -851,12 +808,117 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
   </button>
 );
 
+// --- RIGHT PANEL (Column 3) ---
+const RightPanel = ({ tasks, runs, stores, handleQuickAction, addToast }) => {
+  const storeList = stores.data || [];
+  const runList = runs.data || [];
+  const lastSync = storeList[0]?.lastSyncAt ? new Date(storeList[0].lastSyncAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Never';
+  const lastOptimize = storeList[0]?.lastOptimizedAt ? new Date(storeList[0].lastOptimizedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Never';
+
+  return (
+    <div className="space-y-5">
+      {/* Quick Actions */}
+      <div>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Quick Actions</p>
+        <div className="space-y-1.5">
+          {[
+            { icon: Package, label: 'Optimize Products', color: 'indigo', action: () => handleQuickAction('optimize', 'Optimize Products') },
+            { icon: RefreshCw, label: 'Sync Store', color: 'blue', action: () => handleQuickAction('sync', 'Sync Store') },
+            { icon: Megaphone, label: 'Create Ads', color: 'rose', action: () => handleQuickAction('ads', 'Create Ads') },
+            { icon: Share2, label: 'Social Content', color: 'emerald', action: () => handleQuickAction('social', 'Social Content') },
+            { icon: TrendingUp, label: 'Find Winners', color: 'amber', action: () => handleQuickAction('winning', 'Find Winners') },
+          ].map((a, i) => (
+            <button key={i} onClick={a.action} className="w-full flex items-center space-x-3 p-2.5 rounded-2xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-[0.98] cursor-pointer">
+              <div className={`p-2 rounded-xl ${colorMap[a.color].bg} ${colorMap[a.color].text}`}>
+                <a.icon size={16} />
+              </div>
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{a.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Task Monitor */}
+      {tasks.length > 0 && (
+        <div>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Task Monitor</p>
+          <div className="space-y-1.5">
+            {tasks.map((task) => (
+              <div key={task.id} className="flex items-center justify-between p-2.5 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-white/30 dark:border-white/5">
+                <div className="flex items-center space-x-2 min-w-0 flex-1">
+                  <div className={`p-1.5 rounded-lg flex-shrink-0 ${
+                    task.status === 'running' ? 'bg-blue-100 dark:bg-blue-500/20' :
+                    task.status === 'completed' ? 'bg-emerald-100 dark:bg-emerald-500/20' :
+                    'bg-rose-100 dark:bg-rose-500/20'
+                  }`}>
+                    {task.status === 'running' ? <RefreshCw size={12} className="text-blue-500 animate-spin" /> :
+                     task.status === 'completed' ? <CheckCircle2 size={12} className="text-emerald-500" /> :
+                     <AlertCircle size={12} className="text-rose-500" />}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate">{task.label}</p>
+                    <p className="text-[9px] text-slate-500 truncate">{task.detail}</p>
+                  </div>
+                </div>
+                {task.result && <span className="text-[9px] font-semibold text-emerald-600 flex-shrink-0 ml-1">{task.result}</span>}
+                {task.status === 'running' && <span className="text-[9px] text-blue-500 flex-shrink-0 ml-1 animate-pulse">...</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Store Quick Stats */}
+      <div>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Store Status</p>
+        <div className="space-y-2 p-3 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/30 dark:border-white/5">
+          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Products</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{storeList[0]?.productCount || 0}</span></div>
+          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Last Sync</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastSync}</span></div>
+          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Last Optimize</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastOptimize}</span></div>
+        </div>
+      </div>
+
+      {/* Recent Activity */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Recent Activity</p>
+          <button onClick={runs.refetch} className="p-1 rounded-lg hover:bg-white/40 dark:hover:bg-white/5 transition-all">
+            <RefreshCw size={12} className={`text-slate-400 ${runs.loading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+        <div className="space-y-1.5">
+          {runList.slice(0, 6).map((run) => {
+            const isSuccess = run.status === 'COMPLETED' || run.status === 'success';
+            const isFailed = run.status === 'FAILED';
+            const time = run.startedAt ? new Date(run.startedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+            return (
+              <div key={run.id} className="flex items-center space-x-2 p-2 bg-white/30 dark:bg-slate-800/30 rounded-xl">
+                <div className={`p-1 rounded-lg flex-shrink-0 ${isSuccess ? 'bg-emerald-100 dark:bg-emerald-500/20' : isFailed ? 'bg-rose-100 dark:bg-rose-500/20' : 'bg-amber-100 dark:bg-amber-500/20'}`}>
+                  {isSuccess ? <CheckCircle2 size={12} className="text-emerald-500" /> : isFailed ? <AlertCircle size={12} className="text-rose-500" /> : <Clock size={12} className="text-amber-500" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate">{run.runType?.replace(/_/g, ' ')}</p>
+                  <p className="text-[9px] text-slate-400">{time}</p>
+                </div>
+                {run.productsOptimized > 0 && <span className="text-[9px] font-semibold text-emerald-600">{run.productsOptimized}/{run.productsTotal}</span>}
+              </div>
+            );
+          })}
+          {runList.length === 0 && <p className="text-[11px] text-slate-400 text-center py-2">No activity yet</p>}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- MAIN APP ---
 export default function App() {
   const [activeTab, setActiveTab] = useState('command-center');
   const [isDark, setIsDark] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { toasts, addToast, removeToast } = useToast();
+  const [tasks, setTasks] = useState([]);
+  const taskIdRef = React.useRef(0);
 
   // API hooks
   const dashboard = useApi(() => api.getDashboard(), []);
@@ -903,6 +965,42 @@ export default function App() {
   const handleNav = (id) => {
     setActiveTab(id);
     setMobileMenuOpen(false);
+  };
+
+  const addTask = (label) => {
+    const id = ++taskIdRef.current;
+    const task = { id, label, status: 'running', detail: 'Starting...', result: null, startedAt: new Date() };
+    setTasks(prev => [task, ...prev.slice(0, 9)]);
+    return id;
+  };
+
+  const updateTask = (id, updates) => {
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+  };
+
+  const handleQuickAction = async (action, label) => {
+    const taskId = addTask(label);
+    addToast(`Running ${label}...`, 'info');
+    try {
+      const storeId = (stores.data || [])[0]?.id;
+      let result;
+      if (action === 'optimize') {
+        updateTask(taskId, { detail: 'Optimizing products via Shopify API...' });
+        result = await api.optimizeStore(storeId);
+        updateTask(taskId, { status: 'completed', detail: 'Done', result: `${result.optimized || 0}/${result.total || 0} optimized` });
+      } else if (action === 'sync') {
+        updateTask(taskId, { detail: 'Syncing products from Shopify...' });
+        result = await api.syncStore(storeId);
+        updateTask(taskId, { status: 'completed', detail: 'Done', result: `${result.synced || 0} synced` });
+      } else {
+        updateTask(taskId, { status: 'completed', detail: 'Triggered', result: 'OK' });
+      }
+      addToast(`${label} complete!`, 'success');
+      runs.refetch(); dashboard.refetch(); stores.refetch();
+    } catch (e) {
+      updateTask(taskId, { status: 'failed', detail: e.message });
+      addToast(`Error: ${e.message}`, 'error');
+    }
   };
 
   return (
@@ -1012,10 +1110,10 @@ export default function App() {
           </GlassCard>
         </div>
 
-        {/* Main Content */}
+        {/* Col 2: Main Content - SCROLLABLE */}
         <div className="flex-1 pt-16 md:pt-0 pb-20 md:pb-0 p-4 md:p-6 overflow-y-auto hide-scrollbar">
-          <div className="max-w-7xl mx-auto">
-            {activeTab === 'command-center' && <CommandCenter stores={stores} dashboard={dashboard} runs={runs} insights={insights} addToast={addToast} />}
+          <div className="max-w-5xl mx-auto">
+            {activeTab === 'command-center' && <CommandCenter stores={stores} dashboard={dashboard} runs={runs} insights={insights} addToast={addToast} tasks={tasks} handleQuickAction={handleQuickAction} />}
             {activeTab === 'products' && <ProductsView products={products} addToast={addToast} />}
             {activeTab === 'ads' && <AdsView skillOutputs={adsOutputs} addToast={addToast} />}
             {activeTab === 'social' && <SocialView stores={stores} skillOutputs={socialOutputs} />}
@@ -1023,6 +1121,13 @@ export default function App() {
             {activeTab === 'intelligence' && <IntelligenceView insights={insights} competitors={competitors} addToast={addToast} />}
             {activeTab === 'themes' && <ThemesView themes={themes} />}
           </div>
+        </div>
+
+        {/* Col 3: Right Panel - STICKY (lg+ only) */}
+        <div className="hidden lg:flex my-6 mr-6 flex-col w-72 xl:w-80">
+          <GlassCard className="h-full flex flex-col !p-5 shadow-2xl overflow-y-auto hide-scrollbar">
+            <RightPanel tasks={tasks} runs={runs} stores={stores} handleQuickAction={handleQuickAction} addToast={addToast} />
+          </GlassCard>
         </div>
       </div>
 
