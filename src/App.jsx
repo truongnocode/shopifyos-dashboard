@@ -923,10 +923,8 @@ const ThemesView = ({ themes }) => {
 
 // --- PIPELINE VIEW ---
 const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
-  const [mode, setMode] = useState('clone'); // 'clone' or 'full'
   const [running, setRunning] = useState(false);
   const [steps, setSteps] = useState([]);
-  const [cloneForm, setCloneForm] = useState({ url: '', storeName: '' });
   const [fullForm, setFullForm] = useState({ url: '', repo: '', storeName: '', domain: '', tokenKey: '', niche: '' });
 
   const inputClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[14px] py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200 placeholder-slate-400";
@@ -935,65 +933,6 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
     setSteps(prev => prev.map((s, i) => i === idx ? { ...s, status, detail: detail || s.detail } : s));
   };
 
-  const runClonePipeline = async () => {
-    if (!cloneForm.url) return addToast('Vui lòng nhập URL đối thủ', 'error');
-    const storeName = cloneForm.storeName || new URL(cloneForm.url.startsWith('http') ? cloneForm.url : `https://${cloneForm.url}`).hostname.split('.')[0];
-
-    setRunning(true);
-    setSteps([
-      { title: 'Crawl đối thủ', status: 'pending', detail: '' },
-      { title: 'Tạo store mới', status: 'pending', detail: '' },
-      { title: 'Import sản phẩm', status: 'pending', detail: '' },
-      { title: 'Tối ưu SEO', status: 'pending', detail: '' },
-    ]);
-
-    try {
-      // Step 1: Crawl
-      updateStep(0, 'running', 'Đang crawl sản phẩm...');
-      const crawlResult = await api.crawlCompetitor(cloneForm.url);
-      updateStep(0, 'done', `${crawlResult.productsCrawled} SP, ${crawlResult.collections?.length || 0} collections`);
-
-      // Step 2: Create store
-      updateStep(1, 'running', 'Đang tạo store...');
-      const store = await api.createStore({ name: storeName, domain: `${storeName.toLowerCase().replace(/\s+/g,'-')}.myshopify.com`, nicheName: storeName + ' Niche', envTokenKey: `SHOPIFY_ACCESS_TOKEN_${storeName.toUpperCase().replace(/[^A-Z0-9]/g,'')}` });
-      updateStep(1, 'done', store.name);
-
-      // Step 3: Import crawled products
-      updateStep(2, 'running', 'Đang import sản phẩm...');
-      let totalImported = 0;
-      let hasMore = true;
-      while (hasMore) {
-        const importResult = await api.importCrawled(store.id, crawlResult.sessionId);
-        totalImported += importResult.imported;
-        if (importResult.imported === 0) hasMore = false;
-        updateStep(2, 'running', `Đã import ${totalImported} SP...`);
-      }
-      updateStep(2, 'done', `${totalImported} SP đã import`);
-
-      // Step 4: Optimize
-      updateStep(3, 'running', 'Đang tối ưu SEO...');
-      let totalOptimized = 0;
-      let optMore = true;
-      while (optMore) {
-        try {
-          const optResult = await api.optimizeStore(store.id);
-          totalOptimized += optResult.optimized || 0;
-          if (!optResult.optimized || optResult.total === 0) optMore = false;
-          updateStep(3, 'running', `Đã tối ưu ${totalOptimized} SP...`);
-        } catch { optMore = false; }
-      }
-      updateStep(3, 'done', `${totalOptimized} SP đã tối ưu`);
-
-      addToast(`Clone hoàn tất! ${totalImported} SP đã import và ${totalOptimized} đã tối ưu.`, 'success');
-      stores.refetch(); runs.refetch();
-    } catch (e) {
-      const failIdx = steps.findIndex(s => s.status === 'running');
-      if (failIdx >= 0) updateStep(failIdx, 'failed', e.message);
-      addToast(`Lỗi: ${e.message}`, 'error');
-    } finally {
-      setRunning(false);
-    }
-  };
 
   const runFullPipeline = async () => {
     if (!fullForm.url || !fullForm.storeName || !fullForm.domain || !fullForm.tokenKey || !fullForm.niche) return addToast('Vui lòng điền đầy đủ thông tin', 'error');
@@ -1051,42 +990,11 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Setup Store mới</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Tự động clone đối thủ hoặc setup store từ đầu</p>
+        <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Thiết lập hệ thống Shopify đầy đủ cho store mới</p>
       </div>
 
-      {/* Mode Tabs */}
-      <div className="flex gap-2">
-        <button onClick={() => setMode('clone')} className={`px-4 py-2 rounded-[14px] text-sm font-semibold transition-all ${mode === 'clone' ? 'bg-indigo-600/85 text-white shadow-[0_4px_16px_rgba(99,102,241,0.3)]' : 'bg-white/[0.08] dark:bg-slate-800/[0.1] text-slate-600 dark:text-slate-300 border border-white/[0.1] dark:border-white/[0.04]'}`}>
-          Clone trang web đối thủ
-        </button>
-        <button onClick={() => setMode('full')} className={`px-4 py-2 rounded-[14px] text-sm font-semibold transition-all ${mode === 'full' ? 'bg-indigo-600/85 text-white shadow-[0_4px_16px_rgba(99,102,241,0.3)]' : 'bg-white/[0.08] dark:bg-slate-800/[0.1] text-slate-600 dark:text-slate-300 border border-white/[0.1] dark:border-white/[0.04]'}`}>
-          Xây dựng Store hoàn chỉnh
-        </button>
-      </div>
-
-      {/* Clone Mode */}
-      {mode === 'clone' && (
-        <GlassCard>
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Clone trang web đối thủ</h2>
-          <p className="text-xs text-slate-500 mb-4">Chỉ cần nhập URL trang web đối thủ. Hệ thống sẽ tự động phân tích, crawl toàn bộ sản phẩm, bộ sưu tập, và tạo một trang web Shopify mới tương tự đối thủ với sản phẩm đã được tối ưu SEO.</p>
-          <div className="space-y-3">
-            <div>
-              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">URL đối thủ *</label>
-              <input className={inputClass} placeholder="vd: competitor-store.myshopify.com" value={cloneForm.url} onChange={e => setCloneForm({...cloneForm, url: e.target.value})} disabled={running} />
-            </div>
-            <div>
-              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Tên store mới (tùy chọn)</label>
-              <input className={inputClass} placeholder="Để trống = tự tạo từ URL" value={cloneForm.storeName} onChange={e => setCloneForm({...cloneForm, storeName: e.target.value})} disabled={running} />
-            </div>
-            <GlassButton variant="primary" icon={Rocket} onClick={runClonePipeline} disabled={running}>
-              {running ? 'Đang chạy...' : 'Bắt đầu Clone'}
-            </GlassButton>
-          </div>
-        </GlassCard>
-      )}
-
-      {/* Full Pipeline Mode */}
-      {mode === 'full' && (
+      {/* Pipeline Form */}
+      {(
         <GlassCard>
           <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Xây dựng Store Shopify hoàn chỉnh</h2>
           <p className="text-xs text-slate-500 mb-4">Thiết lập hệ thống Shopify đầy đủ: phân tích đối thủ, kết nối store Shopify của bạn, đồng bộ sản phẩm qua API, tối ưu SEO toàn bộ. Phù hợp khi bạn đã có store Shopify và muốn hoàn thiện hệ thống.</p>
