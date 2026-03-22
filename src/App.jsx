@@ -1030,11 +1030,87 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
               <input className={inputClass} placeholder="my-store.myshopify.com" value={fullForm.domain} onChange={e => setFullForm({...fullForm, domain: e.target.value})} disabled={running} />
             </div>
             <GlassButton variant="primary" icon={Rocket} onClick={runFullPipeline} disabled={running}>
-              {running ? 'Đang chạy...' : 'Bắt đầu Pipeline'}
+              {running ? 'Đang chạy...' : 'Chạy Full Pipeline'}
             </GlassButton>
           </div>
         </GlassCard>
       )}
+
+      {/* Chạy từng bước */}
+      <GlassCard>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Chạy từng bước</h2>
+        <p className="text-xs text-slate-500 mb-4">Chọn bước cần chạy riêng lẻ. Dùng khi không cần chạy toàn bộ pipeline.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          {[
+            { icon: Eye, label: 'Phân tích đối thủ', desc: 'Crawl SP, collections, giá từ URL đối thủ', color: 'blue', action: async () => {
+              if (!fullForm.url) return addToast('Nhập URL đối thủ trước', 'error');
+              setSteps([{ title: 'Phân tích đối thủ', status: 'running', detail: 'Đang crawl...' }]);
+              setRunning(true);
+              try {
+                const r = await api.crawlCompetitor(fullForm.url);
+                setSteps([{ title: 'Phân tích đối thủ', status: 'done', detail: `${r.productsCrawled} SP, ${r.collections?.length || 0} collections` }]);
+                addToast(`Crawl xong: ${r.productsCrawled} sản phẩm`, 'success');
+              } catch(e) { setSteps([{ title: 'Phân tích đối thủ', status: 'failed', detail: e.message }]); addToast(`Lỗi: ${e.message}`, 'error'); }
+              setRunning(false);
+            }},
+            { icon: Store, label: 'Tạo Store', desc: 'Tạo store mới trong hệ thống', color: 'purple', action: async () => {
+              if (!fullForm.storeName || !fullForm.domain || !fullForm.niche) return addToast('Nhập tên store, domain, niche', 'error');
+              setSteps([{ title: 'Tạo Store', status: 'running', detail: 'Đang tạo...' }]);
+              setRunning(true);
+              try {
+                const s = await api.createStore({ name: fullForm.storeName, domain: fullForm.domain, nicheName: fullForm.niche, envTokenKey: 'SHOPIFY_ACCESS_TOKEN_HEARTTOSOUL' });
+                setSteps([{ title: 'Tạo Store', status: 'done', detail: s.name }]);
+                addToast(`Store "${s.name}" đã tạo`, 'success');
+                stores.refetch();
+              } catch(e) { setSteps([{ title: 'Tạo Store', status: 'failed', detail: e.message }]); addToast(`Lỗi: ${e.message}`, 'error'); }
+              setRunning(false);
+            }},
+            { icon: RefreshCw, label: 'Đồng bộ sản phẩm', desc: 'Pull SP từ Shopify API vào hệ thống', color: 'emerald', action: async () => {
+              const storeList = stores.data || [];
+              if (!storeList.length) return addToast('Chưa có store. Tạo store trước', 'error');
+              setSteps([{ title: 'Đồng bộ sản phẩm', status: 'running', detail: 'Đang sync...' }]);
+              setRunning(true);
+              try {
+                const r = await api.syncStore(storeList[storeList.length - 1].id);
+                setSteps([{ title: 'Đồng bộ sản phẩm', status: 'done', detail: `${r.synced} SP` }]);
+                addToast(`Đồng bộ xong: ${r.synced} sản phẩm`, 'success');
+                stores.refetch();
+              } catch(e) { setSteps([{ title: 'Đồng bộ sản phẩm', status: 'failed', detail: e.message }]); addToast(`Lỗi: ${e.message}`, 'error'); }
+              setRunning(false);
+            }},
+            { icon: Sparkles, label: 'Tối ưu SEO', desc: 'AI tối ưu title, description, tags', color: 'indigo', action: async () => {
+              const storeList = stores.data || [];
+              if (!storeList.length) return addToast('Chưa có store', 'error');
+              setSteps([{ title: 'Tối ưu SEO', status: 'running', detail: 'Đang tối ưu...' }]);
+              setRunning(true);
+              try {
+                let total = 0, more = true;
+                while (more) {
+                  try {
+                    const r = await api.optimizeStore(storeList[storeList.length - 1].id);
+                    total += r.optimized || 0;
+                    if (!r.optimized || r.total === 0) more = false;
+                    setSteps([{ title: 'Tối ưu SEO', status: 'running', detail: `Đã tối ưu ${total} SP...` }]);
+                  } catch { more = false; }
+                }
+                setSteps([{ title: 'Tối ưu SEO', status: 'done', detail: `${total} SP đã tối ưu` }]);
+                addToast(`Tối ưu xong: ${total} sản phẩm`, 'success');
+              } catch(e) { setSteps([{ title: 'Tối ưu SEO', status: 'failed', detail: e.message }]); addToast(`Lỗi: ${e.message}`, 'error'); }
+              setRunning(false);
+            }},
+          ].map((step, i) => (
+            <button key={i} onClick={step.action} disabled={running} className="flex items-center space-x-3 p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04] hover:bg-white/[0.12] dark:hover:bg-slate-700/[0.15] transition-all active:scale-[0.98] cursor-pointer text-left disabled:opacity-50">
+              <div className={`p-2.5 rounded-[12px] ${colorMap[step.color].bg} ${colorMap[step.color].text} flex-shrink-0`}>
+                <step.icon size={18} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-slate-800 dark:text-white">{step.label}</p>
+                <p className="text-[10px] text-slate-500">{step.desc}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </GlassCard>
 
       {/* Pipeline Progress */}
       {steps.length > 0 && (
