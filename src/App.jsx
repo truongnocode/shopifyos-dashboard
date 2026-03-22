@@ -673,9 +673,10 @@ const SocialView = ({ stores, skillOutputs }) => {
   );
 };
 
-const WinningProductsView = ({ competitors, skillOutputs, addToast }) => {
+const WinningProductsView = ({ competitors, skillOutputs, insights, addToast }) => {
   const competitorList = competitors.data || fallbackCompetitors;
   const outputs = skillOutputs?.data || [];
+  const insightList = insights?.data || fallbackInsights;
 
   const handleCrawl = async () => {
     addToast('Đang crawl đối thủ...', 'info');
@@ -692,8 +693,8 @@ const WinningProductsView = ({ competitors, skillOutputs, addToast }) => {
     <div className="space-y-6 md:space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Săn SP Win</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Nghiên cứu SP, phát hiện trend, spy ads</p>
+          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Nghiên cứu sản phẩm</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Tìm SP tiềm năng, phân tích đối thủ, theo dõi thị trường</p>
         </div>
         <button onClick={competitors.refetch} className="p-2.5 rounded-[12px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${competitors.loading ? 'animate-spin' : ''}`} />
@@ -771,6 +772,50 @@ const WinningProductsView = ({ competitors, skillOutputs, addToast }) => {
           <p className="text-xs text-slate-500">Chạy <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[11px] font-mono">/winning-product-hunter</code> trong Claude Code để tạo reports.</p>
         </GlassCard>
       )}
+
+      {/* Insights + Competitors */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <GlassCard>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center mb-4">
+            <Lightbulb className="mr-2 text-amber-500" size={20} /> Nhận định thị trường
+          </h2>
+          <div className="space-y-2.5">
+            {insightList.map((insight) => (
+              <div key={insight.id} className="p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
+                <div className="flex justify-between items-start mb-1">
+                  <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                    (insight.category || insight.type) === 'TREND' ? 'bg-emerald-100/60 dark:bg-emerald-500/15 text-emerald-600' :
+                    (insight.category || insight.type) === 'SEO_UPDATE' ? 'bg-blue-100/60 dark:bg-blue-500/15 text-blue-600' :
+                    (insight.category || insight.type) === 'COMPETITOR_CHANGE' ? 'bg-rose-100/60 dark:bg-rose-500/15 text-rose-600' :
+                    'bg-purple-100/60 dark:bg-purple-500/15 text-purple-600'
+                  }`}>{insight.category || insight.type}</span>
+                  <span className="text-[10px] text-slate-400">{insight.relevance}</span>
+                </div>
+                <p className="text-xs font-bold text-slate-800 dark:text-white mt-1.5">{insight.title}</p>
+                <p className="text-[10px] text-slate-400 mt-1">{insight.source}</p>
+              </div>
+            ))}
+            {insightList.length === 0 && <p className="text-xs text-slate-400 text-center py-3">Chưa có nhận định</p>}
+          </div>
+        </GlassCard>
+        <GlassCard>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center mb-4">
+            <Target className="mr-2 text-rose-500" size={20} /> Đối thủ cạnh tranh
+          </h2>
+          <div className="space-y-2.5">
+            {competitorList.map((comp, idx) => (
+              <div key={comp.id || idx} className="flex items-center justify-between p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
+                <div className="min-w-0">
+                  <p className="font-bold text-xs text-slate-800 dark:text-white">{comp.domain || comp.name}</p>
+                  <p className="text-[10px] text-slate-500">{comp.name} &middot; {comp.productCount || 0} SP</p>
+                </div>
+                <Badge type={comp.lastCrawledAt ? 'success' : 'pending'} text={comp.lastCrawledAt ? 'Đã crawl' : 'Chờ'} />
+              </div>
+            ))}
+            {competitorList.length === 0 && <p className="text-xs text-slate-400 text-center py-3">Chưa có đối thủ</p>}
+          </div>
+        </GlassCard>
+      </div>
     </div>
   );
 };
@@ -872,6 +917,102 @@ const ThemesView = ({ themes }) => {
           ))}
         </div>
       )}
+    </div>
+  );
+};
+
+// --- PIPELINE VIEW ---
+const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
+  const storeList = stores.data || [];
+  const runList = runs.data || [];
+
+  const pipelineSteps = [
+    { step: '1', title: 'Crawl đối thủ', desc: 'Thu thập SP, bộ sưu tập, giá từ store đối thủ', icon: Eye, color: 'blue' },
+    { step: '2', title: 'Phân tích niche', desc: 'Xác định personas, keywords, chiến lược giá', icon: BrainCircuit, color: 'purple' },
+    { step: '3', title: 'Tối ưu sản phẩm', desc: 'AI viết lại title, body, SEO, tags', icon: Sparkles, color: 'indigo' },
+    { step: '4', title: 'Convert Theme', desc: 'React/HTML → Shopify Liquid (12 phase)', icon: Palette, color: 'rose' },
+    { step: '5', title: 'Setup Store', desc: 'Menus, collections, settings, pages', icon: Settings, color: 'amber' },
+    { step: '6', title: 'Import SP', desc: 'Push SP đã tối ưu qua Admin API', icon: Package, color: 'emerald' },
+    { step: '7', title: 'Kiểm tra', desc: 'Check links, mobile, tốc độ, SEO', icon: CheckCircle2, color: 'blue' },
+  ];
+
+  return (
+    <div className="space-y-6 md:space-y-8 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Setup Store mới</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Pipeline tự động: crawl → tối ưu → convert → setup</p>
+        </div>
+        <button onClick={runs.refetch} className="p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/[0.15] transition-all active:scale-95">
+          <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${runs.loading ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
+
+      {/* Pipeline Steps */}
+      <GlassCard>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Quy trình Pipeline</h2>
+        <div className="space-y-2">
+          {pipelineSteps.map((s, i) => (
+            <div key={i} className="flex items-center space-x-3 p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
+              <div className={`w-8 h-8 rounded-full ${colorMap[s.color].bg} ${colorMap[s.color].text} flex items-center justify-center font-bold text-sm flex-shrink-0`}>{s.step}</div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-slate-800 dark:text-white">{s.title}</p>
+                <p className="text-[11px] text-slate-500">{s.desc}</p>
+              </div>
+              <s.icon size={16} className="text-slate-300 dark:text-slate-600 flex-shrink-0" />
+            </div>
+          ))}
+        </div>
+      </GlassCard>
+
+      {/* How to use */}
+      <GlassCard>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Cách sử dụng</h2>
+        <div className="space-y-3">
+          <div className="p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
+            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">Bước 1: Chuẩn bị input</p>
+            <p className="text-[11px] text-slate-500">• URL GitHub repo (React/HTML theme)<br/>• URL store đối thủ để crawl<br/>• Thông tin niche & store mới</p>
+          </div>
+          <div className="p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
+            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">Bước 2: Chạy Pipeline</p>
+            <p className="text-[11px] text-slate-500">Trong Claude Code, gõ: <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[10px] font-mono">/shopify-pipeline</code></p>
+          </div>
+          <div className="p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
+            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">Bước 3: Theo dõi</p>
+            <p className="text-[11px] text-slate-500">Pipeline tự động chạy 7 bước. Theo dõi tiến trình trên dashboard.</p>
+          </div>
+        </div>
+      </GlassCard>
+
+      {/* Recent Pipeline Runs */}
+      <GlassCard>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Lịch sử chạy Pipeline</h2>
+        {runs.loading ? <LoadingSkeleton count={3} /> : (
+          <div className="space-y-2">
+            {runList.filter(r => r.runType === 'FULL_PIPELINE' || r.runType === 'STORE_SETUP' || r.runType === 'IMPORT').map((run) => {
+              const isOk = run.status === 'COMPLETED';
+              const time = run.startedAt ? new Date(run.startedAt).toLocaleString('vi-VN') : '';
+              return (
+                <div key={run.id} className="flex items-center justify-between p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
+                  <div className="flex items-center space-x-3">
+                    <div className={`p-2 rounded-[10px] ${isOk ? 'bg-emerald-100/60 dark:bg-emerald-500/15' : 'bg-amber-100/60 dark:bg-amber-500/15'}`}>
+                      {isOk ? <CheckCircle2 size={16} className="text-emerald-500" /> : <Clock size={16} className="text-amber-500" />}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-slate-800 dark:text-white">{run.runType?.replace(/_/g, ' ')}</p>
+                      <p className="text-[11px] text-slate-500">{run.store?.name || 'N/A'} &middot; {time}</p>
+                    </div>
+                  </div>
+                  <Badge type={isOk ? 'success' : 'pending'} text={isOk ? 'Hoàn tất' : run.status} />
+                </div>
+              );
+            })}
+            {runList.filter(r => ['FULL_PIPELINE','STORE_SETUP','IMPORT'].includes(r.runType)).length === 0 && (
+              <p className="text-xs text-slate-400 text-center py-4">Chưa chạy pipeline nào. Gõ /shopify-pipeline trong Claude Code để bắt đầu.</p>
+            )}
+          </div>
+        )}
+      </GlassCard>
     </div>
   );
 };
@@ -1199,14 +1340,15 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
     </div>
   );
 
-  if (activeTab === 'intelligence') return (
+  if (activeTab === 'pipeline') return (
     <div className="space-y-5">
       <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Hành động</p>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Pipeline</p>
         <div className="space-y-1.5">
-          <ActionBtn icon={Target} label="Crawl đối thủ" color="rose" onClick={() => addToast('Chạy /shopify-pipeline trong Claude Code', 'info')} />
-          <ActionBtn icon={Lightbulb} label="Phân tích thị trường" color="amber" onClick={() => addToast('Chạy /winning-product-hunter trong Claude Code', 'info')} />
-          <ActionBtn icon={RefreshCw} label="Cập nhật insights" color="blue" onClick={() => addToast('Chạy /shopify-pipeline trong Claude Code', 'info')} />
+          <ActionBtn icon={Rocket} label="Chạy Full Pipeline" color="purple" onClick={() => addToast('Gõ /shopify-pipeline trong Claude Code', 'info')} />
+          <ActionBtn icon={Eye} label="Crawl đối thủ" color="blue" onClick={() => addToast('Gõ /shopify-pipeline trong Claude Code', 'info')} />
+          <ActionBtn icon={Palette} label="Convert Theme" color="rose" onClick={() => addToast('Gõ /shopify-pipeline trong Claude Code', 'info')} />
+          <ActionBtn icon={RefreshCw} label="Đồng bộ store" color="emerald" onClick={() => handleQuickAction('sync', 'Đồng bộ cửa hàng')} />
         </div>
       </div>
       <TaskSection />
@@ -1287,12 +1429,13 @@ export default function App() {
       { id: 'products', icon: Package, label: 'Sản phẩm' },
     ]},
     { group: 'AI Skills', items: [
+      { id: 'products', icon: Sparkles, label: 'Tối ưu SP' },
       { id: 'ads', icon: Megaphone, label: 'Quảng cáo' },
       { id: 'social', icon: Share2, label: 'Mạng xã hội' },
-      { id: 'winning-products', icon: TrendingUp, label: 'Săn SP Win' },
+      { id: 'winning-products', icon: TrendingUp, label: 'Nghiên cứu SP' },
     ]},
-    { group: 'Nghiên cứu', items: [
-      { id: 'intelligence', icon: BrainCircuit, label: 'Phân tích' },
+    { group: 'Pipeline', items: [
+      { id: 'pipeline', icon: Rocket, label: 'Setup Store mới' },
     ]},
     { group: 'Quản lý', items: [
       { id: 'stores-manage', icon: Settings, label: 'Niche & Store' },
@@ -1461,9 +1604,8 @@ export default function App() {
             {activeTab === 'products' && <ProductsView products={products} addToast={addToast} />}
             {activeTab === 'ads' && <AdsView skillOutputs={adsOutputs} addToast={addToast} />}
             {activeTab === 'social' && <SocialView stores={stores} skillOutputs={socialOutputs} />}
-            {activeTab === 'winning-products' && <WinningProductsView competitors={competitors} skillOutputs={winningOutputs} addToast={addToast} />}
-            {activeTab === 'intelligence' && <IntelligenceView insights={insights} competitors={competitors} addToast={addToast} />}
-
+            {activeTab === 'winning-products' && <WinningProductsView competitors={competitors} skillOutputs={winningOutputs} insights={insights} addToast={addToast} />}
+            {activeTab === 'pipeline' && <PipelineView stores={stores} runs={runs} addToast={addToast} handleQuickAction={handleQuickAction} />}
             {activeTab === 'stores-manage' && <StoresManageView niches={niches} stores={stores} addToast={addToast} />}
           </div>
         </div>
