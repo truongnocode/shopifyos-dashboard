@@ -925,7 +925,7 @@ const ThemesView = ({ themes }) => {
 const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
   const [running, setRunning] = useState(false);
   const [steps, setSteps] = useState([]);
-  const [fullForm, setFullForm] = useState({ url: '', repo: '', storeName: '', domain: '', tokenKey: '', niche: '' });
+  const [fullForm, setFullForm] = useState({ url: '', repo: '', storeName: '', domain: '', accessToken: '', niche: '' });
 
   const inputClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[14px] py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200 placeholder-slate-400";
 
@@ -935,34 +935,42 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
 
 
   const runFullPipeline = async () => {
-    if (!fullForm.url || !fullForm.storeName || !fullForm.domain || !fullForm.tokenKey || !fullForm.niche) return addToast('Vui lòng điền đầy đủ thông tin', 'error');
+    if (!fullForm.storeName || !fullForm.domain || !fullForm.accessToken || !fullForm.niche) return addToast('Vui lòng điền đầy đủ thông tin (tên store, domain, token, niche)', 'error');
+    const autoTokenKey = `SHOPIFY_ACCESS_TOKEN_${fullForm.storeName.toUpperCase().replace(/[^A-Z0-9]/g, '')}`;
 
     setRunning(true);
-    setSteps([
-      { title: 'Crawl đối thủ', status: 'pending', detail: '' },
-      { title: 'Tạo store', status: 'pending', detail: '' },
-      { title: 'Đồng bộ từ Shopify', status: 'pending', detail: '' },
-      { title: 'Tối ưu SEO', status: 'pending', detail: '' },
-    ]);
+    const hasCrawl = !!fullForm.url;
+    const stepList = [];
+    if (hasCrawl) stepList.push({ title: 'Phân tích đối thủ', status: 'pending', detail: '' });
+    stepList.push({ title: 'Tạo store', status: 'pending', detail: '' });
+    stepList.push({ title: 'Đồng bộ sản phẩm', status: 'pending', detail: '' });
+    stepList.push({ title: 'Tối ưu SEO', status: 'pending', detail: '' });
+    setSteps(stepList);
+    let stepIdx = 0;
 
     try {
-      // Step 1: Crawl
-      updateStep(0, 'running', 'Đang crawl đối thủ...');
-      const crawlResult = await api.crawlCompetitor(fullForm.url);
-      updateStep(0, 'done', `${crawlResult.productsCrawled} SP`);
+      // Step: Crawl (optional)
+      if (hasCrawl) {
+        updateStep(stepIdx, 'running', 'Đang phân tích trang web đối thủ...');
+        const crawlResult = await api.crawlCompetitor(fullForm.url);
+        updateStep(stepIdx, 'done', `${crawlResult.productsCrawled} SP, ${crawlResult.collections?.length || 0} bộ sưu tập`);
+        stepIdx++;
+      }
 
-      // Step 2: Create store
-      updateStep(1, 'running', 'Đang tạo store...');
-      const store = await api.createStore({ name: fullForm.storeName, domain: fullForm.domain, nicheName: fullForm.niche, envTokenKey: fullForm.tokenKey });
-      updateStep(1, 'done', store.name);
+      // Step: Create store
+      updateStep(stepIdx, 'running', 'Đang tạo store trong hệ thống...');
+      const store = await api.createStore({ name: fullForm.storeName, domain: fullForm.domain, nicheName: fullForm.niche, envTokenKey: autoTokenKey });
+      updateStep(stepIdx, 'done', store.name);
+      stepIdx++;
 
-      // Step 3: Sync from Shopify
-      updateStep(2, 'running', 'Đang đồng bộ từ Shopify API...');
+      // Step: Sync from Shopify
+      updateStep(stepIdx, 'running', 'Đang đồng bộ sản phẩm từ Shopify API...');
       const syncResult = await api.syncStore(store.id);
-      updateStep(2, 'done', `${syncResult.synced} SP đã đồng bộ`);
+      updateStep(stepIdx, 'done', `${syncResult.synced} SP đã đồng bộ`);
+      stepIdx++;
 
-      // Step 4: Optimize
-      updateStep(3, 'running', 'Đang tối ưu SEO...');
+      // Step: Optimize
+      updateStep(stepIdx, 'running', 'Đang tối ưu SEO...');
       let totalOpt = 0;
       let more = true;
       while (more) {
@@ -970,10 +978,10 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
           const r = await api.optimizeStore(store.id);
           totalOpt += r.optimized || 0;
           if (!r.optimized || r.total === 0) more = false;
-          updateStep(3, 'running', `Đã tối ưu ${totalOpt} SP...`);
+          updateStep(stepIdx, 'running', `Đã tối ưu ${totalOpt} SP...`);
         } catch { more = false; }
       }
-      updateStep(3, 'done', `${totalOpt} SP đã tối ưu`);
+      updateStep(stepIdx, 'done', `${totalOpt} SP đã tối ưu`);
 
       addToast('Pipeline hoàn tất!', 'success');
       stores.refetch(); runs.refetch();
@@ -1000,7 +1008,7 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
           <p className="text-xs text-slate-500 mb-4">Thiết lập hệ thống Shopify đầy đủ: phân tích đối thủ, kết nối store Shopify của bạn, đồng bộ sản phẩm qua API, tối ưu SEO toàn bộ. Phù hợp khi bạn đã có store Shopify và muốn hoàn thiện hệ thống.</p>
           <div className="space-y-3">
             <div>
-              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">URL đối thủ *</label>
+              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">URL đối thủ (tùy chọn - để phân tích đối thủ)</label>
               <input className={inputClass} placeholder="vd: competitor.myshopify.com" value={fullForm.url} onChange={e => setFullForm({...fullForm, url: e.target.value})} disabled={running} />
             </div>
             <div>
@@ -1022,8 +1030,9 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
               <input className={inputClass} placeholder="my-store.myshopify.com" value={fullForm.domain} onChange={e => setFullForm({...fullForm, domain: e.target.value})} disabled={running} />
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Env Token Key *</label>
-              <input className={inputClass} placeholder="SHOPIFY_ACCESS_TOKEN_MYSTORE" value={fullForm.tokenKey} onChange={e => setFullForm({...fullForm, tokenKey: e.target.value})} disabled={running} />
+              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Shopify Access Token *</label>
+              <input className={inputClass} type="password" placeholder="shpat_xxxxxxxxxxxxxxxx" value={fullForm.accessToken} onChange={e => setFullForm({...fullForm, accessToken: e.target.value})} disabled={running} />
+              <p className="text-[9px] text-slate-400 mt-1">Lấy từ Shopify Admin → Settings → Apps → Develop apps → Admin API access token</p>
             </div>
             <GlassButton variant="primary" icon={Rocket} onClick={runFullPipeline} disabled={running}>
               {running ? 'Đang chạy...' : 'Bắt đầu Pipeline'}
