@@ -1057,18 +1057,18 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
       {/* Mode Tabs */}
       <div className="flex gap-2">
         <button onClick={() => setMode('clone')} className={`px-4 py-2 rounded-[14px] text-sm font-semibold transition-all ${mode === 'clone' ? 'bg-indigo-600/85 text-white shadow-[0_4px_16px_rgba(99,102,241,0.3)]' : 'bg-white/[0.08] dark:bg-slate-800/[0.1] text-slate-600 dark:text-slate-300 border border-white/[0.1] dark:border-white/[0.04]'}`}>
-          Clone đối thủ
+          Clone trang web đối thủ
         </button>
         <button onClick={() => setMode('full')} className={`px-4 py-2 rounded-[14px] text-sm font-semibold transition-all ${mode === 'full' ? 'bg-indigo-600/85 text-white shadow-[0_4px_16px_rgba(99,102,241,0.3)]' : 'bg-white/[0.08] dark:bg-slate-800/[0.1] text-slate-600 dark:text-slate-300 border border-white/[0.1] dark:border-white/[0.04]'}`}>
-          Full Pipeline
+          Xây dựng Store hoàn chỉnh
         </button>
       </div>
 
       {/* Clone Mode */}
       {mode === 'clone' && (
         <GlassCard>
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Clone đối thủ</h2>
-          <p className="text-xs text-slate-500 mb-4">Nhập URL store Shopify đối thủ. Hệ thống sẽ tự động crawl, import và tối ưu tất cả sản phẩm.</p>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Clone trang web đối thủ</h2>
+          <p className="text-xs text-slate-500 mb-4">Chỉ cần nhập URL trang web đối thủ. Hệ thống sẽ tự động phân tích, crawl toàn bộ sản phẩm, bộ sưu tập, và tạo một trang web Shopify mới tương tự đối thủ với sản phẩm đã được tối ưu SEO.</p>
           <div className="space-y-3">
             <div>
               <label className="text-[11px] font-semibold text-slate-500 mb-1 block">URL đối thủ *</label>
@@ -1088,8 +1088,8 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
       {/* Full Pipeline Mode */}
       {mode === 'full' && (
         <GlassCard>
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Full Pipeline</h2>
-          <p className="text-xs text-slate-500 mb-4">Setup store hoàn chỉnh: crawl đối thủ + đồng bộ từ Shopify API + tối ưu SEO.</p>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Xây dựng Store Shopify hoàn chỉnh</h2>
+          <p className="text-xs text-slate-500 mb-4">Thiết lập hệ thống Shopify đầy đủ: phân tích đối thủ, kết nối store Shopify của bạn, đồng bộ sản phẩm qua API, tối ưu SEO toàn bộ. Phù hợp khi bạn đã có store Shopify và muốn hoàn thiện hệ thống.</p>
           <div className="space-y-3">
             <div>
               <label className="text-[11px] font-semibold text-slate-500 mb-1 block">URL đối thủ *</label>
