@@ -88,7 +88,7 @@ const Toast = ({ toasts, removeToast }) => (
     {toasts.map((toast) => (
       <div
         key={toast.id}
-        className={`flex items-center space-x-2 px-4 py-3 rounded-2xl backdrop-blur-xl border shadow-lg animate-fade-in cursor-pointer ${
+        className={`flex items-center space-x-2 px-4 py-3 rounded-2xl backdrop-blur-[10px] backdrop-saturate-[170%] border shadow-lg animate-fade-in cursor-pointer ${
           toast.type === 'success'
             ? 'bg-emerald-100/80 dark:bg-emerald-900/60 border-emerald-200/50 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-300'
             : toast.type === 'error'
@@ -122,7 +122,7 @@ const SectionHeader = ({ title, onRefresh, loading }) => (
   <div className="flex items-center justify-between">
     <h2 className="text-lg font-bold text-slate-800 dark:text-white">{title}</h2>
     {onRefresh && (
-      <button onClick={onRefresh} className="p-2 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95" disabled={loading}>
+      <button onClick={onRefresh} className="p-2 rounded-xl bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95" disabled={loading}>
         <RefreshCw size={16} className={`text-slate-500 dark:text-slate-400 ${loading ? 'animate-spin' : ''}`} />
       </button>
     )}
@@ -135,11 +135,11 @@ const TaskMonitor = ({ tasks }) => {
   return (
     <GlassCard className="!p-4 border-l-4 border-indigo-500">
       <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-3 flex items-center">
-        <Activity size={16} className="mr-2 text-indigo-500" /> Task Monitor
+        <Activity size={16} className="mr-2 text-indigo-500" /> Giám sát tác vụ
       </h3>
       <div className="space-y-2">
         {tasks.map((task) => (
-          <div key={task.id} className="flex items-center justify-between p-2.5 bg-white/50 dark:bg-slate-800/50 rounded-xl border border-white/30 dark:border-white/5">
+          <div key={task.id} className="flex items-center justify-between p-2.5 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-xl border border-white/[0.1] dark:border-white/[0.04]">
             <div className="flex items-center space-x-2.5 min-w-0 flex-1">
               <div className={`p-1.5 rounded-lg flex-shrink-0 ${
                 task.status === 'running' ? 'bg-blue-100 dark:bg-blue-500/20' :
@@ -161,7 +161,7 @@ const TaskMonitor = ({ tasks }) => {
               <span className="text-[10px] font-semibold text-emerald-600 flex-shrink-0">{task.result}</span>
             )}
             {task.status === 'running' && (
-              <span className="text-[10px] text-blue-500 flex-shrink-0 animate-pulse">Processing...</span>
+              <span className="text-[10px] text-blue-500 flex-shrink-0 animate-pulse">Đang xử lý...</span>
             )}
           </div>
         ))}
@@ -184,7 +184,7 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, han
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Trung tâm điều khiển</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">ShopifyOS &middot; Tổng quan hệ thống</p>
         </div>
-        <button onClick={() => { dashboard.refetch(); stores.refetch(); runs.refetch(); insights.refetch(); }} className="p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+        <button onClick={() => { dashboard.refetch(); stores.refetch(); runs.refetch(); insights.refetch(); }} className="p-2.5 rounded-xl bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${dashboard.loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -192,10 +192,10 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, han
       {/* Stats - 2x2 on mobile */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         {[
-          { icon: Store, label: 'Stores', value: Array.isArray(dashData.stores) ? dashData.stores.length : (dashData.stores || 0), color: 'blue', badge: `${storeList.length} niches` },
+          { icon: Store, label: 'Cửa hàng', value: Array.isArray(dashData.stores) ? dashData.stores.length : (dashData.stores || 0), color: 'blue', badge: `${storeList.length} niches` },
           { icon: Package, label: 'Sản phẩm', value: dashData.productCount, color: 'indigo', badge: null },
-          { icon: Sparkles, label: 'AI Skills', value: 5, color: 'purple', badge: 'Active' },
-          { icon: Zap, label: 'Automations', value: 3, color: 'amber', badge: null },
+          { icon: Sparkles, label: 'Kỹ năng AI', value: 5, color: 'purple', badge: 'Hoạt động' },
+          { icon: Zap, label: 'Tự động hóa', value: 3, color: 'amber', badge: null },
         ].map((stat, i) => (
           <GlassCard key={i} className="flex flex-col justify-center space-y-3 md:space-y-4 !p-4 md:!p-8">
             <div className="flex items-center justify-between">
@@ -223,7 +223,7 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, han
             { icon: TrendingUp, label: 'Tìm SP Win', color: 'amber', action: () => addToast('Mở Claude Code và chạy /winning-product-hunter', 'info') },
             { icon: Rocket, label: 'Pipeline', color: 'purple', action: () => addToast('Mở Claude Code và chạy /shopify-pipeline', 'info') },
           ].map((action, i) => (
-            <div key={i} onClick={action.action} className="flex-shrink-0 flex flex-col items-center gap-2 p-3 md:p-4 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl rounded-2xl border border-white/40 dark:border-white/5 min-w-[80px] md:min-w-[100px] cursor-pointer hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+            <div key={i} onClick={action.action} className="flex-shrink-0 flex flex-col items-center gap-2 p-3 md:p-4 bg-white/[0.08] dark:bg-slate-800/[0.1] backdrop-blur-[10px] backdrop-saturate-[170%] rounded-2xl border border-white/[0.12] dark:border-white/[0.04] min-w-[80px] md:min-w-[100px] cursor-pointer hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
               <div className={`p-2.5 rounded-xl ${colorMap[action.color].bg} ${colorMap[action.color].text}`}>
                 <action.icon size={20} />
               </div>
@@ -244,7 +244,7 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, han
         {stores.loading ? <LoadingSkeleton count={2} /> : (
           <div className="space-y-3 mt-4">
             {storeList.map((store) => (
-              <div key={store.id} className="flex items-center justify-between p-3.5 md:p-5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl md:rounded-[24px] border border-white/40 dark:border-white/5">
+              <div key={store.id} className="flex items-center justify-between p-3.5 md:p-5 bg-white/[0.1] dark:bg-slate-800/[0.12] backdrop-blur-[10px] backdrop-saturate-[170%] rounded-[16px] border border-white/[0.12] dark:border-white/[0.04]">
                 <div className="flex items-center space-x-3 md:space-x-5 min-w-0">
                   <div className={`w-11 h-11 md:w-14 md:h-14 rounded-2xl md:rounded-[18px] bg-gradient-to-br ${store.gradient || 'from-rose-400 to-pink-600'} flex items-center justify-center text-xl md:text-2xl shadow-inner flex-shrink-0`}>
                     {store.icon || '\u{1F3EA}'}
@@ -253,7 +253,7 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, han
                     <span className="block font-bold text-slate-700 dark:text-slate-200 text-sm md:text-lg truncate">{store.name}</span>
                     <span className="text-xs md:text-sm text-slate-500 dark:text-slate-400">{store.domain}</span>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge type={store.isActive ? 'active' : 'setup'} text={store.isActive ? 'Active' : 'Đang setup'} />
+                      <Badge type={store.isActive ? 'active' : 'setup'} text={store.isActive ? 'Hoạt động' : 'Đang setup'} />
                       <span className="text-[10px] md:text-xs text-slate-400 hidden sm:inline">{store.niche?.name || (typeof store.niche === 'string' ? store.niche : '')}</span>
                     </div>
                   </div>
@@ -274,7 +274,7 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, han
           <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">AI Skills</h2>
           <div className="space-y-2.5">
             {skillsConfig.map((skill) => (
-              <div key={skill.id} className="flex items-center space-x-3 p-3 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/30 dark:border-white/5">
+              <div key={skill.id} className="flex items-center space-x-3 p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-2xl border border-white/[0.1] dark:border-white/[0.04]">
                 <div className={`p-2.5 rounded-xl ${colorMap[skill.color].pill} flex-shrink-0`}>
                   <skill.icon size={18} className={colorMap[skill.color].text} />
                 </div>
@@ -299,7 +299,7 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, han
                   const isFailed = run.status === 'FAILED';
                   const timeAgo = run.startedAt ? new Date(run.startedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
                   return (
-                    <div key={run.id} className="flex items-center space-x-3 p-3 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-white/40 dark:border-white/5">
+                    <div key={run.id} className="flex items-center space-x-3 p-3 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-2xl border border-white/[0.12] dark:border-white/[0.04]">
                       <div className={`p-2 rounded-xl flex-shrink-0 ${isSuccess ? 'bg-emerald-100 dark:bg-emerald-500/20' : isFailed ? 'bg-rose-100 dark:bg-rose-500/20' : 'bg-amber-100 dark:bg-amber-500/20'}`}>
                         {isSuccess ? <CheckCircle2 size={18} className="text-emerald-500" /> : isFailed ? <AlertCircle size={18} className="text-rose-500" /> : <Clock size={18} className="text-amber-500" />}
                       </div>
@@ -325,14 +325,14 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, han
           <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center">
             <Lightbulb className="mr-2 text-amber-500" size={20} /> Nhận định thông minh
           </h2>
-          <button onClick={insights.refetch} className="p-2 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95" disabled={insights.loading}>
+          <button onClick={insights.refetch} className="p-2 rounded-xl bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95" disabled={insights.loading}>
             <RefreshCw size={16} className={`text-slate-500 dark:text-slate-400 ${insights.loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
         {insights.loading ? <LoadingSkeleton count={4} /> : (
           <div className="space-y-2.5">
             {insightList.map((insight) => (
-              <div key={insight.id} className="flex items-center justify-between p-3 md:p-4 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-white/40 dark:border-white/5">
+              <div key={insight.id} className="flex items-center justify-between p-3 md:p-4 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-2xl border border-white/[0.12] dark:border-white/[0.04]">
                 <div className="flex items-center space-x-2.5 min-w-0 flex-1">
                   <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full flex-shrink-0 ${
                     (insight.category || insight.type) === 'Trend' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600' :
@@ -375,7 +375,7 @@ const ProductsView = ({ products, addToast }) => {
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Sản phẩm</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Heart To Soul &middot; Shopify Admin API</p>
         </div>
-        <button onClick={products.refetch} className="p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+        <button onClick={products.refetch} className="p-2.5 rounded-xl bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${products.loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -440,7 +440,7 @@ const AdsView = ({ skillOutputs, addToast }) => {
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Tạo Quảng cáo</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">AI tạo chiến dịch cho Meta, Google, TikTok</p>
         </div>
-        <button onClick={skillOutputs.refetch} className="p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+        <button onClick={skillOutputs.refetch} className="p-2.5 rounded-xl bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${skillOutputs.loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -490,7 +490,7 @@ const AdsView = ({ skillOutputs, addToast }) => {
                 {content.headlines && <div className="mb-2">{content.headlines.map((h, i) => <p key={i} className="text-xs text-slate-700 dark:text-slate-200 font-medium">• {h}</p>)}</div>}
                 {content.descriptions && <div className="mb-2">{content.descriptions.map((d, i) => <p key={i} className="text-[11px] text-slate-500">{d}</p>)}</div>}
                 {content.hook && <p className="text-sm font-semibold text-rose-600 dark:text-rose-400 mb-1">{content.hook}</p>}
-                {content.script && <pre className="text-[11px] text-slate-500 bg-white/30 dark:bg-slate-800/30 p-2 rounded-xl mb-2 whitespace-pre-wrap">{content.script}</pre>}
+                {content.script && <pre className="text-[11px] text-slate-500 bg-white/[0.06] dark:bg-slate-800/[0.08] p-2 rounded-xl mb-2 whitespace-pre-wrap">{content.script}</pre>}
                 {content.keywords && <div className="flex flex-wrap gap-1 mb-2">{content.keywords.map((k, i) => <span key={i} className="px-2 py-0.5 bg-indigo-100/80 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 text-[10px] rounded-full">{k}</span>)}</div>}
                 {content.hashtags && <div className="flex flex-wrap gap-1 mb-2">{content.hashtags.map((h, i) => <span key={i} className="px-2 py-0.5 bg-purple-100/80 dark:bg-purple-500/20 text-purple-600 dark:text-purple-300 text-[10px] rounded-full">{h}</span>)}</div>}
                 {content.targeting && <div className="mt-2 p-2 bg-blue-50/50 dark:bg-blue-500/10 rounded-xl"><p className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">Targeting: {content.targeting.age} | {content.targeting.interests?.join(', ')}</p></div>}
@@ -512,10 +512,10 @@ const SocialView = ({ stores, skillOutputs }) => {
     <div className="space-y-6 md:space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Social Content</h1>
+          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Nội dung Mạng xã hội</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Tạo nội dung đa nền tảng</p>
         </div>
-        <button onClick={skillOutputs.refetch} className="p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+        <button onClick={skillOutputs.refetch} className="p-2.5 rounded-xl bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${skillOutputs.loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -524,8 +524,8 @@ const SocialView = ({ stores, skillOutputs }) => {
         {[
           { icon: FileText, label: 'Bài đăng', value: outputs.filter(o => o.outputType === 'post').length || '24', color: 'indigo' },
           { icon: Image, label: 'Prompt hình', value: outputs.filter(o => o.outputType === 'image_prompt').length || '18', color: 'purple' },
-          { icon: Video, label: 'Video concepts', value: outputs.filter(o => o.outputType === 'video').length || '6', color: 'rose' },
-          { icon: Hash, label: 'Hashtag sets', value: outputs.filter(o => o.outputType === 'hashtag').length || '12', color: 'emerald' },
+          { icon: Video, label: 'Ý tưởng video', value: outputs.filter(o => o.outputType === 'video').length || '6', color: 'rose' },
+          { icon: Hash, label: 'Bộ hashtag', value: outputs.filter(o => o.outputType === 'hashtag').length || '12', color: 'emerald' },
         ].map((s, i) => (
           <GlassCard key={i} className="!p-4 md:!p-6">
             <div className={`p-2.5 rounded-xl w-fit mb-2 ${colorMap[s.color].pill}`}>
@@ -556,7 +556,7 @@ const SocialView = ({ stores, skillOutputs }) => {
                   <span className="text-[10px] text-slate-400">{content.bestTime && `Best: ${content.bestTime}`}</span>
                 </div>
                 <h3 className="font-bold text-sm text-slate-800 dark:text-white mb-2">{output.title}</h3>
-                {content.caption && <pre className="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap bg-white/30 dark:bg-slate-800/30 p-3 rounded-xl mb-2 leading-relaxed">{content.caption}</pre>}
+                {content.caption && <pre className="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap bg-white/[0.06] dark:bg-slate-800/[0.08] p-3 rounded-xl mb-2 leading-relaxed">{content.caption}</pre>}
                 {content.imagePrompt && <div className="p-2 bg-amber-50/50 dark:bg-amber-500/10 rounded-xl"><p className="text-[10px] text-amber-700 dark:text-amber-300"><span className="font-semibold">Image Prompt:</span> {content.imagePrompt}</p></div>}
               </GlassCard>
             );
@@ -569,7 +569,7 @@ const SocialView = ({ stores, skillOutputs }) => {
           <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Loại nội dung</h2>
           <div className="space-y-2">
             {['Giáo dục & Tips', 'Cảm xúc & Storytelling', 'Giới thiệu SP', 'Hậu trường', 'Phong cách UGC', 'Theo mùa & Trending'].map((type, i) => (
-              <div key={i} className="flex items-center space-x-3 p-2.5 bg-white/40 dark:bg-slate-800/40 rounded-xl border border-white/30 dark:border-white/5">
+              <div key={i} className="flex items-center space-x-3 p-2.5 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-xl border border-white/[0.1] dark:border-white/[0.04]">
                 <div className="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0"></div>
                 <span className="text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200">{type}</span>
               </div>
@@ -577,10 +577,10 @@ const SocialView = ({ stores, skillOutputs }) => {
           </div>
         </GlassCard>
         <GlassCard>
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Stores đang hoạt động</h2>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Cửa hàng đang hoạt động</h2>
           <div className="space-y-3">
             {storeList.map((store) => (
-              <div key={store.id} className="flex items-center justify-between p-3 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-white/40 dark:border-white/5">
+              <div key={store.id} className="flex items-center justify-between p-3 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-2xl border border-white/[0.12] dark:border-white/[0.04]">
                 <div className="flex items-center space-x-3">
                   <span className="text-xl">{store.icon || '\u{1F3EA}'}</span>
                   <div>
@@ -620,7 +620,7 @@ const WinningProductsView = ({ competitors, skillOutputs, addToast }) => {
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Săn SP Win</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Nghiên cứu SP, phát hiện trend, spy ads</p>
         </div>
-        <button onClick={competitors.refetch} className="p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+        <button onClick={competitors.refetch} className="p-2.5 rounded-xl bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${competitors.loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -674,7 +674,7 @@ const WinningProductsView = ({ competitors, skillOutputs, addToast }) => {
                   <div className="space-y-2 mb-2">
                     <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">Đối thủ phân tích:</p>
                     {content.competitors.map((c, i) => (
-                      <div key={i} className="flex items-center justify-between p-2 bg-white/30 dark:bg-slate-800/30 rounded-xl">
+                      <div key={i} className="flex items-center justify-between p-2 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-xl">
                         <div><p className="text-xs font-bold text-slate-700 dark:text-slate-200">{c.name}</p><p className="text-[10px] text-slate-500">{c.platform} | {c.adSpend}</p></div>
                         <Badge type="neutral" text={`CTR ${c.ctr}`} />
                       </div>
@@ -708,10 +708,10 @@ const IntelligenceView = ({ insights, competitors, addToast }) => {
     <div className="space-y-6 md:space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Intelligence</h1>
+          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Phân tích thị trường</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Phân tích thị trường & theo dõi đối thủ</p>
         </div>
-        <button onClick={() => { insights.refetch(); competitors.refetch(); }} className="p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+        <button onClick={() => { insights.refetch(); competitors.refetch(); }} className="p-2.5 rounded-xl bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${insights.loading || competitors.loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -723,7 +723,7 @@ const IntelligenceView = ({ insights, competitors, addToast }) => {
           {insights.loading ? <LoadingSkeleton count={4} /> : (
             <div className="space-y-3">
               {insightList.map((insight) => (
-                <div key={insight.id} className="p-3.5 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-white/40 dark:border-white/5">
+                <div key={insight.id} className="p-3.5 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-2xl border border-white/[0.12] dark:border-white/[0.04]">
                   <div className="flex justify-between items-start mb-1.5">
                     <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full ${
                       (insight.category || insight.type) === 'Trend' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600' :
@@ -747,7 +747,7 @@ const IntelligenceView = ({ insights, competitors, addToast }) => {
           {competitors.loading ? <LoadingSkeleton count={2} /> : (
             <div className="space-y-3 mb-4">
               {competitorList.map((comp, idx) => (
-                <div key={comp.id || idx} className="flex items-center justify-between p-3.5 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-white/40 dark:border-white/5">
+                <div key={comp.id || idx} className="flex items-center justify-between p-3.5 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-2xl border border-white/[0.12] dark:border-white/[0.04]">
                   <div className="min-w-0">
                     <h3 className="font-bold text-sm text-slate-800 dark:text-white">{comp.domain}</h3>
                     <p className="text-xs text-slate-500">Cho: {comp.name}</p>
@@ -757,7 +757,7 @@ const IntelligenceView = ({ insights, competitors, addToast }) => {
               ))}
             </div>
           )}
-          <div className="p-3 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/30 dark:border-white/5">
+          <div className="p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-2xl border border-white/[0.1] dark:border-white/[0.04]">
             <p className="text-xs text-slate-500">Chạy <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[11px] font-mono">/shopify-pipeline</code> để crawl & phân tích.</p>
           </div>
         </GlassCard>
@@ -774,9 +774,9 @@ const ThemesView = ({ themes }) => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Themes</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Quản lý Liquid theme</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Quản lý giao diện</p>
         </div>
-        <button onClick={themes.refetch} className="p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+        <button onClick={themes.refetch} className="p-2.5 rounded-xl bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${themes.loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -812,23 +812,23 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
 const RightPanel = ({ tasks, runs, stores, handleQuickAction, addToast }) => {
   const storeList = stores.data || [];
   const runList = runs.data || [];
-  const lastSync = storeList[0]?.lastSyncAt ? new Date(storeList[0].lastSyncAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Never';
-  const lastOptimize = storeList[0]?.lastOptimizedAt ? new Date(storeList[0].lastOptimizedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Never';
+  const lastSync = storeList[0]?.lastSyncAt ? new Date(storeList[0].lastSyncAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Chưa có';
+  const lastOptimize = storeList[0]?.lastOptimizedAt ? new Date(storeList[0].lastOptimizedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Chưa có';
 
   return (
     <div className="space-y-5">
       {/* Quick Actions */}
       <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Quick Actions</p>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Thao tác nhanh</p>
         <div className="space-y-1.5">
           {[
-            { icon: Package, label: 'Optimize Products', color: 'indigo', action: () => handleQuickAction('optimize', 'Optimize Products') },
-            { icon: RefreshCw, label: 'Sync Store', color: 'blue', action: () => handleQuickAction('sync', 'Sync Store') },
-            { icon: Megaphone, label: 'Create Ads', color: 'rose', action: () => handleQuickAction('ads', 'Create Ads') },
-            { icon: Share2, label: 'Social Content', color: 'emerald', action: () => handleQuickAction('social', 'Social Content') },
-            { icon: TrendingUp, label: 'Find Winners', color: 'amber', action: () => handleQuickAction('winning', 'Find Winners') },
+            { icon: Package, label: 'Tối ưu sản phẩm', color: 'indigo', action: () => handleQuickAction('optimize', 'Tối ưu sản phẩm') },
+            { icon: RefreshCw, label: 'Đồng bộ cửa hàng', color: 'blue', action: () => handleQuickAction('sync', 'Đồng bộ cửa hàng') },
+            { icon: Megaphone, label: 'Tạo quảng cáo', color: 'rose', action: () => handleQuickAction('ads', 'Tạo quảng cáo') },
+            { icon: Share2, label: 'Nội dung MXH', color: 'emerald', action: () => handleQuickAction('social', 'Nội dung MXH') },
+            { icon: TrendingUp, label: 'Tìm SP tiềm năng', color: 'amber', action: () => handleQuickAction('winning', 'Tìm SP tiềm năng') },
           ].map((a, i) => (
-            <button key={i} onClick={a.action} className="w-full flex items-center space-x-3 p-2.5 rounded-2xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-[0.98] cursor-pointer">
+            <button key={i} onClick={a.action} className="w-full flex items-center space-x-3 p-2.5 rounded-2xl bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-[0.98] cursor-pointer">
               <div className={`p-2 rounded-xl ${colorMap[a.color].bg} ${colorMap[a.color].text}`}>
                 <a.icon size={16} />
               </div>
@@ -841,10 +841,10 @@ const RightPanel = ({ tasks, runs, stores, handleQuickAction, addToast }) => {
       {/* Task Monitor */}
       {tasks.length > 0 && (
         <div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Task Monitor</p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Giám sát tác vụ</p>
           <div className="space-y-1.5">
             {tasks.map((task) => (
-              <div key={task.id} className="flex items-center justify-between p-2.5 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-white/30 dark:border-white/5">
+              <div key={task.id} className="flex items-center justify-between p-2.5 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-2xl border border-white/[0.1] dark:border-white/[0.04]">
                 <div className="flex items-center space-x-2 min-w-0 flex-1">
                   <div className={`p-1.5 rounded-lg flex-shrink-0 ${
                     task.status === 'running' ? 'bg-blue-100 dark:bg-blue-500/20' :
@@ -870,18 +870,18 @@ const RightPanel = ({ tasks, runs, stores, handleQuickAction, addToast }) => {
 
       {/* Store Quick Stats */}
       <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Store Status</p>
-        <div className="space-y-2 p-3 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/30 dark:border-white/5">
-          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Products</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{storeList[0]?.productCount || 0}</span></div>
-          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Last Sync</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastSync}</span></div>
-          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Last Optimize</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastOptimize}</span></div>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Trạng thái cửa hàng</p>
+        <div className="space-y-2 p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-2xl border border-white/[0.1] dark:border-white/[0.04]">
+          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Sản phẩm</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{storeList[0]?.productCount || 0}</span></div>
+          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Đồng bộ lần cuối</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastSync}</span></div>
+          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Tối ưu lần cuối</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastOptimize}</span></div>
         </div>
       </div>
 
       {/* Recent Activity */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Recent Activity</p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hoạt động gần đây</p>
           <button onClick={runs.refetch} className="p-1 rounded-lg hover:bg-white/40 dark:hover:bg-white/5 transition-all">
             <RefreshCw size={12} className={`text-slate-400 ${runs.loading ? 'animate-spin' : ''}`} />
           </button>
@@ -892,7 +892,7 @@ const RightPanel = ({ tasks, runs, stores, handleQuickAction, addToast }) => {
             const isFailed = run.status === 'FAILED';
             const time = run.startedAt ? new Date(run.startedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
             return (
-              <div key={run.id} className="flex items-center space-x-2 p-2 bg-white/30 dark:bg-slate-800/30 rounded-xl">
+              <div key={run.id} className="flex items-center space-x-2 p-2 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-xl">
                 <div className={`p-1 rounded-lg flex-shrink-0 ${isSuccess ? 'bg-emerald-100 dark:bg-emerald-500/20' : isFailed ? 'bg-rose-100 dark:bg-rose-500/20' : 'bg-amber-100 dark:bg-amber-500/20'}`}>
                   {isSuccess ? <CheckCircle2 size={12} className="text-emerald-500" /> : isFailed ? <AlertCircle size={12} className="text-rose-500" /> : <Clock size={12} className="text-amber-500" />}
                 </div>
@@ -904,7 +904,7 @@ const RightPanel = ({ tasks, runs, stores, handleQuickAction, addToast }) => {
               </div>
             );
           })}
-          {runList.length === 0 && <p className="text-[11px] text-slate-400 text-center py-2">No activity yet</p>}
+          {runList.length === 0 && <p className="text-[11px] text-slate-400 text-center py-2">Chưa có hoạt động</p>}
         </div>
       </div>
     </div>
@@ -941,25 +941,25 @@ export default function App() {
 
   const navItems = [
     { group: 'Tổng quan', items: [
-      { id: 'command-center', icon: LayoutDashboard, label: 'Dashboard' },
+      { id: 'command-center', icon: LayoutDashboard, label: 'Bảng điều khiển' },
       { id: 'products', icon: Package, label: 'Sản phẩm' },
-      { id: 'themes', icon: Palette, label: 'Themes' },
+      { id: 'themes', icon: Palette, label: 'Giao diện' },
     ]},
     { group: 'AI Skills', items: [
-      { id: 'ads', icon: Megaphone, label: 'Tạo Ads' },
-      { id: 'social', icon: Share2, label: 'Social' },
+      { id: 'ads', icon: Megaphone, label: 'Quảng cáo' },
+      { id: 'social', icon: Share2, label: 'Mạng xã hội' },
       { id: 'winning-products', icon: TrendingUp, label: 'Săn SP Win' },
     ]},
     { group: 'Nghiên cứu', items: [
-      { id: 'intelligence', icon: BrainCircuit, label: 'Intelligence' },
+      { id: 'intelligence', icon: BrainCircuit, label: 'Phân tích' },
     ]},
   ];
 
   const bottomNav = [
-    { id: 'command-center', icon: LayoutDashboard, label: 'Home' },
+    { id: 'command-center', icon: LayoutDashboard, label: 'Trang chủ' },
     { id: 'products', icon: Package, label: 'SP' },
     { id: 'ads', icon: Megaphone, label: 'Ads' },
-    { id: 'social', icon: Share2, label: 'Social' },
+    { id: 'social', icon: Share2, label: 'Mạng xã hội' },
   ];
 
   const handleNav = (id) => {
@@ -969,7 +969,7 @@ export default function App() {
 
   const addTask = (label) => {
     const id = ++taskIdRef.current;
-    const task = { id, label, status: 'running', detail: 'Starting...', result: null, startedAt: new Date() };
+    const task = { id, label, status: 'running', detail: 'Đang bắt đầu...', result: null, startedAt: new Date() };
     setTasks(prev => [task, ...prev.slice(0, 9)]);
     return id;
   };
@@ -980,26 +980,26 @@ export default function App() {
 
   const handleQuickAction = async (action, label) => {
     const taskId = addTask(label);
-    addToast(`Running ${label}...`, 'info');
+    addToast(`Đang chạy ${label}...`, 'info');
     try {
       const storeId = (stores.data || [])[0]?.id;
       let result;
       if (action === 'optimize') {
-        updateTask(taskId, { detail: 'Optimizing products via Shopify API...' });
+        updateTask(taskId, { detail: 'Đang tối ưu sản phẩm qua Shopify API...' });
         result = await api.optimizeStore(storeId);
-        updateTask(taskId, { status: 'completed', detail: 'Done', result: `${result.optimized || 0}/${result.total || 0} optimized` });
+        updateTask(taskId, { status: 'completed', detail: 'Hoàn tất', result: `${result.optimized || 0}/${result.total || 0} đã tối ưu` });
       } else if (action === 'sync') {
-        updateTask(taskId, { detail: 'Syncing products from Shopify...' });
+        updateTask(taskId, { detail: 'Đang đồng bộ sản phẩm từ Shopify...' });
         result = await api.syncStore(storeId);
-        updateTask(taskId, { status: 'completed', detail: 'Done', result: `${result.synced || 0} synced` });
+        updateTask(taskId, { status: 'completed', detail: 'Hoàn tất', result: `${result.synced || 0} đã đồng bộ` });
       } else {
-        updateTask(taskId, { status: 'completed', detail: 'Triggered', result: 'OK' });
+        updateTask(taskId, { status: 'completed', detail: 'Đã kích hoạt', result: 'OK' });
       }
-      addToast(`${label} complete!`, 'success');
+      addToast(`${label} hoàn tất!`, 'success');
       runs.refetch(); dashboard.refetch(); stores.refetch();
     } catch (e) {
       updateTask(taskId, { status: 'failed', detail: e.message });
-      addToast(`Error: ${e.message}`, 'error');
+      addToast(`Lỗi: ${e.message}`, 'error');
     }
   };
 
@@ -1010,14 +1010,14 @@ export default function App() {
 
       {/* Mesh Gradient Background */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className={`absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full mix-blend-multiply filter blur-[120px] opacity-70 animate-blob ${isDark ? 'bg-indigo-900/40' : 'bg-purple-200'}`}></div>
-        <div className={`absolute top-[10%] -right-[10%] w-[40%] h-[60%] rounded-full mix-blend-multiply filter blur-[120px] opacity-70 animate-blob animation-delay-2000 ${isDark ? 'bg-teal-900/30' : 'bg-cyan-200'}`}></div>
-        <div className={`absolute -bottom-[20%] left-[20%] w-[60%] h-[50%] rounded-full mix-blend-multiply filter blur-[120px] opacity-70 animate-blob animation-delay-4000 ${isDark ? 'bg-purple-900/30' : 'bg-pink-200'}`}></div>
+        <div className={`absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full mix-blend-multiply filter blur-[120px] opacity-50 animate-blob ${isDark ? 'bg-indigo-900/40' : 'bg-purple-200/80'}`}></div>
+        <div className={`absolute top-[10%] -right-[10%] w-[40%] h-[60%] rounded-full mix-blend-multiply filter blur-[120px] opacity-50 animate-blob animation-delay-2000 ${isDark ? 'bg-teal-900/30' : 'bg-cyan-200/80'}`}></div>
+        <div className={`absolute -bottom-[20%] left-[20%] w-[60%] h-[50%] rounded-full mix-blend-multiply filter blur-[120px] opacity-50 animate-blob animation-delay-4000 ${isDark ? 'bg-purple-900/30' : 'bg-pink-200/80'}`}></div>
       </div>
 
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50">
-        <div className="flex items-center justify-between px-4 py-3 bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border-b border-white/40 dark:border-white/10">
+        <div className="flex items-center justify-between px-4 py-3 bg-white/[0.15] dark:bg-slate-900/[0.2] backdrop-blur-[12px] backdrop-saturate-[180%] border-b border-white/40 dark:border-white/10">
           <div className="flex items-center space-x-2.5">
             <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white shadow-lg">
               <Zap size={16} />
@@ -1025,10 +1025,10 @@ export default function App() {
             <span className="text-base font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-indigo-600 dark:from-white dark:to-indigo-400">ShopifyOS</span>
           </div>
           <div className="flex items-center space-x-2">
-            <button onClick={() => setIsDark(!isDark)} className="p-2 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-white/40 dark:border-white/10">
+            <button onClick={() => setIsDark(!isDark)} className="p-2 rounded-xl bg-white/[0.1] dark:bg-slate-800/[0.12] border border-white/40 dark:border-white/10">
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-white/40 dark:border-white/10">
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-xl bg-white/[0.1] dark:bg-slate-800/[0.12] border border-white/40 dark:border-white/10">
               {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
@@ -1039,7 +1039,7 @@ export default function App() {
       {mobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-40 pt-14">
           <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}></div>
-          <div className="relative mx-4 mt-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl rounded-3xl border border-white/60 dark:border-white/10 shadow-2xl p-5 max-h-[70vh] overflow-y-auto">
+          <div className="relative mx-4 mt-2 bg-white/[0.2] dark:bg-slate-900/[0.25] backdrop-blur-[12px] backdrop-saturate-[180%] rounded-3xl border border-white/60 dark:border-white/10 shadow-2xl p-5 max-h-[70vh] overflow-y-auto">
             {navItems.map((group) => (
               <div key={group.group} className="mb-4">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 mb-2">{group.group}</p>
@@ -1102,7 +1102,7 @@ export default function App() {
             </div>
 
             <div className="mt-3 pt-3 border-t border-white/40 dark:border-white/10 px-2">
-              <button onClick={() => setIsDark(!isDark)} className="w-full flex items-center justify-center p-2.5 rounded-2xl bg-white/50 dark:bg-slate-800/50 hover:bg-white/80 dark:hover:bg-slate-700/80 text-slate-600 dark:text-slate-300 transition-all border border-white/40 dark:border-white/10">
+              <button onClick={() => setIsDark(!isDark)} className="w-full flex items-center justify-center p-2.5 rounded-2xl bg-white/[0.1] dark:bg-slate-800/[0.12] hover:bg-white/80 dark:hover:bg-slate-700/80 text-slate-600 dark:text-slate-300 transition-all border border-white/40 dark:border-white/10">
                 {isDark ? <Sun size={18} /> : <Moon size={18} />}
                 <span className="ml-2 text-sm font-medium">{isDark ? 'Sáng' : 'Tối'}</span>
               </button>
@@ -1133,7 +1133,7 @@ export default function App() {
 
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50">
-        <div className="mx-3 mb-3 flex items-center justify-around py-2 bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl rounded-2xl border border-white/50 dark:border-white/10 shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
+        <div className="mx-3 mb-3 flex items-center justify-around py-2 bg-white/[0.15] dark:bg-slate-900/[0.2] backdrop-blur-[12px] backdrop-saturate-[180%] rounded-2xl border border-white/50 dark:border-white/10 shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
           {bottomNav.map((item) => (
             <button key={item.id} onClick={() => handleNav(item.id)} className={`flex flex-col items-center py-1.5 px-3 rounded-xl transition-all ${activeTab === item.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`}>
               <item.icon size={20} strokeWidth={activeTab === item.id ? 2.5 : 2} />
