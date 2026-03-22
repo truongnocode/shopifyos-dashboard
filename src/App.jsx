@@ -935,7 +935,7 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
 
 
   const runFullPipeline = async () => {
-    if (!fullForm.storeName || !fullForm.domain || !fullForm.accessToken || !fullForm.niche) return addToast('Vui lòng điền đầy đủ thông tin (tên store, domain, token, niche)', 'error');
+    if (!fullForm.storeName || !fullForm.domain || !fullForm.niche) return addToast('Vui lòng điền đầy đủ thông tin (tên store, domain, niche)', 'error');
     const autoTokenKey = `SHOPIFY_ACCESS_TOKEN_${fullForm.storeName.toUpperCase().replace(/[^A-Z0-9]/g, '')}`;
 
     setRunning(true);
@@ -1029,10 +1029,11 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
               <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Domain Shopify *</label>
               <input className={inputClass} placeholder="my-store.myshopify.com" value={fullForm.domain} onChange={e => setFullForm({...fullForm, domain: e.target.value})} disabled={running} />
             </div>
-            <div>
-              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Shopify Access Token *</label>
-              <input className={inputClass} type="password" placeholder="shpat_xxxxxxxxxxxxxxxx" value={fullForm.accessToken} onChange={e => setFullForm({...fullForm, accessToken: e.target.value})} disabled={running} />
-              <p className="text-[9px] text-slate-400 mt-1">Lấy từ Shopify Admin → Settings → Apps → Develop apps → Admin API access token</p>
+            <div className="p-3 bg-indigo-500/[0.06] dark:bg-indigo-500/[0.08] rounded-[14px] border border-indigo-500/[0.15] dark:border-indigo-400/[0.1]">
+              <p className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 mb-1">Kết nối Shopify API</p>
+              <p className="text-[10px] text-slate-500 mb-2">Access token sẽ được lấy tự động bởi hệ thống sau khi bạn bấm "Bắt đầu". Nếu cần đăng nhập Shopify, hệ thống sẽ hướng dẫn.</p>
+              <p className="text-[9px] text-slate-400">Hoặc nhập thủ công nếu đã có:</p>
+              <input className={inputClass + ' mt-1'} type="password" placeholder="shpat_xxx (tùy chọn - để trống = tự động)" value={fullForm.accessToken} onChange={e => setFullForm({...fullForm, accessToken: e.target.value})} disabled={running} />
             </div>
             <GlassButton variant="primary" icon={Rocket} onClick={runFullPipeline} disabled={running}>
               {running ? 'Đang chạy...' : 'Bắt đầu Pipeline'}
