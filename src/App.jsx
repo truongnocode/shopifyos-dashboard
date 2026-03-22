@@ -13,6 +13,7 @@ import {
 import { GlassCard, GlassButton, Badge, colorMap, LoadingSkeleton } from './components/ui';
 import { api } from './api';
 import { useApi } from './hooks/useApi';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 // --- FALLBACK DATA ---
 const fallbackStores = [
@@ -237,6 +238,80 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, han
       <div className="lg:hidden">
         <TaskMonitor tasks={tasks} />
       </div>
+
+      {/* Charts */}
+      {(() => {
+        const totalProducts = storeList.reduce((s, st) => s + (st.productCount || 0), 0);
+        const optimizedCount = runList.reduce((s, r) => s + (r.productsOptimized || 0), 0);
+        const pendingCount = Math.max(0, totalProducts - optimizedCount);
+
+        const pieData = [
+          { name: 'Đã tối ưu', value: optimizedCount || 0 },
+          { name: 'Chưa tối ưu', value: pendingCount || 1 },
+        ];
+        const COLORS = ['#6366f1', '#e2e8f0'];
+        const DARK_COLORS = ['#818cf8', '#334155'];
+
+        const storeBarData = storeList.map(st => ({
+          name: st.name?.length > 10 ? st.name.substring(0, 10) + '...' : st.name,
+          sp: st.productCount || 0,
+        }));
+
+        const insightBarData = [
+          { name: 'TREND', value: insightList.filter(i => i.category === 'TREND').length },
+          { name: 'SEO', value: insightList.filter(i => i.category === 'SEO_UPDATE').length },
+          { name: 'Đối thủ', value: insightList.filter(i => i.category === 'COMPETITOR_CHANGE').length },
+          { name: 'Cơ hội', value: insightList.filter(i => i.category === 'OPPORTUNITY').length },
+        ];
+
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Pie: Optimization Status */}
+            <GlassCard className="!p-4">
+              <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mb-2">Trạng thái tối ưu</p>
+              <div className="flex items-center justify-center">
+                <ResponsiveContainer width={140} height={140}>
+                  <PieChart>
+                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={4} dataKey="value" strokeWidth={0}>
+                      {pieData.map((_, idx) => <Cell key={idx} fill={COLORS[idx]} />)}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="ml-2 space-y-1">
+                  <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-indigo-500"></div><span className="text-[10px] text-slate-500">{optimizedCount} đã tối ưu</span></div>
+                  <div className="flex items-center space-x-2"><div className="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-slate-600"></div><span className="text-[10px] text-slate-500">{pendingCount} chưa</span></div>
+                </div>
+              </div>
+            </GlassCard>
+
+            {/* Bar: Products per Store */}
+            <GlassCard className="!p-4">
+              <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mb-2">Sản phẩm theo Store</p>
+              <ResponsiveContainer width="100%" height={140}>
+                <BarChart data={storeBarData} barSize={24}>
+                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={30} />
+                  <Tooltip contentStyle={{ background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: 12, fontSize: 11, backdropFilter: 'blur(8px)' }} />
+                  <Bar dataKey="sp" fill="#6366f1" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </GlassCard>
+
+            {/* Bar: Insights by Category */}
+            <GlassCard className="!p-4">
+              <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mb-2">Nhận định theo loại</p>
+              <ResponsiveContainer width="100%" height={140}>
+                <BarChart data={insightBarData} barSize={24}>
+                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={20} allowDecimals={false} />
+                  <Tooltip contentStyle={{ background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: 12, fontSize: 11 }} />
+                  <Bar dataKey="value" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </GlassCard>
+          </div>
+        );
+      })()}
 
       {/* Stores */}
       <GlassCard>
