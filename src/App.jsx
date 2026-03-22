@@ -1434,10 +1434,8 @@ export default function App() {
       { id: 'social', icon: Share2, label: 'Mạng xã hội' },
       { id: 'winning-products', icon: TrendingUp, label: 'Nghiên cứu SP' },
     ]},
-    { group: 'Pipeline', items: [
-      { id: 'pipeline', icon: Rocket, label: 'Setup Store mới' },
-    ]},
     { group: 'Quản lý', items: [
+      { id: 'pipeline', icon: Rocket, label: 'Setup Store mới' },
       { id: 'stores-manage', icon: Settings, label: 'Niche & Store' },
     ]},
   ];
