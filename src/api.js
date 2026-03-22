@@ -42,4 +42,9 @@ export const api = {
   optimizeStore: (storeId) => postJSON('/api/shopify', { action: 'optimize', storeId }),
   createInsight: (data) => postJSON('/api/shopify/insights', data),
   saveSkillOutput: (data) => postJSON('/api/shopify/skill-outputs', data),
+  getNiches: () => fetchJSON('/api/shopify/niches'),
+  createNiche: (data) => postJSON('/api/shopify/niches', data),
+  deleteNiche: (id) => fetch(`${API_BASE}/api/shopify/niches?id=${id}`, { method: 'DELETE' }).then(r => r.json()),
+  createStore: (data) => postJSON('/api/shopify/stores', data),
+  deleteStore: (id) => fetch(`${API_BASE}/api/shopify/stores?id=${id}`, { method: 'DELETE' }).then(r => r.json()),
 };
