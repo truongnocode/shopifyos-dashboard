@@ -89,7 +89,7 @@ const Toast = ({ toasts, removeToast }) => (
     {toasts.map((toast) => (
       <div
         key={toast.id}
-        className={`flex items-center space-x-2 px-4 py-3 rounded-[16px] backdrop-blur-[10px] backdrop-saturate-[170%] border shadow-lg animate-fade-in cursor-pointer ${
+        className={`flex items-center space-x-2 px-4 py-3 rounded-[18px] backdrop-blur-[10px] backdrop-saturate-[170%] border shadow-lg animate-fade-in cursor-pointer ${
           toast.type === 'success'
             ? 'bg-emerald-100/80 dark:bg-emerald-900/60 border-emerald-200/50 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-300'
             : toast.type === 'error'
@@ -123,7 +123,7 @@ const SectionHeader = ({ title, onRefresh, loading }) => (
   <div className="flex items-center justify-between">
     <h2 className="text-lg font-bold text-slate-800 dark:text-white">{title}</h2>
     {onRefresh && (
-      <button onClick={onRefresh} className="p-2 rounded-[12px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95" disabled={loading}>
+      <button onClick={onRefresh} className="p-2 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95" disabled={loading}>
         <RefreshCw size={16} className={`text-slate-500 dark:text-slate-400 ${loading ? 'animate-spin' : ''}`} />
       </button>
     )}
@@ -140,9 +140,9 @@ const TaskMonitor = ({ tasks }) => {
       </h3>
       <div className="space-y-2">
         {tasks.map((task) => (
-          <div key={task.id} className="flex items-center justify-between p-2.5 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[12px] border border-white/[0.1] dark:border-white/[0.04]">
+          <div key={task.id} className="flex items-center justify-between p-2.5 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[14px] border border-white/[0.1] dark:border-white/[0.04]">
             <div className="flex items-center space-x-2.5 min-w-0 flex-1">
-              <div className={`p-1.5 rounded-lg flex-shrink-0 ${
+              <div className={`p-1.5 rounded-[14px] flex-shrink-0 ${
                 task.status === 'running' ? 'bg-blue-100 dark:bg-blue-500/20' :
                 task.status === 'completed' ? 'bg-emerald-100 dark:bg-emerald-500/20' :
                 task.status === 'failed' ? 'bg-rose-100 dark:bg-rose-500/20' :
@@ -185,7 +185,7 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, han
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Trung tâm điều khiển</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">ShopifyOS &middot; Tổng quan hệ thống</p>
         </div>
-        <button onClick={() => { dashboard.refetch(); stores.refetch(); runs.refetch(); insights.refetch(); }} className="p-2.5 rounded-[12px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+        <button onClick={() => { dashboard.refetch(); stores.refetch(); runs.refetch(); insights.refetch(); }} className="p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${dashboard.loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -200,7 +200,7 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, han
         ].map((stat, i) => (
           <GlassCard key={i} className="flex flex-col justify-center space-y-3 md:space-y-4 !p-4 md:!p-8">
             <div className="flex items-center justify-between">
-              <div className={`p-2.5 md:p-4 rounded-[16px] ${colorMap[stat.color].bg} ${colorMap[stat.color].text}`}>
+              <div className={`p-2.5 md:p-4 rounded-[18px] ${colorMap[stat.color].bg} ${colorMap[stat.color].text}`}>
                 <stat.icon size={20} className="md:w-7 md:h-7" />
               </div>
               {stat.badge && <Badge type="neutral" text={stat.badge} />}
@@ -224,8 +224,8 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, han
             { icon: TrendingUp, label: 'Tìm SP Win', color: 'amber', action: () => addToast('Mở Claude Code và chạy /winning-product-hunter', 'info') },
             { icon: Rocket, label: 'Pipeline', color: 'purple', action: () => addToast('Mở Claude Code và chạy /shopify-pipeline', 'info') },
           ].map((action, i) => (
-            <div key={i} onClick={action.action} className="flex-shrink-0 flex flex-col items-center gap-2 p-3 md:p-4 bg-white/[0.08] dark:bg-slate-800/[0.1] backdrop-blur-[10px] backdrop-saturate-[170%] rounded-[16px] border border-white/[0.12] dark:border-white/[0.04] min-w-[80px] md:min-w-[100px] cursor-pointer hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
-              <div className={`p-2.5 rounded-[12px] ${colorMap[action.color].bg} ${colorMap[action.color].text}`}>
+            <div key={i} onClick={action.action} className="flex-shrink-0 flex flex-col items-center gap-2 p-3 md:p-4 bg-white/[0.08] dark:bg-slate-800/[0.1] backdrop-blur-[10px] backdrop-saturate-[170%] rounded-[18px] border border-white/[0.12] dark:border-white/[0.04] min-w-[80px] md:min-w-[100px] cursor-pointer hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+              <div className={`p-2.5 rounded-[14px] ${colorMap[action.color].bg} ${colorMap[action.color].text}`}>
                 <action.icon size={20} />
               </div>
               <span className="text-[11px] md:text-xs font-semibold text-slate-600 dark:text-slate-300 text-center whitespace-nowrap">{action.label}</span>
@@ -319,9 +319,9 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, han
         {stores.loading ? <LoadingSkeleton count={2} /> : (
           <div className="space-y-3 mt-4">
             {storeList.map((store) => (
-              <div key={store.id} className="flex items-center justify-between p-3.5 md:p-5 bg-white/[0.1] dark:bg-slate-800/[0.12] backdrop-blur-[10px] backdrop-saturate-[170%] rounded-[16px] border border-white/[0.12] dark:border-white/[0.04]">
+              <div key={store.id} className="flex items-center justify-between p-3.5 md:p-5 bg-white/[0.1] dark:bg-slate-800/[0.12] backdrop-blur-[10px] backdrop-saturate-[170%] rounded-[18px] border border-white/[0.12] dark:border-white/[0.04]">
                 <div className="flex items-center space-x-3 md:space-x-5 min-w-0">
-                  <div className={`w-11 h-11 md:w-14 md:h-14 rounded-[16px] md:rounded-[18px] bg-gradient-to-br ${store.gradient || 'from-rose-400 to-pink-600'} flex items-center justify-center text-xl md:text-2xl shadow-inner flex-shrink-0`}>
+                  <div className={`w-11 h-11 md:w-14 md:h-14 rounded-[18px] md:rounded-[18px] bg-gradient-to-br ${store.gradient || 'from-rose-400 to-pink-600'} flex items-center justify-center text-xl md:text-2xl shadow-inner flex-shrink-0`}>
                     {store.icon || '\u{1F3EA}'}
                   </div>
                   <div className="min-w-0">
@@ -349,8 +349,8 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, han
           <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">AI Skills</h2>
           <div className="space-y-2.5">
             {skillsConfig.map((skill) => (
-              <div key={skill.id} className="flex items-center space-x-3 p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[16px] border border-white/[0.1] dark:border-white/[0.04]">
-                <div className={`p-2.5 rounded-[12px] ${colorMap[skill.color].pill} flex-shrink-0`}>
+              <div key={skill.id} className="flex items-center space-x-3 p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[18px] border border-white/[0.1] dark:border-white/[0.04]">
+                <div className={`p-2.5 rounded-[14px] ${colorMap[skill.color].pill} flex-shrink-0`}>
                   <skill.icon size={18} className={colorMap[skill.color].text} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -374,8 +374,8 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, han
                   const isFailed = run.status === 'FAILED';
                   const timeAgo = run.startedAt ? new Date(run.startedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
                   return (
-                    <div key={run.id} className="flex items-center space-x-3 p-3 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[16px] border border-white/[0.12] dark:border-white/[0.04]">
-                      <div className={`p-2 rounded-[12px] flex-shrink-0 ${isSuccess ? 'bg-emerald-100 dark:bg-emerald-500/20' : isFailed ? 'bg-rose-100 dark:bg-rose-500/20' : 'bg-amber-100 dark:bg-amber-500/20'}`}>
+                    <div key={run.id} className="flex items-center space-x-3 p-3 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[18px] border border-white/[0.12] dark:border-white/[0.04]">
+                      <div className={`p-2 rounded-[14px] flex-shrink-0 ${isSuccess ? 'bg-emerald-100 dark:bg-emerald-500/20' : isFailed ? 'bg-rose-100 dark:bg-rose-500/20' : 'bg-amber-100 dark:bg-amber-500/20'}`}>
                         {isSuccess ? <CheckCircle2 size={18} className="text-emerald-500" /> : isFailed ? <AlertCircle size={18} className="text-rose-500" /> : <Clock size={18} className="text-amber-500" />}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -400,14 +400,14 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, han
           <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center">
             <Lightbulb className="mr-2 text-amber-500" size={20} /> Nhận định thông minh
           </h2>
-          <button onClick={insights.refetch} className="p-2 rounded-[12px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95" disabled={insights.loading}>
+          <button onClick={insights.refetch} className="p-2 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95" disabled={insights.loading}>
             <RefreshCw size={16} className={`text-slate-500 dark:text-slate-400 ${insights.loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
         {insights.loading ? <LoadingSkeleton count={4} /> : (
           <div className="space-y-2.5">
             {insightList.map((insight) => (
-              <div key={insight.id} className="flex items-center justify-between p-3 md:p-4 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[16px] border border-white/[0.12] dark:border-white/[0.04]">
+              <div key={insight.id} className="flex items-center justify-between p-3 md:p-4 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[18px] border border-white/[0.12] dark:border-white/[0.04]">
                 <div className="flex items-center space-x-2.5 min-w-0 flex-1">
                   <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full flex-shrink-0 ${
                     (insight.category || insight.type) === 'Trend' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600' :
@@ -450,7 +450,7 @@ const ProductsView = ({ products, addToast }) => {
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Sản phẩm</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Heart To Soul &middot; Shopify Admin API</p>
         </div>
-        <button onClick={products.refetch} className="p-2.5 rounded-[12px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+        <button onClick={products.refetch} className="p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${products.loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -483,7 +483,7 @@ const ProductsView = ({ products, addToast }) => {
           {productList.map((prod) => (
             <GlassCard key={prod.id} className="!p-4">
               <div className="flex items-center space-x-3">
-                <div className="w-11 h-11 rounded-[16px] bg-gradient-to-br from-rose-200 to-pink-300 dark:from-rose-800 dark:to-pink-900 flex items-center justify-center flex-shrink-0">
+                <div className="w-11 h-11 rounded-[18px] bg-gradient-to-br from-rose-200 to-pink-300 dark:from-rose-800 dark:to-pink-900 flex items-center justify-center flex-shrink-0">
                   <Heart size={18} className="text-rose-500" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -515,7 +515,7 @@ const AdsView = ({ skillOutputs, addToast }) => {
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Tạo Quảng cáo</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">AI tạo chiến dịch cho Meta, Google, TikTok</p>
         </div>
-        <button onClick={skillOutputs.refetch} className="p-2.5 rounded-[12px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+        <button onClick={skillOutputs.refetch} className="p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${skillOutputs.loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -528,7 +528,7 @@ const AdsView = ({ skillOutputs, addToast }) => {
         ].map((p, i) => (
           <GlassCard key={i} hoverEffect className="cursor-pointer !p-5">
             <div className="flex items-center space-x-3 md:block">
-              <div className={`p-3 md:p-4 rounded-[16px] w-fit md:mb-4 ${colorMap[p.color].bg} ${colorMap[p.color].text}`}>
+              <div className={`p-3 md:p-4 rounded-[18px] w-fit md:mb-4 ${colorMap[p.color].bg} ${colorMap[p.color].text}`}>
                 <p.icon size={22} />
               </div>
               <div className="flex-1">
@@ -565,11 +565,11 @@ const AdsView = ({ skillOutputs, addToast }) => {
                 {content.headlines && <div className="mb-2">{content.headlines.map((h, i) => <p key={i} className="text-xs text-slate-700 dark:text-slate-200 font-medium">• {h}</p>)}</div>}
                 {content.descriptions && <div className="mb-2">{content.descriptions.map((d, i) => <p key={i} className="text-[11px] text-slate-500">{d}</p>)}</div>}
                 {content.hook && <p className="text-sm font-semibold text-rose-600 dark:text-rose-400 mb-1">{content.hook}</p>}
-                {content.script && <pre className="text-[11px] text-slate-500 bg-white/[0.06] dark:bg-slate-800/[0.08] p-2 rounded-[12px] mb-2 whitespace-pre-wrap">{content.script}</pre>}
+                {content.script && <pre className="text-[11px] text-slate-500 bg-white/[0.06] dark:bg-slate-800/[0.08] p-2 rounded-[14px] mb-2 whitespace-pre-wrap">{content.script}</pre>}
                 {content.keywords && <div className="flex flex-wrap gap-1 mb-2">{content.keywords.map((k, i) => <span key={i} className="px-2 py-0.5 bg-indigo-100/80 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 text-[10px] rounded-full">{k}</span>)}</div>}
                 {content.hashtags && <div className="flex flex-wrap gap-1 mb-2">{content.hashtags.map((h, i) => <span key={i} className="px-2 py-0.5 bg-purple-100/80 dark:bg-purple-500/20 text-purple-600 dark:text-purple-300 text-[10px] rounded-full">{h}</span>)}</div>}
-                {content.targeting && <div className="mt-2 p-2 bg-blue-50/50 dark:bg-blue-500/10 rounded-[12px]"><p className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">Targeting: {content.targeting.age} | {content.targeting.interests?.join(', ')}</p></div>}
-                {(content.imagePrompt || content.videoPrompt) && <div className="mt-2 p-2 bg-amber-50/50 dark:bg-amber-500/10 rounded-[12px]"><p className="text-[10px] text-amber-700 dark:text-amber-300"><span className="font-semibold">Prompt:</span> {content.imagePrompt || content.videoPrompt}</p></div>}
+                {content.targeting && <div className="mt-2 p-2 bg-blue-50/50 dark:bg-blue-500/10 rounded-[14px]"><p className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">Targeting: {content.targeting.age} | {content.targeting.interests?.join(', ')}</p></div>}
+                {(content.imagePrompt || content.videoPrompt) && <div className="mt-2 p-2 bg-amber-50/50 dark:bg-amber-500/10 rounded-[14px]"><p className="text-[10px] text-amber-700 dark:text-amber-300"><span className="font-semibold">Prompt:</span> {content.imagePrompt || content.videoPrompt}</p></div>}
               </GlassCard>
             );
           })}
@@ -590,7 +590,7 @@ const SocialView = ({ stores, skillOutputs }) => {
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Nội dung Mạng xã hội</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Tạo nội dung đa nền tảng</p>
         </div>
-        <button onClick={skillOutputs.refetch} className="p-2.5 rounded-[12px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+        <button onClick={skillOutputs.refetch} className="p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${skillOutputs.loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -603,7 +603,7 @@ const SocialView = ({ stores, skillOutputs }) => {
           { icon: Hash, label: 'Bộ hashtag', value: outputs.filter(o => o.outputType === 'hashtag').length || '12', color: 'emerald' },
         ].map((s, i) => (
           <GlassCard key={i} className="!p-4 md:!p-6">
-            <div className={`p-2.5 rounded-[12px] w-fit mb-2 ${colorMap[s.color].pill}`}>
+            <div className={`p-2.5 rounded-[14px] w-fit mb-2 ${colorMap[s.color].pill}`}>
               <s.icon size={18} className={colorMap[s.color].text} />
             </div>
             <p className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white">{s.value}</p>
@@ -631,8 +631,8 @@ const SocialView = ({ stores, skillOutputs }) => {
                   <span className="text-[10px] text-slate-400">{content.bestTime && `Best: ${content.bestTime}`}</span>
                 </div>
                 <h3 className="font-bold text-sm text-slate-800 dark:text-white mb-2">{output.title}</h3>
-                {content.caption && <pre className="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap bg-white/[0.06] dark:bg-slate-800/[0.08] p-3 rounded-[12px] mb-2 leading-relaxed">{content.caption}</pre>}
-                {content.imagePrompt && <div className="p-2 bg-amber-50/50 dark:bg-amber-500/10 rounded-[12px]"><p className="text-[10px] text-amber-700 dark:text-amber-300"><span className="font-semibold">Image Prompt:</span> {content.imagePrompt}</p></div>}
+                {content.caption && <pre className="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap bg-white/[0.06] dark:bg-slate-800/[0.08] p-3 rounded-[14px] mb-2 leading-relaxed">{content.caption}</pre>}
+                {content.imagePrompt && <div className="p-2 bg-amber-50/50 dark:bg-amber-500/10 rounded-[14px]"><p className="text-[10px] text-amber-700 dark:text-amber-300"><span className="font-semibold">Image Prompt:</span> {content.imagePrompt}</p></div>}
               </GlassCard>
             );
           })}
@@ -644,7 +644,7 @@ const SocialView = ({ stores, skillOutputs }) => {
           <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Loại nội dung</h2>
           <div className="space-y-2">
             {['Giáo dục & Tips', 'Cảm xúc & Storytelling', 'Giới thiệu SP', 'Hậu trường', 'Phong cách UGC', 'Theo mùa & Trending'].map((type, i) => (
-              <div key={i} className="flex items-center space-x-3 p-2.5 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[12px] border border-white/[0.1] dark:border-white/[0.04]">
+              <div key={i} className="flex items-center space-x-3 p-2.5 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[14px] border border-white/[0.1] dark:border-white/[0.04]">
                 <div className="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0"></div>
                 <span className="text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200">{type}</span>
               </div>
@@ -655,7 +655,7 @@ const SocialView = ({ stores, skillOutputs }) => {
           <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Cửa hàng đang hoạt động</h2>
           <div className="space-y-3">
             {storeList.map((store) => (
-              <div key={store.id} className="flex items-center justify-between p-3 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[16px] border border-white/[0.12] dark:border-white/[0.04]">
+              <div key={store.id} className="flex items-center justify-between p-3 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[18px] border border-white/[0.12] dark:border-white/[0.04]">
                 <div className="flex items-center space-x-3">
                   <span className="text-xl">{store.icon || '\u{1F3EA}'}</span>
                   <div>
@@ -696,7 +696,7 @@ const WinningProductsView = ({ competitors, skillOutputs, insights, addToast }) 
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Nghiên cứu sản phẩm</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Tìm SP tiềm năng, phân tích đối thủ, theo dõi thị trường</p>
         </div>
-        <button onClick={competitors.refetch} className="p-2.5 rounded-[12px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+        <button onClick={competitors.refetch} className="p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${competitors.loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -709,7 +709,7 @@ const WinningProductsView = ({ competitors, skillOutputs, insights, addToast }) 
         ].map((f, i) => (
           <GlassCard key={i} hoverEffect className="cursor-pointer !p-5" onClick={handleCrawl}>
             <div className="flex items-center space-x-3 md:block">
-              <div className={`p-3 md:p-4 rounded-[16px] w-fit md:mb-4 ${colorMap[f.color].bg} ${colorMap[f.color].text}`}>
+              <div className={`p-3 md:p-4 rounded-[18px] w-fit md:mb-4 ${colorMap[f.color].bg} ${colorMap[f.color].text}`}>
                 <f.icon size={22} />
               </div>
               <div>
@@ -739,10 +739,10 @@ const WinningProductsView = ({ competitors, skillOutputs, insights, addToast }) 
                 <h3 className="font-bold text-sm text-slate-800 dark:text-white mb-3">{output.title}</h3>
                 {content.product && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
-                    <div className="p-2 bg-emerald-50/50 dark:bg-emerald-500/10 rounded-[12px] text-center"><p className="text-lg font-bold text-emerald-600">{content.score}</p><p className="text-[10px] text-slate-500">Score</p></div>
-                    <div className="p-2 bg-blue-50/50 dark:bg-blue-500/10 rounded-[12px] text-center"><p className="text-xs font-bold text-blue-600">{content.trend}</p><p className="text-[10px] text-slate-500">Trend</p></div>
-                    <div className="p-2 bg-amber-50/50 dark:bg-amber-500/10 rounded-[12px] text-center"><p className="text-xs font-bold text-amber-600">{content.marginPotential}</p><p className="text-[10px] text-slate-500">Margin</p></div>
-                    <div className="p-2 bg-purple-50/50 dark:bg-purple-500/10 rounded-[12px] text-center"><p className="text-xs font-bold text-purple-600">{content.sellingPrice}</p><p className="text-[10px] text-slate-500">Giá bán</p></div>
+                    <div className="p-2 bg-emerald-50/50 dark:bg-emerald-500/10 rounded-[14px] text-center"><p className="text-lg font-bold text-emerald-600">{content.score}</p><p className="text-[10px] text-slate-500">Score</p></div>
+                    <div className="p-2 bg-blue-50/50 dark:bg-blue-500/10 rounded-[14px] text-center"><p className="text-xs font-bold text-blue-600">{content.trend}</p><p className="text-[10px] text-slate-500">Trend</p></div>
+                    <div className="p-2 bg-amber-50/50 dark:bg-amber-500/10 rounded-[14px] text-center"><p className="text-xs font-bold text-amber-600">{content.marginPotential}</p><p className="text-[10px] text-slate-500">Margin</p></div>
+                    <div className="p-2 bg-purple-50/50 dark:bg-purple-500/10 rounded-[14px] text-center"><p className="text-xs font-bold text-purple-600">{content.sellingPrice}</p><p className="text-[10px] text-slate-500">Giá bán</p></div>
                   </div>
                 )}
                 {content.whyWinning && <p className="text-xs text-slate-600 dark:text-slate-300 mb-2"><span className="font-semibold">Tại sao win:</span> {content.whyWinning}</p>}
@@ -750,7 +750,7 @@ const WinningProductsView = ({ competitors, skillOutputs, insights, addToast }) 
                   <div className="space-y-2 mb-2">
                     <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">Đối thủ phân tích:</p>
                     {content.competitors.map((c, i) => (
-                      <div key={i} className="flex items-center justify-between p-2 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[12px]">
+                      <div key={i} className="flex items-center justify-between p-2 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px]">
                         <div><p className="text-xs font-bold text-slate-700 dark:text-slate-200">{c.name}</p><p className="text-[10px] text-slate-500">{c.platform} | {c.adSpend}</p></div>
                         <Badge type="neutral" text={`CTR ${c.ctr}`} />
                       </div>
@@ -758,7 +758,7 @@ const WinningProductsView = ({ competitors, skillOutputs, insights, addToast }) 
                   </div>
                 )}
                 {content.insights && <div className="space-y-1 mb-2">{content.insights.map((ins, i) => <p key={i} className="text-[11px] text-slate-500">• {ins}</p>)}</div>}
-                {content.recommendation && <div className="p-2 bg-indigo-50/50 dark:bg-indigo-500/10 rounded-[12px]"><p className="text-[11px] text-indigo-600 dark:text-indigo-300"><span className="font-semibold">Khuyến nghị:</span> {content.recommendation}</p></div>}
+                {content.recommendation && <div className="p-2 bg-indigo-50/50 dark:bg-indigo-500/10 rounded-[14px]"><p className="text-[11px] text-indigo-600 dark:text-indigo-300"><span className="font-semibold">Khuyến nghị:</span> {content.recommendation}</p></div>}
                 {content.sources && <div className="mt-2 flex flex-wrap gap-1">{content.sources.map((s, i) => <span key={i} className="px-2 py-0.5 bg-slate-100/80 dark:bg-slate-700/50 text-[9px] text-slate-500 rounded-full">{s}</span>)}</div>}
               </GlassCard>
             );
@@ -769,7 +769,7 @@ const WinningProductsView = ({ competitors, skillOutputs, insights, addToast }) 
       {outputs.length === 0 && (
         <GlassCard>
           <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Báo cáo</h2>
-          <p className="text-xs text-slate-500">Chạy <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[11px] font-mono">/winning-product-hunter</code> trong Claude Code để tạo reports.</p>
+          <p className="text-xs text-slate-500">Chạy <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-[14px] text-[11px] font-mono">/winning-product-hunter</code> trong Claude Code để tạo reports.</p>
         </GlassCard>
       )}
 
@@ -781,7 +781,7 @@ const WinningProductsView = ({ competitors, skillOutputs, insights, addToast }) 
           </h2>
           <div className="space-y-2.5">
             {insightList.map((insight) => (
-              <div key={insight.id} className="p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
+              <div key={insight.id} className="p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[16px] border border-white/[0.08] dark:border-white/[0.04]">
                 <div className="flex justify-between items-start mb-1">
                   <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
                     (insight.category || insight.type) === 'TREND' ? 'bg-emerald-100/60 dark:bg-emerald-500/15 text-emerald-600' :
@@ -804,7 +804,7 @@ const WinningProductsView = ({ competitors, skillOutputs, insights, addToast }) 
           </h2>
           <div className="space-y-2.5">
             {competitorList.map((comp, idx) => (
-              <div key={comp.id || idx} className="flex items-center justify-between p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
+              <div key={comp.id || idx} className="flex items-center justify-between p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[16px] border border-white/[0.08] dark:border-white/[0.04]">
                 <div className="min-w-0">
                   <p className="font-bold text-xs text-slate-800 dark:text-white">{comp.domain || comp.name}</p>
                   <p className="text-[10px] text-slate-500">{comp.name} &middot; {comp.productCount || 0} SP</p>
@@ -831,7 +831,7 @@ const IntelligenceView = ({ insights, competitors, addToast }) => {
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Phân tích thị trường</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Phân tích thị trường & theo dõi đối thủ</p>
         </div>
-        <button onClick={() => { insights.refetch(); competitors.refetch(); }} className="p-2.5 rounded-[12px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+        <button onClick={() => { insights.refetch(); competitors.refetch(); }} className="p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${insights.loading || competitors.loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -843,7 +843,7 @@ const IntelligenceView = ({ insights, competitors, addToast }) => {
           {insights.loading ? <LoadingSkeleton count={4} /> : (
             <div className="space-y-3">
               {insightList.map((insight) => (
-                <div key={insight.id} className="p-3.5 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[16px] border border-white/[0.12] dark:border-white/[0.04]">
+                <div key={insight.id} className="p-3.5 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[18px] border border-white/[0.12] dark:border-white/[0.04]">
                   <div className="flex justify-between items-start mb-1.5">
                     <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full ${
                       (insight.category || insight.type) === 'Trend' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600' :
@@ -867,7 +867,7 @@ const IntelligenceView = ({ insights, competitors, addToast }) => {
           {competitors.loading ? <LoadingSkeleton count={2} /> : (
             <div className="space-y-3 mb-4">
               {competitorList.map((comp, idx) => (
-                <div key={comp.id || idx} className="flex items-center justify-between p-3.5 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[16px] border border-white/[0.12] dark:border-white/[0.04]">
+                <div key={comp.id || idx} className="flex items-center justify-between p-3.5 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[18px] border border-white/[0.12] dark:border-white/[0.04]">
                   <div className="min-w-0">
                     <h3 className="font-bold text-sm text-slate-800 dark:text-white">{comp.domain}</h3>
                     <p className="text-xs text-slate-500">Cho: {comp.name}</p>
@@ -877,8 +877,8 @@ const IntelligenceView = ({ insights, competitors, addToast }) => {
               ))}
             </div>
           )}
-          <div className="p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[16px] border border-white/[0.1] dark:border-white/[0.04]">
-            <p className="text-xs text-slate-500">Chạy <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[11px] font-mono">/shopify-pipeline</code> để crawl & phân tích.</p>
+          <div className="p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[18px] border border-white/[0.1] dark:border-white/[0.04]">
+            <p className="text-xs text-slate-500">Chạy <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-[14px] text-[11px] font-mono">/shopify-pipeline</code> để crawl & phân tích.</p>
           </div>
         </GlassCard>
       </div>
@@ -896,7 +896,7 @@ const ThemesView = ({ themes }) => {
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Themes</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Quản lý giao diện</p>
         </div>
-        <button onClick={themes.refetch} className="p-2.5 rounded-[12px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+        <button onClick={themes.refetch} className="p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${themes.loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -905,7 +905,7 @@ const ThemesView = ({ themes }) => {
           {themeList.map((theme, i) => (
             <GlassCard key={theme.id || i} hoverEffect className="cursor-pointer !p-5">
               <div className="flex items-center justify-between mb-3">
-                <div className="p-2.5 bg-purple-100 dark:bg-purple-500/20 rounded-[12px]">
+                <div className="p-2.5 bg-purple-100 dark:bg-purple-500/20 rounded-[14px]">
                   <Palette size={20} className="text-purple-600 dark:text-purple-400" />
                 </div>
                 <Badge type={theme.status === 'Active' ? 'success' : 'pending'} text={theme.status} />
@@ -927,8 +927,158 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
   const [steps, setSteps] = useState([]);
   const [pipeMode, setPipeMode] = useState('auto'); // 'auto' or 'custom'
   const [fullForm, setFullForm] = useState({ url: '', repo: '', storeName: '', domain: '', niche: '' });
+  const [selectedSkill, setSelectedSkill] = useState(null);
+  const [skillFormData, setSkillFormData] = useState({});
+  const [skillResult, setSkillResult] = useState(null);
 
-  const inputClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[14px] py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200 placeholder-slate-400";
+  const inputClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[16px] py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200 placeholder-slate-400";
+  const selectClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[16px] py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200";
+
+  const pipelineSkills = [
+    {
+      id: 'crawl', icon: Eye, label: 'Phân tích đối thủ',
+      desc: 'Crawl sản phẩm, bộ sưu tập, giá từ store đối thủ',
+      color: 'blue',
+      inputs: [{ key: 'url', label: 'URL đối thủ', placeholder: 'competitor.myshopify.com', type: 'text', required: true }],
+      run: async (data) => {
+        if (!data.url) throw new Error('Nhập URL đối thủ');
+        return await api.crawlCompetitor(data.url);
+      },
+      formatResult: (r) => ({ 'Sản phẩm crawl được': r.productsCrawled, 'Bộ sưu tập': r.collections?.length || 0, 'Collections': r.collections?.join(', ') || 'N/A' })
+    },
+    {
+      id: 'research', icon: BrainCircuit, label: 'Nghiên cứu thị trường',
+      desc: 'Phân tích trends, keywords, buyer personas cho niche',
+      color: 'purple',
+      inputs: [{ key: 'keywords', label: 'Niche / Keywords', placeholder: 'vd: Jewelry, LED Art, Home Decor', type: 'text', required: true }],
+      run: async (data) => {
+        if (!data.keywords) throw new Error('Nhập niche hoặc keywords');
+        const r = await api.createInsight({ category: 'TREND', title: `Market research: ${data.keywords}`, description: `Auto-generated market analysis for ${data.keywords}`, source: 'shopify-pipeline', relevance: 0.8 });
+        return { insight: r, message: 'Đã tạo insight thành công' };
+      },
+      formatResult: (r) => ({ 'Trạng thái': 'Insight đã tạo', 'Nội dung': r.insight?.title || r.message })
+    },
+    {
+      id: 'create-store', icon: Store, label: 'Tạo Store',
+      desc: 'Tạo store mới trong hệ thống ShopifyOS',
+      color: 'blue',
+      inputs: [
+        { key: 'storeName', label: 'Tên store', placeholder: 'My New Store', type: 'text', required: true },
+        { key: 'domain', label: 'Domain Shopify', placeholder: 'my-store.myshopify.com', type: 'text', required: true },
+        { key: 'niche', label: 'Niche', placeholder: 'vd: Jewelry', type: 'text', required: true },
+      ],
+      run: async (data) => {
+        if (!data.storeName || !data.domain || !data.niche) throw new Error('Điền đầy đủ tên store, domain, niche');
+        return await api.createStore({ name: data.storeName, domain: data.domain, nicheName: data.niche, envTokenKey: 'SHOPIFY_ACCESS_TOKEN_HEARTTOSOUL' });
+      },
+      formatResult: (r) => ({ 'Store': r.name, 'Domain': r.domain, 'ID': r.id })
+    },
+    {
+      id: 'sync', icon: RefreshCw, label: 'Đồng bộ sản phẩm',
+      desc: 'Pull sản phẩm từ Shopify API vào hệ thống',
+      color: 'emerald',
+      inputs: [{ key: 'storeId', label: 'Chọn store', type: 'store-select', required: true }],
+      run: async (data) => {
+        if (!data.storeId) throw new Error('Chọn store trước');
+        return await api.syncStore(data.storeId);
+      },
+      formatResult: (r) => ({ 'Sản phẩm đã đồng bộ': r.synced })
+    },
+    {
+      id: 'optimize', icon: Sparkles, label: 'Tối ưu SEO',
+      desc: 'AI tối ưu title, description, tags cho sản phẩm',
+      color: 'indigo',
+      inputs: [{ key: 'storeId', label: 'Chọn store', type: 'store-select', required: true }],
+      run: async (data) => {
+        if (!data.storeId) throw new Error('Chọn store trước');
+        let total = 0, more = true;
+        while (more) {
+          try {
+            const r = await api.optimizeStore(data.storeId);
+            total += r.optimized || 0;
+            if (!r.optimized || r.total === 0) more = false;
+          } catch { more = false; }
+        }
+        return { optimized: total };
+      },
+      formatResult: (r) => ({ 'Sản phẩm đã tối ưu': r.optimized })
+    },
+    {
+      id: 'import-crawled', icon: Package, label: 'Import SP đã crawl',
+      desc: 'Import sản phẩm từ đối thủ vào store của bạn',
+      color: 'amber',
+      inputs: [{ key: 'storeId', label: 'Chọn store', type: 'store-select', required: true }],
+      run: async (data) => {
+        if (!data.storeId) throw new Error('Chọn store trước');
+        let total = 0, hasMore = true;
+        while (hasMore) {
+          const r = await api.importCrawled(data.storeId, '');
+          total += r.imported || 0;
+          if (!r.imported) hasMore = false;
+        }
+        return { imported: total };
+      },
+      formatResult: (r) => ({ 'Sản phẩm đã import': r.imported })
+    },
+    {
+      id: 'convert-theme', icon: Palette, label: 'Convert Theme',
+      desc: 'Chuyển React/HTML sang Shopify Liquid (Claude Code)',
+      color: 'rose',
+      inputs: [{ key: 'repo', label: 'GitHub repo URL', placeholder: 'https://github.com/user/theme', type: 'text', required: true }],
+      run: async () => {
+        return { claudeCode: true, message: 'Tác vụ này cần chạy qua Claude Code. Gõ /shopify-pipeline trong terminal.' };
+      },
+      formatResult: (r) => ({ 'Hướng dẫn': r.message })
+    },
+    {
+      id: 'setup-store', icon: Settings, label: 'Setup Store',
+      desc: 'Tạo menus, collections, settings, pages (Claude Code)',
+      color: 'amber',
+      inputs: [{ key: 'storeId', label: 'Chọn store', type: 'store-select', required: true }],
+      run: async () => {
+        return { claudeCode: true, message: 'Tác vụ này cần chạy qua Claude Code. Gõ /shopify-pipeline trong terminal.' };
+      },
+      formatResult: (r) => ({ 'Hướng dẫn': r.message })
+    },
+    {
+      id: 're-optimize', icon: BarChart3, label: 'Tái tối ưu',
+      desc: 'Optimize lại sản phẩm đã tối ưu trước đó',
+      color: 'purple',
+      inputs: [{ key: 'storeId', label: 'Chọn store', type: 'store-select', required: true }],
+      run: async (data) => {
+        if (!data.storeId) throw new Error('Chọn store trước');
+        let total = 0, more = true;
+        while (more) {
+          try {
+            const r = await api.optimizeStore(data.storeId);
+            total += r.optimized || 0;
+            if (!r.optimized || r.total === 0) more = false;
+          } catch { more = false; }
+        }
+        return { optimized: total };
+      },
+      formatResult: (r) => ({ 'Sản phẩm đã tái tối ưu': r.optimized })
+    },
+  ];
+
+  const runSkill = async () => {
+    if (!selectedSkill) return;
+    setRunning(true);
+    setSkillResult(null);
+    setSteps([{ title: selectedSkill.label, status: 'running', detail: 'Đang xử lý...' }]);
+    try {
+      const result = await selectedSkill.run(skillFormData);
+      setSteps([{ title: selectedSkill.label, status: 'done', detail: 'Hoàn tất' }]);
+      setSkillResult(result);
+      addToast(`${selectedSkill.label} hoàn tất!`, 'success');
+      stores.refetch(); runs.refetch();
+    } catch (e) {
+      setSteps([{ title: selectedSkill.label, status: 'failed', detail: e.message }]);
+      addToast(`Lỗi: ${e.message}`, 'error');
+    } finally {
+      setRunning(false);
+    }
+  };
 
   const updateStep = (idx, status, detail) => {
     setSteps(prev => prev.map((s, i) => i === idx ? { ...s, status, detail: detail || s.detail } : s));
@@ -1003,12 +1153,12 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
       </div>
 
       {/* Segmented Control - Apple Style */}
-      <div className="relative inline-flex p-[3px] bg-slate-200/70 dark:bg-slate-700/40 backdrop-blur-[8px] rounded-[12px]">
-        <div className={`absolute top-[3px] bottom-[3px] rounded-[10px] bg-white dark:bg-slate-600/60 shadow-[0_1px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ease-out ${pipeMode === 'auto' ? 'left-[3px] w-[calc(50%-3px)]' : 'left-[50%] w-[calc(50%-3px)]'}`}></div>
-        <button onClick={() => setPipeMode('auto')} className={`relative z-10 px-6 py-2 rounded-[10px] text-sm font-semibold transition-colors duration-200 ${pipeMode === 'auto' ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+      <div className="relative inline-flex p-[3px] bg-slate-200/70 dark:bg-slate-700/40 backdrop-blur-[8px] rounded-[14px]">
+        <div className={`absolute top-[3px] bottom-[3px] rounded-[12px] bg-white dark:bg-slate-600/60 shadow-[0_1px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ease-out ${pipeMode === 'auto' ? 'left-[3px] w-[calc(50%-3px)]' : 'left-[50%] w-[calc(50%-3px)]'}`}></div>
+        <button onClick={() => setPipeMode('auto')} className={`relative z-10 px-6 py-2 rounded-[12px] text-sm font-semibold transition-colors duration-200 ${pipeMode === 'auto' ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
           Tự động
         </button>
-        <button onClick={() => setPipeMode('custom')} className={`relative z-10 px-6 py-2 rounded-[10px] text-sm font-semibold transition-colors duration-200 ${pipeMode === 'custom' ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+        <button onClick={() => setPipeMode('custom')} className={`relative z-10 px-6 py-2 rounded-[12px] text-sm font-semibold transition-colors duration-200 ${pipeMode === 'custom' ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
           Tùy chỉnh
         </button>
       </div>
@@ -1050,164 +1200,143 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
 
       {/* Custom Mode */}
       {pipeMode === 'custom' && (<>
-      <GlassCard>
-        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Thông tin</h2>
-        <p className="text-xs text-slate-500 mb-3">Nhập thông tin cần thiết cho các bước bên dưới.</p>
-        <div className="space-y-3">
-          <div>
-            <label className="text-[11px] font-semibold text-slate-500 mb-1 block">URL đối thủ (cho bước Phân tích)</label>
-            <input className={inputClass} placeholder="vd: competitor.myshopify.com" value={fullForm.url} onChange={e => setFullForm({...fullForm, url: e.target.value})} disabled={running} />
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Tên store</label>
-              <input className={inputClass} placeholder="My Store" value={fullForm.storeName} onChange={e => setFullForm({...fullForm, storeName: e.target.value})} disabled={running} />
+        {/* Step 1: Skill Selector */}
+        {!selectedSkill && !skillResult && (
+          <GlassCard>
+            <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Chọn tác vụ</h2>
+            <p className="text-xs text-slate-500 mb-4">Chọn bước cần thực hiện. Mỗi bước hoạt động độc lập.</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              {pipelineSkills.map(skill => {
+                const Icon = skill.icon;
+                return (
+                  <button
+                    key={skill.id}
+                    onClick={() => { setSelectedSkill(skill); setSkillFormData({}); setSkillResult(null); setSteps([]); }}
+                    className="flex items-center space-x-3 p-3.5 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[18px] border border-white/[0.08] dark:border-white/[0.04] hover:bg-white/[0.14] dark:hover:bg-slate-700/[0.18] transition-all active:scale-[0.97] cursor-pointer text-left group"
+                  >
+                    <div className={`p-2.5 rounded-[16px] ${colorMap[skill.color].bg} ${colorMap[skill.color].text} flex-shrink-0 transition-transform group-hover:scale-110`}>
+                      <Icon size={18} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-slate-800 dark:text-white">{skill.label}</p>
+                      <p className="text-[10px] text-slate-500 leading-tight">{skill.desc}</p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
-            <div>
-              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Domain</label>
-              <input className={inputClass} placeholder="store.myshopify.com" value={fullForm.domain} onChange={e => setFullForm({...fullForm, domain: e.target.value})} disabled={running} />
-            </div>
-            <div>
-              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Niche</label>
-              <input className={inputClass} placeholder="vd: Jewelry" value={fullForm.niche} onChange={e => setFullForm({...fullForm, niche: e.target.value})} disabled={running} />
-            </div>
-          </div>
-        </div>
-      </GlassCard>
-      <GlassCard>
-        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Chạy từng bước</h2>
-        <p className="text-xs text-slate-500 mb-4">Chọn bước cần chạy. Mỗi bước hoạt động độc lập.</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {[
-            { icon: Eye, label: 'Phân tích đối thủ', desc: 'Crawl SP, collections, giá từ URL đối thủ', color: 'blue', action: async () => {
-              if (!fullForm.url) return addToast('Nhập URL đối thủ trước', 'error');
-              setSteps([{ title: 'Phân tích đối thủ', status: 'running', detail: 'Đang crawl...' }]);
-              setRunning(true);
-              try {
-                const r = await api.crawlCompetitor(fullForm.url);
-                setSteps([{ title: 'Phân tích đối thủ', status: 'done', detail: `${r.productsCrawled} SP, ${r.collections?.length || 0} collections` }]);
-                addToast(`Crawl xong: ${r.productsCrawled} sản phẩm`, 'success');
-              } catch(e) { setSteps([{ title: 'Phân tích đối thủ', status: 'failed', detail: e.message }]); addToast(`Lỗi: ${e.message}`, 'error'); }
-              setRunning(false);
-            }},
-            { icon: BrainCircuit, label: 'Nghiên cứu thị trường', desc: 'Phân tích trends, keywords, buyer personas', color: 'purple', action: async () => {
-              setSteps([{ title: 'Nghiên cứu thị trường', status: 'running', detail: 'Đang phân tích...' }]);
-              setRunning(true);
-              try {
-                await api.createInsight({ category: 'TREND', title: `Market research for ${fullForm.niche || 'niche'}`, description: 'Auto-generated market analysis', source: 'shopify-pipeline', relevance: 0.8 });
-                setSteps([{ title: 'Nghiên cứu thị trường', status: 'done', detail: 'Đã tạo insight' }]);
-                addToast('Nghiên cứu thị trường hoàn tất', 'success');
-              } catch(e) { setSteps([{ title: 'Nghiên cứu thị trường', status: 'failed', detail: e.message }]); addToast(`Lỗi: ${e.message}`, 'error'); }
-              setRunning(false);
-            }},
-            { icon: Store, label: 'Tạo Store', desc: 'Tạo store mới trong hệ thống', color: 'blue', action: async () => {
-              if (!fullForm.storeName || !fullForm.domain || !fullForm.niche) return addToast('Nhập tên store, domain, niche', 'error');
-              setSteps([{ title: 'Tạo Store', status: 'running', detail: 'Đang tạo...' }]);
-              setRunning(true);
-              try {
-                const s = await api.createStore({ name: fullForm.storeName, domain: fullForm.domain, nicheName: fullForm.niche, envTokenKey: 'SHOPIFY_ACCESS_TOKEN_HEARTTOSOUL' });
-                setSteps([{ title: 'Tạo Store', status: 'done', detail: s.name }]);
-                addToast(`Store "${s.name}" đã tạo`, 'success');
-                stores.refetch();
-              } catch(e) { setSteps([{ title: 'Tạo Store', status: 'failed', detail: e.message }]); addToast(`Lỗi: ${e.message}`, 'error'); }
-              setRunning(false);
-            }},
-            { icon: RefreshCw, label: 'Đồng bộ sản phẩm', desc: 'Pull SP từ Shopify API vào hệ thống', color: 'emerald', action: async () => {
-              const storeList = stores.data || [];
-              if (!storeList.length) return addToast('Chưa có store. Tạo store trước', 'error');
-              setSteps([{ title: 'Đồng bộ sản phẩm', status: 'running', detail: 'Đang sync...' }]);
-              setRunning(true);
-              try {
-                const r = await api.syncStore(storeList[storeList.length - 1].id);
-                setSteps([{ title: 'Đồng bộ sản phẩm', status: 'done', detail: `${r.synced} SP` }]);
-                addToast(`Đồng bộ xong: ${r.synced} sản phẩm`, 'success');
-                stores.refetch();
-              } catch(e) { setSteps([{ title: 'Đồng bộ sản phẩm', status: 'failed', detail: e.message }]); addToast(`Lỗi: ${e.message}`, 'error'); }
-              setRunning(false);
-            }},
-            { icon: Sparkles, label: 'Tối ưu SEO', desc: 'AI tối ưu title, description, tags cho SP', color: 'indigo', action: async () => {
-              const storeList = stores.data || [];
-              if (!storeList.length) return addToast('Chưa có store', 'error');
-              setSteps([{ title: 'Tối ưu SEO', status: 'running', detail: 'Đang tối ưu...' }]);
-              setRunning(true);
-              try {
-                let total = 0, more = true;
-                while (more) {
-                  try {
-                    const r = await api.optimizeStore(storeList[storeList.length - 1].id);
-                    total += r.optimized || 0;
-                    if (!r.optimized || r.total === 0) more = false;
-                    setSteps([{ title: 'Tối ưu SEO', status: 'running', detail: `Đã tối ưu ${total} SP...` }]);
-                  } catch { more = false; }
-                }
-                setSteps([{ title: 'Tối ưu SEO', status: 'done', detail: `${total} SP đã tối ưu` }]);
-                addToast(`Tối ưu xong: ${total} sản phẩm`, 'success');
-              } catch(e) { setSteps([{ title: 'Tối ưu SEO', status: 'failed', detail: e.message }]); addToast(`Lỗi: ${e.message}`, 'error'); }
-              setRunning(false);
-            }},
-            { icon: Package, label: 'Import SP đã crawl', desc: 'Import sản phẩm từ đối thủ vào store', color: 'amber', action: async () => {
-              const storeList = stores.data || [];
-              if (!storeList.length) return addToast('Chưa có store', 'error');
-              setSteps([{ title: 'Import SP', status: 'running', detail: 'Đang import...' }]);
-              setRunning(true);
-              try {
-                let total = 0, hasMore = true;
-                while (hasMore) {
-                  const r = await api.importCrawled(storeList[storeList.length - 1].id, '');
-                  total += r.imported || 0;
-                  if (!r.imported) hasMore = false;
-                  setSteps([{ title: 'Import SP', status: 'running', detail: `Đã import ${total} SP...` }]);
-                }
-                setSteps([{ title: 'Import SP', status: 'done', detail: `${total} SP đã import` }]);
-                addToast(`Import xong: ${total} sản phẩm`, 'success');
-                stores.refetch();
-              } catch(e) { setSteps([{ title: 'Import SP', status: 'failed', detail: e.message }]); addToast(`Lỗi: ${e.message}`, 'error'); }
-              setRunning(false);
-            }},
-            { icon: Palette, label: 'Convert Theme', desc: 'Chuyển React/HTML sang Shopify Liquid', color: 'rose', action: async () => {
-              if (!fullForm.repo) return addToast('Nhập GitHub repo trước', 'error');
-              setSteps([{ title: 'Convert Theme', status: 'running', detail: 'Chạy /shopify-pipeline trong Claude Code...' }]);
-              addToast('Convert theme cần chạy qua Claude Code: /shopify-pipeline', 'info');
-              setRunning(false);
-            }},
-            { icon: Settings, label: 'Setup Store', desc: 'Tạo menus, collections, settings, pages', color: 'amber', action: async () => {
-              setSteps([{ title: 'Setup Store', status: 'running', detail: 'Chạy /shopify-pipeline trong Claude Code...' }]);
-              addToast('Setup store cần chạy qua Claude Code: /shopify-pipeline', 'info');
-              setRunning(false);
-            }},
-            { icon: BarChart3, label: 'Tái tối ưu', desc: 'Optimize lại SP đã tối ưu trước đó', color: 'purple', action: async () => {
-              const storeList = stores.data || [];
-              if (!storeList.length) return addToast('Chưa có store', 'error');
-              setSteps([{ title: 'Tái tối ưu', status: 'running', detail: 'Đang re-optimize...' }]);
-              setRunning(true);
-              try {
-                let total = 0, more = true;
-                while (more) {
-                  try {
-                    const r = await api.optimizeStore(storeList[storeList.length - 1].id);
-                    total += r.optimized || 0;
-                    if (!r.optimized || r.total === 0) more = false;
-                    setSteps([{ title: 'Tái tối ưu', status: 'running', detail: `Đã tối ưu ${total} SP...` }]);
-                  } catch { more = false; }
-                }
-                setSteps([{ title: 'Tái tối ưu', status: 'done', detail: `${total} SP đã re-optimize` }]);
-                addToast(`Tái tối ưu xong: ${total} sản phẩm`, 'success');
-              } catch(e) { setSteps([{ title: 'Tái tối ưu', status: 'failed', detail: e.message }]); addToast(`Lỗi: ${e.message}`, 'error'); }
-              setRunning(false);
-            }},
-          ].map((step, i) => (
-            <button key={i} onClick={step.action} disabled={running} className="flex items-center space-x-3 p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04] hover:bg-white/[0.12] dark:hover:bg-slate-700/[0.15] transition-all active:scale-[0.98] cursor-pointer text-left disabled:opacity-50">
-              <div className={`p-2.5 rounded-[12px] ${colorMap[step.color].bg} ${colorMap[step.color].text} flex-shrink-0`}>
-                <step.icon size={18} />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-slate-800 dark:text-white">{step.label}</p>
-                <p className="text-[10px] text-slate-500">{step.desc}</p>
-              </div>
+          </GlassCard>
+        )}
+
+        {/* Step 2: Skill Form */}
+        {selectedSkill && !skillResult && !running && (
+          <GlassCard>
+            <button
+              onClick={() => { setSelectedSkill(null); setSkillFormData({}); setSteps([]); }}
+              className="flex items-center space-x-1 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors mb-4 cursor-pointer"
+            >
+              <ChevronRight size={16} className="rotate-180" />
+              <span>Quay lại</span>
             </button>
-          ))}
-        </div>
-      </GlassCard>
+            <div className="flex items-center space-x-3 mb-4">
+              <div className={`p-3 rounded-[16px] ${colorMap[selectedSkill.color].bg} ${colorMap[selectedSkill.color].text}`}>
+                <selectedSkill.icon size={22} />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white">{selectedSkill.label}</h2>
+                <p className="text-xs text-slate-500">{selectedSkill.desc}</p>
+              </div>
+            </div>
+            <div className="space-y-3 mb-4">
+              {selectedSkill.inputs.map(inp => (
+                <div key={inp.key}>
+                  <label className="text-[11px] font-semibold text-slate-500 mb-1 block">{inp.label} {inp.required && '*'}</label>
+                  {inp.type === 'store-select' ? (
+                    <select
+                      className={selectClass}
+                      value={skillFormData[inp.key] || ''}
+                      onChange={e => setSkillFormData({ ...skillFormData, [inp.key]: e.target.value })}
+                    >
+                      <option value="">-- Chọn store --</option>
+                      {(stores.data || []).map(s => (
+                        <option key={s.id} value={s.id}>{s.name} ({s.domain})</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      className={inputClass}
+                      placeholder={inp.placeholder || ''}
+                      value={skillFormData[inp.key] || ''}
+                      onChange={e => setSkillFormData({ ...skillFormData, [inp.key]: e.target.value })}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+            <GlassButton variant="primary" icon={Play} onClick={runSkill}>
+              Chạy {selectedSkill.label}
+            </GlassButton>
+          </GlassCard>
+        )}
+
+        {/* Step 3: Running state */}
+        {running && steps.length > 0 && (
+          <GlassCard>
+            <div className="flex items-center space-x-3 mb-3">
+              <div className={`p-2.5 rounded-[16px] ${colorMap[selectedSkill?.color || 'blue'].bg} ${colorMap[selectedSkill?.color || 'blue'].text}`}>
+                <RefreshCw size={18} className="animate-spin" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Đang chạy: {selectedSkill?.label}</h2>
+                <p className="text-xs text-slate-500">{steps[0]?.detail || 'Đang xử lý...'}</p>
+              </div>
+            </div>
+            <div className="w-full h-1.5 bg-white/10 dark:bg-slate-800/20 rounded-full overflow-hidden">
+              <div className="h-full bg-indigo-500 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+            </div>
+          </GlassCard>
+        )}
+
+        {/* Step 4: Results */}
+        {skillResult && (
+          <GlassCard>
+            <div className="flex items-center space-x-3 mb-4">
+              <div className={`p-2.5 rounded-[16px] bg-emerald-100/60 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400`}>
+                <CheckCircle2 size={20} />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Kết quả: {selectedSkill?.label}</h2>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Hoàn tất thành công</p>
+              </div>
+            </div>
+            {selectedSkill?.formatResult && (
+              <div className="space-y-2 mb-4">
+                {Object.entries(selectedSkill.formatResult(skillResult)).map(([key, value]) => (
+                  <div key={key} className="flex items-center justify-between p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[16px] border border-white/[0.08] dark:border-white/[0.04]">
+                    <span className="text-xs font-semibold text-slate-500">{key}</span>
+                    <span className="text-sm font-bold text-slate-800 dark:text-white">{String(value)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {skillResult.claudeCode && (
+              <div className="p-3 bg-amber-50/50 dark:bg-amber-500/10 rounded-[16px] border border-amber-200/30 dark:border-amber-500/10 mb-4">
+                <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
+                  <Lightbulb size={14} className="inline mr-1.5 -mt-0.5" />
+                  {skillResult.message}
+                </p>
+              </div>
+            )}
+            <div className="flex items-center space-x-2">
+              <GlassButton variant="primary" icon={Rocket} onClick={() => { setSkillResult(null); setSelectedSkill(null); setSteps([]); setSkillFormData({}); }}>
+                Chạy tác vụ khác
+              </GlassButton>
+              <GlassButton variant="glass" icon={RefreshCw} onClick={() => { setSkillResult(null); setSteps([]); }}>
+                Chạy lại
+              </GlassButton>
+            </div>
+          </GlassCard>
+        )}
       </>)}
 
       {/* Pipeline Progress */}
@@ -1218,7 +1347,7 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
           </h2>
           <div className="space-y-2">
             {steps.map((s, i) => (
-              <div key={i} className="flex items-center space-x-3 p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
+              <div key={i} className="flex items-center space-x-3 p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[16px] border border-white/[0.08] dark:border-white/[0.04]">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                   s.status === 'done' ? 'bg-emerald-100/60 dark:bg-emerald-500/15' :
                   s.status === 'running' ? 'bg-blue-100/60 dark:bg-blue-500/15' :
@@ -1292,7 +1421,7 @@ const StoresManageView = ({ niches, stores, addToast }) => {
     } catch (e) { addToast(`Lỗi: ${e.message}`, 'error'); }
   };
 
-  const inputClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[14px] py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200 placeholder-slate-400";
+  const inputClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[16px] py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200 placeholder-slate-400";
 
   return (
     <div className="space-y-6 md:space-y-8 animate-fade-in">
@@ -1301,7 +1430,7 @@ const StoresManageView = ({ niches, stores, addToast }) => {
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Quản lý Niche & Store</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Thêm, sửa, xóa niche và cửa hàng Shopify</p>
         </div>
-        <button onClick={() => { niches.refetch(); stores.refetch(); }} className="p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/[0.15] transition-all active:scale-95">
+        <button onClick={() => { niches.refetch(); stores.refetch(); }} className="p-2.5 rounded-[16px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/[0.15] transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${niches.loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -1314,7 +1443,7 @@ const StoresManageView = ({ niches, stores, addToast }) => {
         </div>
 
         {showAddNiche && (
-          <div className="mb-4 p-4 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[16px] border border-white/[0.1] dark:border-white/[0.04] space-y-3">
+          <div className="mb-4 p-4 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[18px] border border-white/[0.1] dark:border-white/[0.04] space-y-3">
             <input className={inputClass} placeholder="Tên niche (vd: Jewelry & Accessories)" value={nicheForm.name} onChange={e => setNicheForm({...nicheForm, name: e.target.value})} />
             <input className={inputClass} placeholder="Mô tả (tùy chọn)" value={nicheForm.description} onChange={e => setNicheForm({...nicheForm, description: e.target.value})} />
             <input className={inputClass} placeholder="Keywords (phân cách bằng dấu phẩy)" value={nicheForm.keywords} onChange={e => setNicheForm({...nicheForm, keywords: e.target.value})} />
@@ -1328,12 +1457,12 @@ const StoresManageView = ({ niches, stores, addToast }) => {
         {niches.loading ? <LoadingSkeleton count={2} /> : (
           <div className="space-y-2">
             {nicheList.map((niche) => (
-              <div key={niche.id} className="flex items-center justify-between p-3.5 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
+              <div key={niche.id} className="flex items-center justify-between p-3.5 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[16px] border border-white/[0.08] dark:border-white/[0.04]">
                 <div className="min-w-0 flex-1">
                   <p className="font-bold text-sm text-slate-800 dark:text-white">{niche.name}</p>
                   <p className="text-[11px] text-slate-500">{niche.description || 'Không có mô tả'} &middot; {niche.stores?.length || 0} stores</p>
                 </div>
-                <button onClick={() => handleDeleteNiche(niche.id, niche.name)} className="p-2 rounded-[10px] hover:bg-rose-100/50 dark:hover:bg-rose-500/10 text-slate-400 hover:text-rose-500 transition-colors">
+                <button onClick={() => handleDeleteNiche(niche.id, niche.name)} className="p-2 rounded-[12px] hover:bg-rose-100/50 dark:hover:bg-rose-500/10 text-slate-400 hover:text-rose-500 transition-colors">
                   <X size={16} />
                 </button>
               </div>
@@ -1351,7 +1480,7 @@ const StoresManageView = ({ niches, stores, addToast }) => {
         </div>
 
         {showAddStore && (
-          <div className="mb-4 p-4 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[16px] border border-white/[0.1] dark:border-white/[0.04] space-y-3">
+          <div className="mb-4 p-4 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[18px] border border-white/[0.1] dark:border-white/[0.04] space-y-3">
             <input className={inputClass} placeholder="Tên store (vd: Heart To Soul)" value={storeForm.name} onChange={e => setStoreForm({...storeForm, name: e.target.value})} />
             <input className={inputClass} placeholder="Domain Shopify (vd: my-store.myshopify.com)" value={storeForm.domain} onChange={e => setStoreForm({...storeForm, domain: e.target.value})} />
             <input className={inputClass} placeholder="Tên Niche (vd: Jewelry & Accessories)" value={storeForm.nicheName} onChange={e => setStoreForm({...storeForm, nicheName: e.target.value})} />
@@ -1366,9 +1495,9 @@ const StoresManageView = ({ niches, stores, addToast }) => {
         {stores.loading ? <LoadingSkeleton count={2} /> : (
           <div className="space-y-2">
             {storeList.map((store) => (
-              <div key={store.id} className="flex items-center justify-between p-3.5 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px] border border-white/[0.08] dark:border-white/[0.04]">
+              <div key={store.id} className="flex items-center justify-between p-3.5 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[16px] border border-white/[0.08] dark:border-white/[0.04]">
                 <div className="flex items-center space-x-3 min-w-0 flex-1">
-                  <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-rose-400 to-pink-600 flex items-center justify-center text-lg shadow-inner flex-shrink-0">
+                  <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-rose-400 to-pink-600 flex items-center justify-center text-lg shadow-inner flex-shrink-0">
                     {store.icon || '\u{1F3EA}'}
                   </div>
                   <div className="min-w-0">
@@ -1381,7 +1510,7 @@ const StoresManageView = ({ niches, stores, addToast }) => {
                     </div>
                   </div>
                 </div>
-                <button onClick={() => handleDeleteStore(store.id, store.name)} className="p-2 rounded-[10px] hover:bg-rose-100/50 dark:hover:bg-rose-500/10 text-slate-400 hover:text-rose-500 transition-colors">
+                <button onClick={() => handleDeleteStore(store.id, store.name)} className="p-2 rounded-[12px] hover:bg-rose-100/50 dark:hover:bg-rose-500/10 text-slate-400 hover:text-rose-500 transition-colors">
                   <X size={16} />
                 </button>
               </div>
@@ -1396,7 +1525,7 @@ const StoresManageView = ({ niches, stores, addToast }) => {
 
 // --- SIDEBAR ITEM ---
 const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
-  <button onClick={onClick} className={`w-full flex items-center space-x-3 px-4 py-2.5 mb-0.5 rounded-[16px] transition-all duration-300 ${active ? 'bg-white/80 dark:bg-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.05)] text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-white/40 dark:hover:bg-white/5 font-medium'}`}>
+  <button onClick={onClick} className={`w-full flex items-center space-x-3 px-4 py-2.5 mb-0.5 rounded-[18px] transition-all duration-300 ${active ? 'bg-white/80 dark:bg-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.05)] text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-white/40 dark:hover:bg-white/5 font-medium'}`}>
     <Icon size={20} strokeWidth={active ? 2.5 : 2} /><span className="text-sm">{label}</span>
   </button>
 );
@@ -1409,7 +1538,7 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
   const lastSync = storeList[0]?.lastSyncAt ? new Date(storeList[0].lastSyncAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'Chưa có';
   const lastOptimize = storeList[0]?.lastOptimizedAt ? new Date(storeList[0].lastOptimizedAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'Chưa có';
 
-  const inputClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[14px] py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200 placeholder-slate-400";
+  const inputClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[16px] py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200 placeholder-slate-400";
 
   // Shared: Task Monitor
   const TaskSection = () => tasks.length > 0 && (
@@ -1417,9 +1546,9 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Giám sát tác vụ</p>
       <div className="space-y-1.5">
         {tasks.map((task) => (
-          <div key={task.id} className="flex items-center justify-between p-2.5 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[14px] border border-white/[0.1] dark:border-white/[0.04]">
+          <div key={task.id} className="flex items-center justify-between p-2.5 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[16px] border border-white/[0.1] dark:border-white/[0.04]">
             <div className="flex items-center space-x-2 min-w-0 flex-1">
-              <div className={`p-1.5 rounded-lg flex-shrink-0 ${task.status === 'running' ? 'bg-blue-100 dark:bg-blue-500/20' : task.status === 'completed' ? 'bg-emerald-100 dark:bg-emerald-500/20' : 'bg-rose-100 dark:bg-rose-500/20'}`}>
+              <div className={`p-1.5 rounded-[14px] flex-shrink-0 ${task.status === 'running' ? 'bg-blue-100 dark:bg-blue-500/20' : task.status === 'completed' ? 'bg-emerald-100 dark:bg-emerald-500/20' : 'bg-rose-100 dark:bg-rose-500/20'}`}>
                 {task.status === 'running' ? <RefreshCw size={12} className="text-blue-500 animate-spin" /> : task.status === 'completed' ? <CheckCircle2 size={12} className="text-emerald-500" /> : <AlertCircle size={12} className="text-rose-500" />}
               </div>
               <div className="min-w-0">
@@ -1440,7 +1569,7 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
     <div>
       <div className="flex items-center justify-between mb-3">
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hoạt động gần đây</p>
-        <button onClick={runs.refetch} className="p-1 rounded-lg hover:bg-white/40 dark:hover:bg-white/5 transition-all">
+        <button onClick={runs.refetch} className="p-1 rounded-[14px] hover:bg-white/40 dark:hover:bg-white/5 transition-all">
           <RefreshCw size={12} className={`text-slate-400 ${runs.loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -1449,8 +1578,8 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
           const isOk = run.status === 'COMPLETED' || run.status === 'success';
           const time = run.startedAt ? new Date(run.startedAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
           return (
-            <div key={run.id} className="flex items-center space-x-2 p-2 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[12px]">
-              <div className={`p-1 rounded-lg flex-shrink-0 ${isOk ? 'bg-emerald-100 dark:bg-emerald-500/20' : 'bg-amber-100 dark:bg-amber-500/20'}`}>
+            <div key={run.id} className="flex items-center space-x-2 p-2 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px]">
+              <div className={`p-1 rounded-[14px] flex-shrink-0 ${isOk ? 'bg-emerald-100 dark:bg-emerald-500/20' : 'bg-amber-100 dark:bg-amber-500/20'}`}>
                 {isOk ? <CheckCircle2 size={12} className="text-emerald-500" /> : <Clock size={12} className="text-amber-500" />}
               </div>
               <div className="min-w-0 flex-1">
@@ -1468,8 +1597,8 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
 
   // Shared: Action Button
   const ActionBtn = ({ icon: Ic, label, color, onClick }) => (
-    <button onClick={onClick} className="w-full flex items-center space-x-3 p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/[0.15] dark:hover:bg-slate-700/[0.2] transition-all active:scale-[0.98] cursor-pointer">
-      <div className={`p-2 rounded-[10px] ${colorMap[color].bg} ${colorMap[color].text}`}><Ic size={16} /></div>
+    <button onClick={onClick} className="w-full flex items-center space-x-3 p-2.5 rounded-[16px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/[0.15] dark:hover:bg-slate-700/[0.2] transition-all active:scale-[0.98] cursor-pointer">
+      <div className={`p-2 rounded-[12px] ${colorMap[color].bg} ${colorMap[color].text}`}><Ic size={16} /></div>
       <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{label}</span>
     </button>
   );
@@ -1491,7 +1620,7 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
       <TaskSection />
       <div>
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Trạng thái cửa hàng</p>
-        <div className="space-y-2 p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[14px] border border-white/[0.1] dark:border-white/[0.04]">
+        <div className="space-y-2 p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[16px] border border-white/[0.1] dark:border-white/[0.04]">
           <div className="flex justify-between"><span className="text-[11px] text-slate-500">Sản phẩm</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{storeList[0]?.productCount || 0}</span></div>
           <div className="flex justify-between"><span className="text-[11px] text-slate-500">Đồng bộ lần cuối</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastSync}</span></div>
           <div className="flex justify-between"><span className="text-[11px] text-slate-500">Tối ưu lần cuối</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastOptimize}</span></div>
@@ -1514,7 +1643,7 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
       <TaskSection />
       <div>
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Thống kê</p>
-        <div className="space-y-2 p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[14px] border border-white/[0.1] dark:border-white/[0.04]">
+        <div className="space-y-2 p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[16px] border border-white/[0.1] dark:border-white/[0.04]">
           <div className="flex justify-between"><span className="text-[11px] text-slate-500">Tổng SP</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{storeList[0]?.productCount || 0}</span></div>
           <div className="flex justify-between"><span className="text-[11px] text-slate-500">Đồng bộ lần cuối</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastSync}</span></div>
           <div className="flex justify-between"><span className="text-[11px] text-slate-500">Tối ưu lần cuối</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastOptimize}</span></div>
@@ -1595,7 +1724,7 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
       <TaskSection />
       <div>
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Tổng quan</p>
-        <div className="space-y-2 p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[14px] border border-white/[0.1] dark:border-white/[0.04]">
+        <div className="space-y-2 p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[16px] border border-white/[0.1] dark:border-white/[0.04]">
           <div className="flex justify-between"><span className="text-[11px] text-slate-500">Niches</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{nicheList.length}</span></div>
           <div className="flex justify-between"><span className="text-[11px] text-slate-500">Stores</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{storeList.length}</span></div>
           <div className="flex justify-between"><span className="text-[11px] text-slate-500">Tổng SP</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{storeList.reduce((s,st) => s + (st.productCount||0), 0)}</span></div>
@@ -1736,10 +1865,10 @@ export default function App() {
             <span className="text-base font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-indigo-600 dark:from-white dark:to-indigo-400">ShopifyOS</span>
           </div>
           <div className="flex items-center space-x-2">
-            <button onClick={() => setIsDark(!isDark)} className="p-2 rounded-[12px] bg-white/[0.1] dark:bg-slate-800/[0.12] border border-white/40 dark:border-white/10">
+            <button onClick={() => setIsDark(!isDark)} className="p-2 rounded-[14px] bg-white/[0.1] dark:bg-slate-800/[0.12] border border-white/40 dark:border-white/10">
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-[12px] bg-white/[0.1] dark:bg-slate-800/[0.12] border border-white/40 dark:border-white/10">
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-[14px] bg-white/[0.1] dark:bg-slate-800/[0.12] border border-white/40 dark:border-white/10">
               {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
@@ -1762,7 +1891,7 @@ export default function App() {
             <div className="pt-3 border-t border-white/30 dark:border-white/10 mt-2">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 mb-2">Stores</p>
               {sidebarStores.map((store) => (
-                <div key={store.id} className="flex items-center space-x-3 p-2.5 rounded-[12px]">
+                <div key={store.id} className="flex items-center space-x-3 p-2.5 rounded-[14px]">
                   <span className="text-lg">{store.icon || '\u{1F3EA}'}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{store.name}</p>
@@ -1801,7 +1930,7 @@ export default function App() {
             <div className="mt-4 pt-3 border-t border-white/30 dark:border-white/10 px-2 space-y-2">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Stores</p>
               {sidebarStores.map((store) => (
-                <div key={store.id} className="flex items-center space-x-3 p-2 rounded-[12px] hover:bg-white/40 dark:hover:bg-white/5 transition-colors cursor-pointer">
+                <div key={store.id} className="flex items-center space-x-3 p-2 rounded-[14px] hover:bg-white/40 dark:hover:bg-white/5 transition-colors cursor-pointer">
                   <span className="text-lg">{store.icon || '\u{1F3EA}'}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{store.name}</p>
@@ -1813,7 +1942,7 @@ export default function App() {
             </div>
 
             <div className="mt-3 pt-3 border-t border-white/40 dark:border-white/10 px-2">
-              <button onClick={() => setIsDark(!isDark)} className="w-full flex items-center justify-center p-2.5 rounded-[16px] bg-white/[0.1] dark:bg-slate-800/[0.12] hover:bg-white/80 dark:hover:bg-slate-700/80 text-slate-600 dark:text-slate-300 transition-all border border-white/40 dark:border-white/10">
+              <button onClick={() => setIsDark(!isDark)} className="w-full flex items-center justify-center p-2.5 rounded-[18px] bg-white/[0.1] dark:bg-slate-800/[0.12] hover:bg-white/80 dark:hover:bg-slate-700/80 text-slate-600 dark:text-slate-300 transition-all border border-white/40 dark:border-white/10">
                 {isDark ? <Sun size={18} /> : <Moon size={18} />}
                 <span className="ml-2 text-sm font-medium">{isDark ? 'Sáng' : 'Tối'}</span>
               </button>
@@ -1844,14 +1973,14 @@ export default function App() {
 
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50">
-        <div className="mx-3 mb-3 flex items-center justify-around py-2 bg-white/[0.15] dark:bg-slate-900/[0.2] backdrop-blur-[12px] backdrop-saturate-[180%] rounded-[16px] border border-white/50 dark:border-white/10 shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
+        <div className="mx-3 mb-3 flex items-center justify-around py-2 bg-white/[0.15] dark:bg-slate-900/[0.2] backdrop-blur-[12px] backdrop-saturate-[180%] rounded-[18px] border border-white/50 dark:border-white/10 shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
           {bottomNav.map((item) => (
-            <button key={item.id} onClick={() => handleNav(item.id)} className={`flex flex-col items-center py-1.5 px-3 rounded-[12px] transition-all ${activeTab === item.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`}>
+            <button key={item.id} onClick={() => handleNav(item.id)} className={`flex flex-col items-center py-1.5 px-3 rounded-[14px] transition-all ${activeTab === item.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`}>
               <item.icon size={20} strokeWidth={activeTab === item.id ? 2.5 : 2} />
               <span className="text-[10px] font-semibold mt-0.5">{item.label}</span>
             </button>
           ))}
-          <button onClick={() => setMobileMenuOpen(true)} className="flex flex-col items-center py-1.5 px-3 rounded-[12px] text-slate-400">
+          <button onClick={() => setMobileMenuOpen(true)} className="flex flex-col items-center py-1.5 px-3 rounded-[14px] text-slate-400">
             <Menu size={20} />
             <span className="text-[10px] font-semibold mt-0.5">Menu</span>
           </button>

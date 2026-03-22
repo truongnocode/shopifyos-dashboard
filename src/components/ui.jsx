@@ -10,7 +10,7 @@ export const GlassCard = ({ children, className = '', noPadding = false, hoverEf
     border border-white/20 dark:border-white/[0.08]
     shadow-[0_8px_32px_rgba(31,38,135,0.12),inset_0_2px_8px_rgba(255,255,255,0.2)]
     dark:shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_4px_rgba(255,255,255,0.04)]
-    rounded-[20px]
+    rounded-[22px]
     ${hoverEffect ? 'hover:bg-white/[0.22] dark:hover:bg-slate-800/[0.28] transition-all duration-300 hover:shadow-[0_12px_40px_rgba(31,38,135,0.18)]' : ''}
     ${noPadding ? '' : 'p-5 md:p-7'}
     ${className}
@@ -23,8 +23,8 @@ export const GlassCard = ({ children, className = '', noPadding = false, hoverEf
 export const GlassButton = ({ children, variant = 'primary', className = '', icon: Icon, onClick, size = 'md', disabled = false }) => {
   const baseStyle = "flex items-center justify-center space-x-2 font-medium transition-all duration-200 active:scale-[0.97] cursor-pointer";
   const sizes = {
-    sm: 'px-4 py-2 text-sm rounded-[14px]',
-    md: 'px-5 py-2.5 md:px-6 md:py-3 rounded-[16px] text-sm',
+    sm: 'px-4 py-2 text-sm rounded-[16px]',
+    md: 'px-5 py-2.5 md:px-6 md:py-3 rounded-[18px] text-sm',
   };
   const variants = {
     primary: "bg-indigo-600/85 hover:bg-indigo-600/95 text-white shadow-[0_4px_16px_rgba(99,102,241,0.3)] backdrop-blur-[8px] border border-indigo-400/30",
@@ -64,7 +64,7 @@ export const LoadingSkeleton = ({ count = 3 }) => (
   <div className="space-y-3">
     {Array.from({ length: count }).map((_, i) => (
       <div key={i} className="animate-pulse">
-        <div className="bg-white/10 dark:bg-slate-800/15 rounded-[16px] h-20 backdrop-blur-[8px] border border-white/10 dark:border-white/[0.04]"></div>
+        <div className="bg-white/10 dark:bg-slate-800/15 rounded-[18px] h-20 backdrop-blur-[8px] border border-white/10 dark:border-white/[0.04]"></div>
       </div>
     ))}
   </div>
