@@ -129,6 +129,47 @@ const SectionHeader = ({ title, onRefresh, loading }) => (
   </div>
 );
 
+// --- TASK MONITOR ---
+const TaskMonitor = ({ tasks }) => {
+  if (tasks.length === 0) return null;
+  return (
+    <GlassCard className="!p-4 border-l-4 border-indigo-500">
+      <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-3 flex items-center">
+        <Activity size={16} className="mr-2 text-indigo-500" /> Task Monitor
+      </h3>
+      <div className="space-y-2">
+        {tasks.map((task) => (
+          <div key={task.id} className="flex items-center justify-between p-2.5 bg-white/50 dark:bg-slate-800/50 rounded-xl border border-white/30 dark:border-white/5">
+            <div className="flex items-center space-x-2.5 min-w-0 flex-1">
+              <div className={`p-1.5 rounded-lg flex-shrink-0 ${
+                task.status === 'running' ? 'bg-blue-100 dark:bg-blue-500/20' :
+                task.status === 'completed' ? 'bg-emerald-100 dark:bg-emerald-500/20' :
+                task.status === 'failed' ? 'bg-rose-100 dark:bg-rose-500/20' :
+                'bg-amber-100 dark:bg-amber-500/20'
+              }`}>
+                {task.status === 'running' ? <RefreshCw size={14} className="text-blue-500 animate-spin" /> :
+                 task.status === 'completed' ? <CheckCircle2 size={14} className="text-emerald-500" /> :
+                 task.status === 'failed' ? <AlertCircle size={14} className="text-rose-500" /> :
+                 <Clock size={14} className="text-amber-500" />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{task.label}</p>
+                <p className="text-[10px] text-slate-500">{task.detail || task.status}</p>
+              </div>
+            </div>
+            {task.status === 'completed' && task.result && (
+              <span className="text-[10px] font-semibold text-emerald-600 flex-shrink-0">{task.result}</span>
+            )}
+            {task.status === 'running' && (
+              <span className="text-[10px] text-blue-500 flex-shrink-0 animate-pulse">Processing...</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </GlassCard>
+  );
+};
+
 // --- VIEWS ---
 const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
   const storeList = stores.data || fallbackStores;
@@ -136,18 +177,51 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
   const runList = runs.data || fallbackRuns;
   const insightList = insights.data || fallbackInsights;
 
+  const [tasks, setTasks] = useState([]);
+  const taskIdRef = React.useRef(0);
+
+  const addTask = (label) => {
+    const id = ++taskIdRef.current;
+    const task = { id, label, status: 'running', detail: 'Starting...', result: null, startedAt: new Date() };
+    setTasks(prev => [task, ...prev]);
+    return id;
+  };
+
+  const updateTask = (id, updates) => {
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+  };
+
   const handleQuickAction = async (action, label) => {
-    addToast(`Đang chạy ${label}...`, 'info');
+    const taskId = addTask(label);
+    addToast(`Running ${label}...`, 'info');
     try {
+      let result;
       if (action === 'optimize') {
-        await api.optimizeStore(storeList[0]?.id);
+        updateTask(taskId, { detail: 'Optimizing products via Shopify API...' });
+        result = await api.optimizeStore(storeList[0]?.id);
+        updateTask(taskId, {
+          status: 'completed',
+          detail: `Done in ${Math.round((Date.now() - tasks.find(t=>t.id===taskId)?.startedAt?.getTime?.() || Date.now()) / 1000)}s`,
+          result: `${result.optimized || 0}/${result.total || 0} optimized`
+        });
       } else if (action === 'sync') {
-        await api.syncStore(storeList[0]?.id);
+        updateTask(taskId, { detail: 'Syncing products from Shopify...' });
+        result = await api.syncStore(storeList[0]?.id);
+        updateTask(taskId, {
+          status: 'completed',
+          detail: 'Sync complete',
+          result: `${result.synced || 0} products synced`
+        });
+      } else {
+        updateTask(taskId, { status: 'completed', detail: 'Triggered', result: 'OK' });
       }
-      addToast(`${label} hoàn tất!`, 'success');
+      addToast(`${label} complete!`, 'success');
       runs.refetch();
+      dashboard.refetch();
+      stores.refetch();
     } catch (e) {
-      addToast(`Lỗi: ${e.message}`, 'error');
+      updateTask(taskId, { status: 'failed', detail: e.message });
+      addToast(`Error: ${e.message}`, 'error');
     }
   };
 
@@ -207,6 +281,9 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
         </div>
       </div>
 
+      {/* Task Monitor */}
+      <TaskMonitor tasks={tasks} />
+
       {/* Stores */}
       <GlassCard>
         <SectionHeader title="Cửa hàng" onRefresh={stores.refetch} loading={stores.loading} />
@@ -261,17 +338,25 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
           <SectionHeader title="Hoạt động gần đây" onRefresh={runs.refetch} loading={runs.loading} />
           {runs.loading ? <LoadingSkeleton count={4} /> : (
             <div className="space-y-2.5 mt-4">
-              {runList.map((run) => (
-                <div key={run.id} className="flex items-center space-x-3 p-3 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-white/40 dark:border-white/5">
-                  <div className={`p-2 rounded-xl flex-shrink-0 ${run.status === 'success' ? 'bg-emerald-100 dark:bg-emerald-500/20' : 'bg-amber-100 dark:bg-amber-500/20'}`}>
-                    {run.status === 'success' ? <CheckCircle2 size={18} className="text-emerald-500" /> : <Clock size={18} className="text-amber-500" />}
+              {runList.map((run) => {
+                const isSuccess = run.status === 'COMPLETED' || run.status === 'success';
+                const isFailed = run.status === 'FAILED';
+                const timeAgo = run.startedAt ? new Date(run.startedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+                return (
+                  <div key={run.id} className="flex items-center space-x-3 p-3 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-white/40 dark:border-white/5">
+                    <div className={`p-2 rounded-xl flex-shrink-0 ${isSuccess ? 'bg-emerald-100 dark:bg-emerald-500/20' : isFailed ? 'bg-rose-100 dark:bg-rose-500/20' : 'bg-amber-100 dark:bg-amber-500/20'}`}>
+                      {isSuccess ? <CheckCircle2 size={18} className="text-emerald-500" /> : isFailed ? <AlertCircle size={18} className="text-rose-500" /> : <Clock size={18} className="text-amber-500" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{run.runType?.replace(/_/g, ' ')}</p>
+                      <p className="text-[11px] text-slate-500">{run.store?.name || 'Heart To Soul'} &middot; {timeAgo}</p>
+                    </div>
+                    {run.productsOptimized > 0 && (
+                      <span className="text-[10px] font-semibold text-emerald-600 flex-shrink-0">{run.productsOptimized}/{run.productsTotal}</span>
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{run.runType}</p>
-                    <p className="text-[11px] text-slate-500">{run.store?.name} &middot; {run.startedAt}</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </GlassCard>
