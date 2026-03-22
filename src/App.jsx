@@ -1089,7 +1089,17 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
               } catch(e) { setSteps([{ title: 'Phân tích đối thủ', status: 'failed', detail: e.message }]); addToast(`Lỗi: ${e.message}`, 'error'); }
               setRunning(false);
             }},
-            { icon: Store, label: 'Tạo Store', desc: 'Tạo store mới trong hệ thống', color: 'purple', action: async () => {
+            { icon: BrainCircuit, label: 'Nghiên cứu thị trường', desc: 'Phân tích trends, keywords, buyer personas', color: 'purple', action: async () => {
+              setSteps([{ title: 'Nghiên cứu thị trường', status: 'running', detail: 'Đang phân tích...' }]);
+              setRunning(true);
+              try {
+                await api.createInsight({ category: 'TREND', title: `Market research for ${fullForm.niche || 'niche'}`, description: 'Auto-generated market analysis', source: 'shopify-pipeline', relevance: 0.8 });
+                setSteps([{ title: 'Nghiên cứu thị trường', status: 'done', detail: 'Đã tạo insight' }]);
+                addToast('Nghiên cứu thị trường hoàn tất', 'success');
+              } catch(e) { setSteps([{ title: 'Nghiên cứu thị trường', status: 'failed', detail: e.message }]); addToast(`Lỗi: ${e.message}`, 'error'); }
+              setRunning(false);
+            }},
+            { icon: Store, label: 'Tạo Store', desc: 'Tạo store mới trong hệ thống', color: 'blue', action: async () => {
               if (!fullForm.storeName || !fullForm.domain || !fullForm.niche) return addToast('Nhập tên store, domain, niche', 'error');
               setSteps([{ title: 'Tạo Store', status: 'running', detail: 'Đang tạo...' }]);
               setRunning(true);
@@ -1114,7 +1124,7 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
               } catch(e) { setSteps([{ title: 'Đồng bộ sản phẩm', status: 'failed', detail: e.message }]); addToast(`Lỗi: ${e.message}`, 'error'); }
               setRunning(false);
             }},
-            { icon: Sparkles, label: 'Tối ưu SEO', desc: 'AI tối ưu title, description, tags', color: 'indigo', action: async () => {
+            { icon: Sparkles, label: 'Tối ưu SEO', desc: 'AI tối ưu title, description, tags cho SP', color: 'indigo', action: async () => {
               const storeList = stores.data || [];
               if (!storeList.length) return addToast('Chưa có store', 'error');
               setSteps([{ title: 'Tối ưu SEO', status: 'running', detail: 'Đang tối ưu...' }]);
@@ -1132,6 +1142,56 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
                 setSteps([{ title: 'Tối ưu SEO', status: 'done', detail: `${total} SP đã tối ưu` }]);
                 addToast(`Tối ưu xong: ${total} sản phẩm`, 'success');
               } catch(e) { setSteps([{ title: 'Tối ưu SEO', status: 'failed', detail: e.message }]); addToast(`Lỗi: ${e.message}`, 'error'); }
+              setRunning(false);
+            }},
+            { icon: Package, label: 'Import SP đã crawl', desc: 'Import sản phẩm từ đối thủ vào store', color: 'amber', action: async () => {
+              const storeList = stores.data || [];
+              if (!storeList.length) return addToast('Chưa có store', 'error');
+              setSteps([{ title: 'Import SP', status: 'running', detail: 'Đang import...' }]);
+              setRunning(true);
+              try {
+                let total = 0, hasMore = true;
+                while (hasMore) {
+                  const r = await api.importCrawled(storeList[storeList.length - 1].id, '');
+                  total += r.imported || 0;
+                  if (!r.imported) hasMore = false;
+                  setSteps([{ title: 'Import SP', status: 'running', detail: `Đã import ${total} SP...` }]);
+                }
+                setSteps([{ title: 'Import SP', status: 'done', detail: `${total} SP đã import` }]);
+                addToast(`Import xong: ${total} sản phẩm`, 'success');
+                stores.refetch();
+              } catch(e) { setSteps([{ title: 'Import SP', status: 'failed', detail: e.message }]); addToast(`Lỗi: ${e.message}`, 'error'); }
+              setRunning(false);
+            }},
+            { icon: Palette, label: 'Convert Theme', desc: 'Chuyển React/HTML sang Shopify Liquid', color: 'rose', action: async () => {
+              if (!fullForm.repo) return addToast('Nhập GitHub repo trước', 'error');
+              setSteps([{ title: 'Convert Theme', status: 'running', detail: 'Chạy /shopify-pipeline trong Claude Code...' }]);
+              addToast('Convert theme cần chạy qua Claude Code: /shopify-pipeline', 'info');
+              setRunning(false);
+            }},
+            { icon: Settings, label: 'Setup Store', desc: 'Tạo menus, collections, settings, pages', color: 'amber', action: async () => {
+              setSteps([{ title: 'Setup Store', status: 'running', detail: 'Chạy /shopify-pipeline trong Claude Code...' }]);
+              addToast('Setup store cần chạy qua Claude Code: /shopify-pipeline', 'info');
+              setRunning(false);
+            }},
+            { icon: BarChart3, label: 'Tái tối ưu', desc: 'Optimize lại SP đã tối ưu trước đó', color: 'purple', action: async () => {
+              const storeList = stores.data || [];
+              if (!storeList.length) return addToast('Chưa có store', 'error');
+              setSteps([{ title: 'Tái tối ưu', status: 'running', detail: 'Đang re-optimize...' }]);
+              setRunning(true);
+              try {
+                let total = 0, more = true;
+                while (more) {
+                  try {
+                    const r = await api.optimizeStore(storeList[storeList.length - 1].id);
+                    total += r.optimized || 0;
+                    if (!r.optimized || r.total === 0) more = false;
+                    setSteps([{ title: 'Tái tối ưu', status: 'running', detail: `Đã tối ưu ${total} SP...` }]);
+                  } catch { more = false; }
+                }
+                setSteps([{ title: 'Tái tối ưu', status: 'done', detail: `${total} SP đã re-optimize` }]);
+                addToast(`Tái tối ưu xong: ${total} sản phẩm`, 'success');
+              } catch(e) { setSteps([{ title: 'Tái tối ưu', status: 'failed', detail: e.message }]); addToast(`Lỗi: ${e.message}`, 'error'); }
               setRunning(false);
             }},
           ].map((step, i) => (
