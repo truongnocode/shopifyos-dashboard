@@ -1285,7 +1285,6 @@ export default function App() {
     { group: 'Tổng quan', items: [
       { id: 'command-center', icon: LayoutDashboard, label: 'Bảng điều khiển' },
       { id: 'products', icon: Package, label: 'Sản phẩm' },
-      { id: 'themes', icon: Palette, label: 'Giao diện' },
     ]},
     { group: 'AI Skills', items: [
       { id: 'ads', icon: Megaphone, label: 'Quảng cáo' },
@@ -1464,7 +1463,7 @@ export default function App() {
             {activeTab === 'social' && <SocialView stores={stores} skillOutputs={socialOutputs} />}
             {activeTab === 'winning-products' && <WinningProductsView competitors={competitors} skillOutputs={winningOutputs} addToast={addToast} />}
             {activeTab === 'intelligence' && <IntelligenceView insights={insights} competitors={competitors} addToast={addToast} />}
-            {activeTab === 'themes' && <ThemesView themes={themes} />}
+
             {activeTab === 'stores-manage' && <StoresManageView niches={niches} stores={stores} addToast={addToast} />}
           </div>
         </div>
