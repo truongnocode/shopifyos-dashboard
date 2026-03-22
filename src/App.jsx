@@ -925,6 +925,7 @@ const ThemesView = ({ themes }) => {
 const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
   const [running, setRunning] = useState(false);
   const [steps, setSteps] = useState([]);
+  const [pipeMode, setPipeMode] = useState('auto'); // 'auto' or 'custom'
   const [fullForm, setFullForm] = useState({ url: '', repo: '', storeName: '', domain: '', niche: '' });
 
   const inputClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[14px] py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200 placeholder-slate-400";
@@ -1001,8 +1002,18 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
         <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Xây dựng và xuất bản store Shopify hoàn chỉnh, sẵn sàng bán hàng</p>
       </div>
 
-      {/* Pipeline Form */}
-      {(
+      {/* Mode Tabs */}
+      <div className="flex gap-2">
+        <button onClick={() => setPipeMode('auto')} className={`px-4 py-2 rounded-[14px] text-sm font-semibold transition-all ${pipeMode === 'auto' ? 'bg-indigo-600/85 text-white shadow-[0_4px_16px_rgba(99,102,241,0.3)]' : 'bg-white/[0.08] dark:bg-slate-800/[0.1] text-slate-600 dark:text-slate-300 border border-white/[0.1] dark:border-white/[0.04]'}`}>
+          Tự động
+        </button>
+        <button onClick={() => setPipeMode('custom')} className={`px-4 py-2 rounded-[14px] text-sm font-semibold transition-all ${pipeMode === 'custom' ? 'bg-indigo-600/85 text-white shadow-[0_4px_16px_rgba(99,102,241,0.3)]' : 'bg-white/[0.08] dark:bg-slate-800/[0.1] text-slate-600 dark:text-slate-300 border border-white/[0.1] dark:border-white/[0.04]'}`}>
+          Tùy chỉnh
+        </button>
+      </div>
+
+      {/* Auto Mode */}
+      {pipeMode === 'auto' && (
         <GlassCard>
           <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Xây dựng Store Shopify hoàn chỉnh</h2>
           <p className="text-xs text-slate-500 mb-4">Tự động xây dựng store Shopify hoàn chỉnh từ A-Z: phân tích đối thủ, đồng bộ sản phẩm, tối ưu SEO toàn bộ, sẵn sàng xuất bản và bán hàng ngay.</p>
@@ -1036,10 +1047,35 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
         </GlassCard>
       )}
 
-      {/* Chạy từng bước */}
+      {/* Custom Mode */}
+      {pipeMode === 'custom' && (<>
+      <GlassCard>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Thông tin</h2>
+        <p className="text-xs text-slate-500 mb-3">Nhập thông tin cần thiết cho các bước bên dưới.</p>
+        <div className="space-y-3">
+          <div>
+            <label className="text-[11px] font-semibold text-slate-500 mb-1 block">URL đối thủ (cho bước Phân tích)</label>
+            <input className={inputClass} placeholder="vd: competitor.myshopify.com" value={fullForm.url} onChange={e => setFullForm({...fullForm, url: e.target.value})} disabled={running} />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Tên store</label>
+              <input className={inputClass} placeholder="My Store" value={fullForm.storeName} onChange={e => setFullForm({...fullForm, storeName: e.target.value})} disabled={running} />
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Domain</label>
+              <input className={inputClass} placeholder="store.myshopify.com" value={fullForm.domain} onChange={e => setFullForm({...fullForm, domain: e.target.value})} disabled={running} />
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Niche</label>
+              <input className={inputClass} placeholder="vd: Jewelry" value={fullForm.niche} onChange={e => setFullForm({...fullForm, niche: e.target.value})} disabled={running} />
+            </div>
+          </div>
+        </div>
+      </GlassCard>
       <GlassCard>
         <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Chạy từng bước</h2>
-        <p className="text-xs text-slate-500 mb-4">Chọn bước cần chạy riêng lẻ. Dùng khi không cần chạy toàn bộ pipeline.</p>
+        <p className="text-xs text-slate-500 mb-4">Chọn bước cần chạy. Mỗi bước hoạt động độc lập.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {[
             { icon: Eye, label: 'Phân tích đối thủ', desc: 'Crawl SP, collections, giá từ URL đối thủ', color: 'blue', action: async () => {
@@ -1111,6 +1147,7 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
           ))}
         </div>
       </GlassCard>
+      </>)}
 
       {/* Pipeline Progress */}
       {steps.length > 0 && (
