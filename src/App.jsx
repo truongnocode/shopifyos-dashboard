@@ -51,35 +51,35 @@ const fallbackProducts = [
 ];
 
 const fallbackRuns = [
-  { id: 1, store: { name: 'Heart To Soul' }, runType: 'SEO Optimize', status: 'success', startedAt: 'Phi\u00EAn tr\u01B0\u1EDBc' },
-  { id: 2, store: { name: 'Heart To Soul' }, runType: 'T\u1EA1o Ads', status: 'success', startedAt: '2 ng\u00E0y tr\u01B0\u1EDBc' },
-  { id: 3, store: { name: 'Heart To Soul' }, runType: 'Social Posts', status: 'success', startedAt: '3 ng\u00E0y tr\u01B0\u1EDBc' },
-  { id: 4, store: { name: 'Lume Vibe' }, runType: 'Nghi\u00EAn c\u1EE9u SP', status: 'pending', startedAt: 'D\u1EF1 ki\u1EBFn' },
+  { id: 1, store: { name: 'Heart To Soul' }, runType: 'SEO Optimize', status: 'success', startedAt: 'Phi\ên tr\ư\ớc' },
+  { id: 2, store: { name: 'Heart To Soul' }, runType: 'T\ạo Ads', status: 'success', startedAt: '2 ng\ày tr\ư\ớc' },
+  { id: 3, store: { name: 'Heart To Soul' }, runType: 'Social Posts', status: 'success', startedAt: '3 ng\ày tr\ư\ớc' },
+  { id: 4, store: { name: 'Lume Vibe' }, runType: 'Nghi\ên c\ứu SP', status: 'pending', startedAt: 'D\ự ki\ến' },
 ];
 
 const fallbackInsights = [
-  { id: 1, category: 'Trend', title: 'Personalized jewelry \u0111ang trend tr\u00EAn TikTok Shop', relevance: 'Cao', discoveredAt: null },
-  { id: 2, category: 'SEO', title: '12 SP c\u1EA7n c\u1EADp nh\u1EADt meta description', relevance: 'TB', discoveredAt: null },
-  { id: 3, category: 'Ads', title: 'CTR chi\u1EBFn d\u1ECBch Valentine cao h\u01A1n TB ng\u00E0nh', relevance: 'Cao', discoveredAt: null },
-  { id: 4, category: 'Social', title: '3 b\u00E0i l\u00EAn l\u1ECBch, 2 b\u00E0i c\u1EA7n prompt h\u00ECnh', relevance: 'TB', discoveredAt: null },
+  { id: 1, category: 'Trend', title: 'Personalized jewelry \đang trend tr\ên TikTok Shop', relevance: 'Cao', discoveredAt: null },
+  { id: 2, category: 'SEO', title: '12 SP c\ần c\ập nh\ật meta description', relevance: 'TB', discoveredAt: null },
+  { id: 3, category: 'Ads', title: 'CTR chi\ến d\ịch Valentine cao h\ơn TB ng\ành', relevance: 'Cao', discoveredAt: null },
+  { id: 4, category: 'Social', title: '3 b\ài l\ên l\ịch, 2 b\ài c\ần prompt h\ình', relevance: 'TB', discoveredAt: null },
 ];
 
 const fallbackCompetitors = [
-  { id: 1, domain: 'Niche Jewelry', name: 'Heart To Soul', productCount: 0, lastCrawledAt: null, niche: { name: 'Jewelry' }, status: '\u0110ang theo' },
-  { id: 2, domain: 'Niche LED Art', name: 'Lume Vibe', productCount: 0, lastCrawledAt: null, niche: { name: 'LED Art' }, status: 'D\u1EF1 ki\u1EBFn' },
+  { id: 1, domain: 'Niche Jewelry', name: 'Heart To Soul', productCount: 0, lastCrawledAt: null, niche: { name: 'Jewelry' }, status: '\Đang theo' },
+  { id: 2, domain: 'Niche LED Art', name: 'Lume Vibe', productCount: 0, lastCrawledAt: null, niche: { name: 'LED Art' }, status: 'D\ự ki\ến' },
 ];
 
 const fallbackThemes = [
-  { id: 1, versionName: 'hearttosoul-liquid', sourceType: 'custom', status: 'Active', store: { name: 'Heart To Soul' }, desc: 'Theme jewelry v\u1EDBi branding love/soul' },
-  { id: 2, versionName: 'lume-vibe-liquid', sourceType: 'custom', status: '\u0110ang ph\u00E1t tri\u1EC3n', store: { name: 'Lume Vibe' }, desc: 'Theme LED art v\u1EDBi dark aesthetic' },
+  { id: 1, versionName: 'hearttosoul-liquid', sourceType: 'custom', status: 'Active', store: { name: 'Heart To Soul' }, desc: 'Theme jewelry v\ới branding love/soul' },
+  { id: 2, versionName: 'lume-vibe-liquid', sourceType: 'custom', status: '\Đang ph\át tri\ển', store: { name: 'Lume Vibe' }, desc: 'Theme LED art v\ới dark aesthetic' },
 ];
 
 const skillsConfig = [
-  { id: 'optimize-products', name: 'Product Optimizer', icon: Package, color: 'indigo', desc: 'T\u1ED1i \u01B0u title, SEO, tags qua Shopify API' },
-  { id: 'ads-content-creator', name: 'Ads Creator', icon: Megaphone, color: 'rose', desc: 'T\u1EA1o chi\u1EBFn d\u1ECBch Meta, Google, TikTok' },
-  { id: 'social-content-creator', name: 'Social Content', icon: Share2, color: 'emerald', desc: 'T\u1EA1o b\u00E0i \u0111\u0103ng, caption, prompt h\u00ECnh/video' },
-  { id: 'winning-product-hunter', name: 'Winning Products', icon: TrendingUp, color: 'amber', desc: 'T\u00ECm SP trend, spy ads \u0111\u1ED1i th\u1EE7' },
-  { id: 'shopify-pipeline', name: 'Pipeline Manager', icon: Rocket, color: 'purple', desc: 'Qu\u1EA3n l\u00FD to\u00E0n b\u1ED9: crawl, optimize, setup' },
+  { id: 'optimize-products', name: 'Product Optimizer', icon: Package, color: 'indigo', desc: 'T\ối \ưu title, SEO, tags qua Shopify API' },
+  { id: 'ads-content-creator', name: 'Ads Creator', icon: Megaphone, color: 'rose', desc: 'T\ạo chi\ến d\ịch Meta, Google, TikTok' },
+  { id: 'social-content-creator', name: 'Social Content', icon: Share2, color: 'emerald', desc: 'T\ạo b\ài \đ\ăng, caption, prompt h\ình/video' },
+  { id: 'winning-product-hunter', name: 'Winning Products', icon: TrendingUp, color: 'amber', desc: 'T\ìm SP trend, spy ads \đ\ối th\ủ' },
+  { id: 'shopify-pipeline', name: 'Pipeline Manager', icon: Rocket, color: 'purple', desc: 'Qu\ản l\ý to\àn b\ộ: crawl, optimize, setup' },
 ];
 
 // --- TOAST SYSTEM ---
@@ -137,17 +137,17 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
   const insightList = insights.data || fallbackInsights;
 
   const handleQuickAction = async (action, label) => {
-    addToast(`\u0110ang ch\u1EA1y ${label}...`, 'info');
+    addToast(`\Đang ch\ạy ${label}...`, 'info');
     try {
       if (action === 'optimize') {
         await api.optimizeStore(storeList[0]?.id);
       } else if (action === 'sync') {
         await api.syncStore(storeList[0]?.id);
       }
-      addToast(`${label} ho\u00E0n t\u1EA5t!`, 'success');
+      addToast(`${label} ho\àn t\ất!`, 'success');
       runs.refetch();
     } catch (e) {
-      addToast(`L\u1ED7i: ${e.message}`, 'error');
+      addToast(`L\ỗi: ${e.message}`, 'error');
     }
   };
 
@@ -155,8 +155,8 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
     <div className="space-y-6 md:space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Trung t\u00E2m \u0111i\u1EC1u khi\u1EC3n</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">ShopifyOS &middot; T\u1ED5ng quan h\u1EC7 th\u1ED1ng</p>
+          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Trung t\âm \đi\ều khi\ển</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">ShopifyOS &middot; T\ổng quan h\ệ th\ống</p>
         </div>
         <button onClick={() => { dashboard.refetch(); stores.refetch(); runs.refetch(); insights.refetch(); }} className="p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${dashboard.loading ? 'animate-spin' : ''}`} />
@@ -167,7 +167,7 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         {[
           { icon: Store, label: 'Stores', value: dashData.stores, color: 'blue', badge: `${storeList.length} niches` },
-          { icon: Package, label: 'S\u1EA3n ph\u1EA9m', value: dashData.productCount, color: 'indigo', badge: null },
+          { icon: Package, label: 'S\ản ph\ẩm', value: dashData.productCount, color: 'indigo', badge: null },
           { icon: Sparkles, label: 'AI Skills', value: 5, color: 'purple', badge: 'Active' },
           { icon: Zap, label: 'Automations', value: 3, color: 'amber', badge: null },
         ].map((stat, i) => (
@@ -188,14 +188,14 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
 
       {/* Quick Actions - horizontal scroll on mobile */}
       <div>
-        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Thao t\u00E1c nhanh</h2>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Thao t\ác nhanh</h2>
         <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2">
           {[
-            { icon: Package, label: 'T\u1ED1i \u01B0u SP', color: 'indigo', action: () => handleQuickAction('optimize', 'T\u1ED1i \u01B0u SP') },
-            { icon: Megaphone, label: 'T\u1EA1o Ads', color: 'rose', action: () => addToast('M\u1EDF Claude Code v\u00E0 ch\u1EA1y /ads-content-creator', 'info') },
-            { icon: Share2, label: 'Social', color: 'emerald', action: () => addToast('M\u1EDF Claude Code v\u00E0 ch\u1EA1y /social-content-creator', 'info') },
-            { icon: TrendingUp, label: 'T\u00ECm SP Win', color: 'amber', action: () => addToast('M\u1EDF Claude Code v\u00E0 ch\u1EA1y /winning-product-hunter', 'info') },
-            { icon: Rocket, label: 'Pipeline', color: 'purple', action: () => addToast('M\u1EDF Claude Code v\u00E0 ch\u1EA1y /shopify-pipeline', 'info') },
+            { icon: Package, label: 'T\ối \ưu SP', color: 'indigo', action: () => handleQuickAction('optimize', 'T\ối \ưu SP') },
+            { icon: Megaphone, label: 'T\ạo Ads', color: 'rose', action: () => addToast('M\ở Claude Code v\à ch\ạy /ads-content-creator', 'info') },
+            { icon: Share2, label: 'Social', color: 'emerald', action: () => addToast('M\ở Claude Code v\à ch\ạy /social-content-creator', 'info') },
+            { icon: TrendingUp, label: 'T\ìm SP Win', color: 'amber', action: () => addToast('M\ở Claude Code v\à ch\ạy /winning-product-hunter', 'info') },
+            { icon: Rocket, label: 'Pipeline', color: 'purple', action: () => addToast('M\ở Claude Code v\à ch\ạy /shopify-pipeline', 'info') },
           ].map((action, i) => (
             <div key={i} onClick={action.action} className="flex-shrink-0 flex flex-col items-center gap-2 p-3 md:p-4 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl rounded-2xl border border-white/40 dark:border-white/5 min-w-[80px] md:min-w-[100px] cursor-pointer hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
               <div className={`p-2.5 rounded-xl ${colorMap[action.color].bg} ${colorMap[action.color].text}`}>
@@ -209,7 +209,7 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
 
       {/* Stores */}
       <GlassCard>
-        <SectionHeader title="C\u1EEDa h\u00E0ng" onRefresh={stores.refetch} loading={stores.loading} />
+        <SectionHeader title="C\ửa h\àng" onRefresh={stores.refetch} loading={stores.loading} />
         {stores.loading ? <LoadingSkeleton count={2} /> : (
           <div className="space-y-3 mt-4">
             {storeList.map((store) => (
@@ -222,7 +222,7 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
                     <span className="block font-bold text-slate-700 dark:text-slate-200 text-sm md:text-lg truncate">{store.name}</span>
                     <span className="text-xs md:text-sm text-slate-500 dark:text-slate-400">{store.domain}</span>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge type={store.isActive ? 'active' : 'setup'} text={store.isActive ? 'Active' : '\u0110ang setup'} />
+                      <Badge type={store.isActive ? 'active' : 'setup'} text={store.isActive ? 'Active' : '\Đang setup'} />
                       <span className="text-[10px] md:text-xs text-slate-400 hidden sm:inline">{store.niche?.name || store.niche}</span>
                     </div>
                   </div>
@@ -258,7 +258,7 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
         </GlassCard>
 
         <GlassCard>
-          <SectionHeader title="Ho\u1EA1t \u0111\u1ED9ng g\u1EA7n \u0111\u00E2y" onRefresh={runs.refetch} loading={runs.loading} />
+          <SectionHeader title="Ho\ạt \đ\ộng g\ần \đ\ây" onRefresh={runs.refetch} loading={runs.loading} />
           {runs.loading ? <LoadingSkeleton count={4} /> : (
             <div className="space-y-2.5 mt-4">
               {runList.map((run) => (
@@ -281,7 +281,7 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast }) => {
       <GlassCard>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center">
-            <Lightbulb className="mr-2 text-amber-500" size={20} /> Nh\u1EADn \u0111\u1ECBnh th\u00F4ng minh
+            <Lightbulb className="mr-2 text-amber-500" size={20} /> Nh\ận \đ\ịnh th\ông minh
           </h2>
           <button onClick={insights.refetch} className="p-2 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95" disabled={insights.loading}>
             <RefreshCw size={16} className={`text-slate-500 dark:text-slate-400 ${insights.loading ? 'animate-spin' : ''}`} />
@@ -316,13 +316,13 @@ const ProductsView = ({ products, addToast }) => {
   const pending = productList.length - optimized;
 
   const handleBulkOptimize = async () => {
-    addToast('\u0110ang t\u1ED1i \u01B0u h\u00E0ng lo\u1EA1t...', 'info');
+    addToast('\Đang t\ối \ưu h\àng lo\ạt...', 'info');
     try {
       await api.optimizeStore();
-      addToast('T\u1ED1i \u01B0u ho\u00E0n t\u1EA5t!', 'success');
+      addToast('T\ối \ưu ho\àn t\ất!', 'success');
       products.refetch();
     } catch (e) {
-      addToast(`L\u1ED7i: ${e.message}`, 'error');
+      addToast(`L\ỗi: ${e.message}`, 'error');
     }
   };
 
@@ -330,7 +330,7 @@ const ProductsView = ({ products, addToast }) => {
     <div className="space-y-6 md:space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">S\u1EA3n ph\u1EA9m</h1>
+          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">S\ản ph\ẩm</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Heart To Soul &middot; Shopify Admin API</p>
         </div>
         <button onClick={products.refetch} className="p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
@@ -340,9 +340,9 @@ const ProductsView = ({ products, addToast }) => {
 
       <div className="grid grid-cols-3 gap-3 md:gap-6">
         {[
-          { label: '\u0110\u00E3 t\u1ED1i \u01B0u', value: optimized, icon: CheckCircle2, color: 'emerald' },
-          { label: '\u0110ang \u0111\u1EE3i', value: pending, icon: Clock, color: 'amber' },
-          { label: 'T\u1ED5ng', value: productList.length, icon: Package, color: 'indigo' },
+          { label: '\Đ\ã t\ối \ưu', value: optimized, icon: CheckCircle2, color: 'emerald' },
+          { label: '\Đang \đ\ợi', value: pending, icon: Clock, color: 'amber' },
+          { label: 'T\ổng', value: productList.length, icon: Package, color: 'indigo' },
         ].map((s, i) => (
           <GlassCard key={i} className="!p-4 md:!p-6 flex items-center justify-between">
             <div>
@@ -357,8 +357,8 @@ const ProductsView = ({ products, addToast }) => {
       </div>
 
       <div className="flex space-x-3">
-        <GlassButton variant="primary" icon={Zap} size="sm" onClick={handleBulkOptimize}>T\u1ED1i \u01B0u h\u00E0ng lo\u1EA1t</GlassButton>
-        <GlassButton variant="glass" icon={Filter} size="sm">L\u1ECDc</GlassButton>
+        <GlassButton variant="primary" icon={Zap} size="sm" onClick={handleBulkOptimize}>T\ối \ưu h\àng lo\ạt</GlassButton>
+        <GlassButton variant="glass" icon={Filter} size="sm">L\ọc</GlassButton>
       </div>
 
       {products.loading ? <LoadingSkeleton count={5} /> : (
@@ -375,8 +375,8 @@ const ProductsView = ({ products, addToast }) => {
                     <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 flex-shrink-0">${prod.priceMin || prod.price}</span>
                   </div>
                   <div className="flex items-center justify-between mt-1.5">
-                    <p className="text-[11px] text-slate-500">{prod.productType || prod.type} &middot; {typeof prod.tags === 'number' ? prod.tags : Array.isArray(prod.tags) ? prod.tags.length : 0} tags &middot; {prod.imageCount || prod.images} \u1EA3nh</p>
-                    <Badge type="neutral" text={prod.lastOptimizedAt ? '\u0110\u00E3 t\u1ED1i \u01B0u' : '\u0110ang \u0111\u1EE3i'} />
+                    <p className="text-[11px] text-slate-500">{prod.productType || prod.type} &middot; {typeof prod.tags === 'number' ? prod.tags : Array.isArray(prod.tags) ? prod.tags.length : 0} tags &middot; {prod.imageCount || prod.images} \ảnh</p>
+                    <Badge type="neutral" text={prod.lastOptimizedAt ? '\Đ\ã t\ối \ưu' : '\Đang \đ\ợi'} />
                   </div>
                 </div>
               </div>
@@ -395,8 +395,8 @@ const AdsView = ({ skillOutputs, addToast }) => {
     <div className="space-y-6 md:space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">T\u1EA1o Qu\u1EA3ng c\u00E1o</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">AI t\u1EA1o chi\u1EBFn d\u1ECBch cho Meta, Google, TikTok</p>
+          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">T\ạo Qu\ảng c\áo</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">AI t\ạo chi\ến d\ịch cho Meta, Google, TikTok</p>
         </div>
         <button onClick={skillOutputs.refetch} className="p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${skillOutputs.loading ? 'animate-spin' : ''}`} />
@@ -425,13 +425,13 @@ const AdsView = ({ skillOutputs, addToast }) => {
       </div>
 
       <GlassCard>
-        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Quy tr\u00ECnh</h2>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Quy tr\ình</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { step: '1', title: 'Nghi\u00EAn c\u1EE9u', desc: 'Ph\u00E2n t\u00EDch ads \u0111\u1ED1i th\u1EE7' },
-            { step: '2', title: 'T\u1EA1o n\u1ED9i dung', desc: 'AI t\u1EA1o prompt, copy, script' },
-            { step: '3', title: 'Xu\u1EA5t file', desc: 'L\u01B0u v\u00E0o ~/Documents/' },
-            { step: '4', title: 'T\u1EF1 ti\u1EBFn h\u00F3a', desc: 'H\u1ECDc t\u1EEB k\u1EBFt qu\u1EA3 th\u1EF1c t\u1EBF' },
+            { step: '1', title: 'Nghi\ên c\ứu', desc: 'Ph\ân t\ích ads \đ\ối th\ủ' },
+            { step: '2', title: 'T\ạo n\ội dung', desc: 'AI t\ạo prompt, copy, script' },
+            { step: '3', title: 'Xu\ất file', desc: 'L\ưu v\ào ~/Documents/' },
+            { step: '4', title: 'T\ự ti\ến h\óa', desc: 'H\ọc t\ừ k\ết qu\ả th\ực t\ế' },
           ].map((s, i) => (
             <div key={i} className="p-3 md:p-4 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/30 dark:border-white/5 text-center">
               <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-2 font-bold text-sm md:text-lg">{s.step}</div>
@@ -454,7 +454,7 @@ const SocialView = ({ stores, skillOutputs }) => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Social Content</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">T\u1EA1o n\u1ED9i dung \u0111a n\u1EC1n t\u1EA3ng</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">T\ạo n\ội dung \đa n\ền t\ảng</p>
         </div>
         <button onClick={skillOutputs.refetch} className="p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${skillOutputs.loading ? 'animate-spin' : ''}`} />
@@ -463,8 +463,8 @@ const SocialView = ({ stores, skillOutputs }) => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         {[
-          { icon: FileText, label: 'B\u00E0i \u0111\u0103ng', value: outputs.filter(o => o.outputType === 'post').length || '24', color: 'indigo' },
-          { icon: Image, label: 'Prompt h\u00ECnh', value: outputs.filter(o => o.outputType === 'image_prompt').length || '18', color: 'purple' },
+          { icon: FileText, label: 'B\ài \đ\ăng', value: outputs.filter(o => o.outputType === 'post').length || '24', color: 'indigo' },
+          { icon: Image, label: 'Prompt h\ình', value: outputs.filter(o => o.outputType === 'image_prompt').length || '18', color: 'purple' },
           { icon: Video, label: 'Video concepts', value: outputs.filter(o => o.outputType === 'video').length || '6', color: 'rose' },
           { icon: Hash, label: 'Hashtag sets', value: outputs.filter(o => o.outputType === 'hashtag').length || '12', color: 'emerald' },
         ].map((s, i) => (
@@ -480,9 +480,9 @@ const SocialView = ({ stores, skillOutputs }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
         <GlassCard>
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Lo\u1EA1i n\u1ED9i dung</h2>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Lo\ại n\ội dung</h2>
           <div className="space-y-2">
-            {['Gi\u00E1o d\u1EE5c & Tips', 'C\u1EA3m x\u00FAc & Storytelling', 'Gi\u1EDBi thi\u1EC7u SP', 'H\u1EADu tr\u01B0\u1EDDng', 'Phong c\u00E1ch UGC', 'Theo m\u00F9a & Trending'].map((type, i) => (
+            {['Gi\áo d\ục & Tips', 'C\ảm x\úc & Storytelling', 'Gi\ới thi\ệu SP', 'H\ậu tr\ư\ờng', 'Phong c\ách UGC', 'Theo m\ùa & Trending'].map((type, i) => (
               <div key={i} className="flex items-center space-x-3 p-2.5 bg-white/40 dark:bg-slate-800/40 rounded-xl border border-white/30 dark:border-white/5">
                 <div className="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0"></div>
                 <span className="text-xs md:text-sm font-medium text-slate-700 dark:text-slate-200">{type}</span>
@@ -491,7 +491,7 @@ const SocialView = ({ stores, skillOutputs }) => {
           </div>
         </GlassCard>
         <GlassCard>
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Stores \u0111ang ho\u1EA1t \u0111\u1ED9ng</h2>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Stores \đang ho\ạt \đ\ộng</h2>
           <div className="space-y-3">
             {storeList.map((store) => (
               <div key={store.id} className="flex items-center justify-between p-3 bg-white/50 dark:bg-slate-800/50 rounded-2xl border border-white/40 dark:border-white/5">
@@ -502,7 +502,7 @@ const SocialView = ({ stores, skillOutputs }) => {
                     <p className="text-[11px] text-slate-500">{store.niche?.name || store.niche}</p>
                   </div>
                 </div>
-                <Badge type={store.isActive ? 'active' : 'setup'} text={store.isActive ? '\u0110ang ch\u1EA1y' : 'Ch\u1EDD'} />
+                <Badge type={store.isActive ? 'active' : 'setup'} text={store.isActive ? '\Đang ch\ạy' : 'Ch\ờ'} />
               </div>
             ))}
           </div>
@@ -516,13 +516,13 @@ const WinningProductsView = ({ competitors, addToast }) => {
   const competitorList = competitors.data || fallbackCompetitors;
 
   const handleCrawl = async () => {
-    addToast('\u0110ang crawl \u0111\u1ED1i th\u1EE7...', 'info');
+    addToast('\Đang crawl \đ\ối th\ủ...', 'info');
     try {
       await api.crawlCompetitor('', competitorList[0]?.id);
-      addToast('Crawl ho\u00E0n t\u1EA5t!', 'success');
+      addToast('Crawl ho\àn t\ất!', 'success');
       competitors.refetch();
     } catch (e) {
-      addToast(`L\u1ED7i: ${e.message}`, 'error');
+      addToast(`L\ỗi: ${e.message}`, 'error');
     }
   };
 
@@ -530,8 +530,8 @@ const WinningProductsView = ({ competitors, addToast }) => {
     <div className="space-y-6 md:space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">S\u0103n SP Win</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Nghi\u00EAn c\u1EE9u SP, ph\u00E1t hi\u1EC7n trend, spy ads</p>
+          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">S\ăn SP Win</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Nghi\ên c\ứu SP, ph\át hi\ện trend, spy ads</p>
         </div>
         <button onClick={competitors.refetch} className="p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${competitors.loading ? 'animate-spin' : ''}`} />
@@ -540,9 +540,9 @@ const WinningProductsView = ({ competitors, addToast }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
         {[
-          { icon: TrendingUp, title: 'Qu\u00E9t Trend', desc: 'Ph\u00E1t hi\u1EC7n micro-trends t\u1EEB TikTok, Amazon, Google', color: 'emerald' },
-          { icon: Eye, title: 'Spy Ads', desc: 'Ph\u00E2n t\u00EDch ads \u0111\u1ED1i th\u1EE7 tr\u00EAn Meta, TikTok, Google', color: 'blue' },
-          { icon: ShoppingBag, title: 'Ch\u1EA5m \u0111i\u1EC3m SP', desc: 'Score theo demand, c\u1EA1nh tranh, bi\u00EAn l\u1EE3i', color: 'amber' },
+          { icon: TrendingUp, title: 'Qu\ét Trend', desc: 'Ph\át hi\ện micro-trends t\ừ TikTok, Amazon, Google', color: 'emerald' },
+          { icon: Eye, title: 'Spy Ads', desc: 'Ph\ân t\ích ads \đ\ối th\ủ tr\ên Meta, TikTok, Google', color: 'blue' },
+          { icon: ShoppingBag, title: 'Ch\ấm \đi\ểm SP', desc: 'Score theo demand, c\ạnh tranh, bi\ên l\ợi', color: 'amber' },
         ].map((f, i) => (
           <GlassCard key={i} hoverEffect className="cursor-pointer !p-5" onClick={handleCrawl}>
             <div className="flex items-center space-x-3 md:block">
@@ -559,11 +559,11 @@ const WinningProductsView = ({ competitors, addToast }) => {
       </div>
 
       <GlassCard>
-        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">B\u00E1o c\u00E1o</h2>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">B\áo c\áo</h2>
         <div className="p-3 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/30 dark:border-white/5 font-mono text-xs md:text-sm text-slate-600 dark:text-slate-300">
           ~/Documents/winning-product-reports/
         </div>
-        <p className="text-xs text-slate-500 mt-2">Ch\u1EA1y <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[11px] font-mono">/winning-product-hunter</code> trong Claude Code.</p>
+        <p className="text-xs text-slate-500 mt-2">Ch\ạy <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[11px] font-mono">/winning-product-hunter</code> trong Claude Code.</p>
       </GlassCard>
     </div>
   );
@@ -578,7 +578,7 @@ const IntelligenceView = ({ insights, competitors, addToast }) => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Intelligence</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Ph\u00E2n t\u00EDch th\u1ECB tr\u01B0\u1EDDng & theo d\u00F5i \u0111\u1ED1i th\u1EE7</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Ph\ân t\ích th\ị tr\ư\ờng & theo d\õi \đ\ối th\ủ</p>
         </div>
         <button onClick={() => { insights.refetch(); competitors.refetch(); }} className="p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${insights.loading || competitors.loading ? 'animate-spin' : ''}`} />
@@ -587,7 +587,7 @@ const IntelligenceView = ({ insights, competitors, addToast }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
         <GlassCard>
           <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center mb-4">
-            <BrainCircuit className="mr-2 text-purple-500" size={20} /> Nh\u1EADn \u0111\u1ECBnh m\u1EDBi
+            <BrainCircuit className="mr-2 text-purple-500" size={20} /> Nh\ận \đ\ịnh m\ới
           </h2>
           {insights.loading ? <LoadingSkeleton count={4} /> : (
             <div className="space-y-3">
@@ -603,7 +603,7 @@ const IntelligenceView = ({ insights, competitors, addToast }) => {
                     <Badge type="neutral" text={insight.relevance || insight.impact} />
                   </div>
                   <p className="text-sm font-bold text-slate-800 dark:text-white mt-2">{insight.title}</p>
-                  <p className="text-[10px] text-slate-400 mt-1">Ngu\u1ED3n: {insight.source || insight.category}</p>
+                  <p className="text-[10px] text-slate-400 mt-1">Ngu\ồn: {insight.source || insight.category}</p>
                 </div>
               ))}
             </div>
@@ -611,7 +611,7 @@ const IntelligenceView = ({ insights, competitors, addToast }) => {
         </GlassCard>
         <GlassCard>
           <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center mb-4">
-            <Target className="mr-2 text-rose-500" size={20} /> Theo d\u00F5i \u0111\u1ED1i th\u1EE7
+            <Target className="mr-2 text-rose-500" size={20} /> Theo d\õi \đ\ối th\ủ
           </h2>
           {competitors.loading ? <LoadingSkeleton count={2} /> : (
             <div className="space-y-3 mb-4">
@@ -621,13 +621,13 @@ const IntelligenceView = ({ insights, competitors, addToast }) => {
                     <h3 className="font-bold text-sm text-slate-800 dark:text-white">{comp.domain}</h3>
                     <p className="text-xs text-slate-500">Cho: {comp.name}</p>
                   </div>
-                  <Badge type={comp.lastCrawledAt || comp.status === '\u0110ang theo' ? 'success' : 'pending'} text={comp.lastCrawledAt ? '\u0110ang theo' : (comp.status || 'D\u1EF1 ki\u1EBFn')} />
+                  <Badge type={comp.lastCrawledAt || comp.status === '\Đang theo' ? 'success' : 'pending'} text={comp.lastCrawledAt ? '\Đang theo' : (comp.status || 'D\ự ki\ến')} />
                 </div>
               ))}
             </div>
           )}
           <div className="p-3 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/30 dark:border-white/5">
-            <p className="text-xs text-slate-500">Ch\u1EA1y <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[11px] font-mono">/shopify-pipeline</code> \u0111\u1EC3 crawl & ph\u00E2n t\u00EDch.</p>
+            <p className="text-xs text-slate-500">Ch\ạy <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[11px] font-mono">/shopify-pipeline</code> \đ\ể crawl & ph\ân t\ích.</p>
           </div>
         </GlassCard>
       </div>
@@ -643,7 +643,7 @@ const ThemesView = ({ themes }) => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Themes</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Qu\u1EA3n l\u00FD Liquid theme</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Qu\ản l\ý Liquid theme</p>
         </div>
         <button onClick={themes.refetch} className="p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${themes.loading ? 'animate-spin' : ''}`} />
@@ -703,17 +703,17 @@ export default function App() {
   }, [isDark]);
 
   const navItems = [
-    { group: 'T\u1ED5ng quan', items: [
+    { group: 'T\ổng quan', items: [
       { id: 'command-center', icon: LayoutDashboard, label: 'Dashboard' },
-      { id: 'products', icon: Package, label: 'S\u1EA3n ph\u1EA9m' },
+      { id: 'products', icon: Package, label: 'S\ản ph\ẩm' },
       { id: 'themes', icon: Palette, label: 'Themes' },
     ]},
     { group: 'AI Skills', items: [
-      { id: 'ads', icon: Megaphone, label: 'T\u1EA1o Ads' },
+      { id: 'ads', icon: Megaphone, label: 'T\ạo Ads' },
       { id: 'social', icon: Share2, label: 'Social' },
-      { id: 'winning-products', icon: TrendingUp, label: 'S\u0103n SP Win' },
+      { id: 'winning-products', icon: TrendingUp, label: 'S\ăn SP Win' },
     ]},
-    { group: 'Nghi\u00EAn c\u1EE9u', items: [
+    { group: 'Nghi\ên c\ứu', items: [
       { id: 'intelligence', icon: BrainCircuit, label: 'Intelligence' },
     ]},
   ];
@@ -831,7 +831,7 @@ export default function App() {
             <div className="mt-3 pt-3 border-t border-white/40 dark:border-white/10 px-2">
               <button onClick={() => setIsDark(!isDark)} className="w-full flex items-center justify-center p-2.5 rounded-2xl bg-white/50 dark:bg-slate-800/50 hover:bg-white/80 dark:hover:bg-slate-700/80 text-slate-600 dark:text-slate-300 transition-all border border-white/40 dark:border-white/10">
                 {isDark ? <Sun size={18} /> : <Moon size={18} />}
-                <span className="ml-2 text-sm font-medium">{isDark ? 'S\u00E1ng' : 'T\u1ED1i'}</span>
+                <span className="ml-2 text-sm font-medium">{isDark ? 'S\áng' : 'T\ối'}</span>
               </button>
             </div>
           </GlassCard>
