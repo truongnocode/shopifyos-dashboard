@@ -960,104 +960,219 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
 );
 
 // --- RIGHT PANEL (Column 3) ---
-const RightPanel = ({ tasks, runs, stores, handleQuickAction, addToast }) => {
+const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction, addToast }) => {
   const storeList = stores.data || [];
   const runList = runs.data || [];
-  const lastSync = storeList[0]?.lastSyncAt ? new Date(storeList[0].lastSyncAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Chưa có';
-  const lastOptimize = storeList[0]?.lastOptimizedAt ? new Date(storeList[0].lastOptimizedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Chưa có';
+  const nicheList = niches?.data || [];
+  const lastSync = storeList[0]?.lastSyncAt ? new Date(storeList[0].lastSyncAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'Chưa có';
+  const lastOptimize = storeList[0]?.lastOptimizedAt ? new Date(storeList[0].lastOptimizedAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'Chưa có';
 
-  return (
+  const inputClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[14px] py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200 placeholder-slate-400";
+
+  // Shared: Task Monitor
+  const TaskSection = () => tasks.length > 0 && (
+    <div>
+      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Giám sát tác vụ</p>
+      <div className="space-y-1.5">
+        {tasks.map((task) => (
+          <div key={task.id} className="flex items-center justify-between p-2.5 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[14px] border border-white/[0.1] dark:border-white/[0.04]">
+            <div className="flex items-center space-x-2 min-w-0 flex-1">
+              <div className={`p-1.5 rounded-lg flex-shrink-0 ${task.status === 'running' ? 'bg-blue-100 dark:bg-blue-500/20' : task.status === 'completed' ? 'bg-emerald-100 dark:bg-emerald-500/20' : 'bg-rose-100 dark:bg-rose-500/20'}`}>
+                {task.status === 'running' ? <RefreshCw size={12} className="text-blue-500 animate-spin" /> : task.status === 'completed' ? <CheckCircle2 size={12} className="text-emerald-500" /> : <AlertCircle size={12} className="text-rose-500" />}
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate">{task.label}</p>
+                <p className="text-[9px] text-slate-500 truncate">{task.detail}</p>
+              </div>
+            </div>
+            {task.result && <span className="text-[9px] font-semibold text-emerald-600 flex-shrink-0 ml-1">{task.result}</span>}
+            {task.status === 'running' && <span className="text-[9px] text-blue-500 flex-shrink-0 ml-1 animate-pulse">...</span>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Shared: Recent Activity
+  const ActivitySection = () => (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hoạt động gần đây</p>
+        <button onClick={runs.refetch} className="p-1 rounded-lg hover:bg-white/40 dark:hover:bg-white/5 transition-all">
+          <RefreshCw size={12} className={`text-slate-400 ${runs.loading ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
+      <div className="space-y-1.5">
+        {runList.slice(0, 5).map((run) => {
+          const isOk = run.status === 'COMPLETED' || run.status === 'success';
+          const time = run.startedAt ? new Date(run.startedAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+          return (
+            <div key={run.id} className="flex items-center space-x-2 p-2 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[12px]">
+              <div className={`p-1 rounded-lg flex-shrink-0 ${isOk ? 'bg-emerald-100 dark:bg-emerald-500/20' : 'bg-amber-100 dark:bg-amber-500/20'}`}>
+                {isOk ? <CheckCircle2 size={12} className="text-emerald-500" /> : <Clock size={12} className="text-amber-500" />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate">{run.runType?.replace(/_/g, ' ')}</p>
+                <p className="text-[9px] text-slate-400">{time}</p>
+              </div>
+              {run.productsOptimized > 0 && <span className="text-[9px] font-semibold text-emerald-600">{run.productsOptimized}/{run.productsTotal}</span>}
+            </div>
+          );
+        })}
+        {runList.length === 0 && <p className="text-[11px] text-slate-400 text-center py-2">Chưa có hoạt động</p>}
+      </div>
+    </div>
+  );
+
+  // Shared: Action Button
+  const ActionBtn = ({ icon: Ic, label, color, onClick }) => (
+    <button onClick={onClick} className="w-full flex items-center space-x-3 p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/[0.15] dark:hover:bg-slate-700/[0.2] transition-all active:scale-[0.98] cursor-pointer">
+      <div className={`p-2 rounded-[10px] ${colorMap[color].bg} ${colorMap[color].text}`}><Ic size={16} /></div>
+      <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{label}</span>
+    </button>
+  );
+
+  // --- Context-specific panels ---
+
+  if (activeTab === 'command-center') return (
     <div className="space-y-5">
-      {/* Quick Actions */}
       <div>
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Thao tác nhanh</p>
         <div className="space-y-1.5">
-          {[
-            { icon: Package, label: 'Tối ưu sản phẩm', color: 'indigo', action: () => handleQuickAction('optimize', 'Tối ưu sản phẩm') },
-            { icon: RefreshCw, label: 'Đồng bộ cửa hàng', color: 'blue', action: () => handleQuickAction('sync', 'Đồng bộ cửa hàng') },
-            { icon: Megaphone, label: 'Tạo quảng cáo', color: 'rose', action: () => handleQuickAction('ads', 'Tạo quảng cáo') },
-            { icon: Share2, label: 'Nội dung MXH', color: 'emerald', action: () => handleQuickAction('social', 'Nội dung MXH') },
-            { icon: TrendingUp, label: 'Tìm SP tiềm năng', color: 'amber', action: () => handleQuickAction('winning', 'Tìm SP tiềm năng') },
-          ].map((a, i) => (
-            <button key={i} onClick={a.action} className="w-full flex items-center space-x-3 p-2.5 rounded-[16px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-[0.98] cursor-pointer">
-              <div className={`p-2 rounded-[12px] ${colorMap[a.color].bg} ${colorMap[a.color].text}`}>
-                <a.icon size={16} />
-              </div>
-              <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{a.label}</span>
-            </button>
-          ))}
+          <ActionBtn icon={Package} label="Tối ưu sản phẩm" color="indigo" onClick={() => handleQuickAction('optimize', 'Tối ưu sản phẩm')} />
+          <ActionBtn icon={RefreshCw} label="Đồng bộ cửa hàng" color="blue" onClick={() => handleQuickAction('sync', 'Đồng bộ cửa hàng')} />
+          <ActionBtn icon={Megaphone} label="Tạo quảng cáo" color="rose" onClick={() => handleQuickAction('ads', 'Tạo quảng cáo')} />
+          <ActionBtn icon={Share2} label="Nội dung MXH" color="emerald" onClick={() => handleQuickAction('social', 'Nội dung MXH')} />
+          <ActionBtn icon={TrendingUp} label="Tìm SP tiềm năng" color="amber" onClick={() => handleQuickAction('winning', 'Tìm SP tiềm năng')} />
         </div>
       </div>
-
-      {/* Task Monitor */}
-      {tasks.length > 0 && (
-        <div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Giám sát tác vụ</p>
-          <div className="space-y-1.5">
-            {tasks.map((task) => (
-              <div key={task.id} className="flex items-center justify-between p-2.5 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[16px] border border-white/[0.1] dark:border-white/[0.04]">
-                <div className="flex items-center space-x-2 min-w-0 flex-1">
-                  <div className={`p-1.5 rounded-lg flex-shrink-0 ${
-                    task.status === 'running' ? 'bg-blue-100 dark:bg-blue-500/20' :
-                    task.status === 'completed' ? 'bg-emerald-100 dark:bg-emerald-500/20' :
-                    'bg-rose-100 dark:bg-rose-500/20'
-                  }`}>
-                    {task.status === 'running' ? <RefreshCw size={12} className="text-blue-500 animate-spin" /> :
-                     task.status === 'completed' ? <CheckCircle2 size={12} className="text-emerald-500" /> :
-                     <AlertCircle size={12} className="text-rose-500" />}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate">{task.label}</p>
-                    <p className="text-[9px] text-slate-500 truncate">{task.detail}</p>
-                  </div>
-                </div>
-                {task.result && <span className="text-[9px] font-semibold text-emerald-600 flex-shrink-0 ml-1">{task.result}</span>}
-                {task.status === 'running' && <span className="text-[9px] text-blue-500 flex-shrink-0 ml-1 animate-pulse">...</span>}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Store Quick Stats */}
+      <TaskSection />
       <div>
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Trạng thái cửa hàng</p>
-        <div className="space-y-2 p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[16px] border border-white/[0.1] dark:border-white/[0.04]">
+        <div className="space-y-2 p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[14px] border border-white/[0.1] dark:border-white/[0.04]">
           <div className="flex justify-between"><span className="text-[11px] text-slate-500">Sản phẩm</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{storeList[0]?.productCount || 0}</span></div>
           <div className="flex justify-between"><span className="text-[11px] text-slate-500">Đồng bộ lần cuối</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastSync}</span></div>
           <div className="flex justify-between"><span className="text-[11px] text-slate-500">Tối ưu lần cuối</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastOptimize}</span></div>
         </div>
       </div>
+      <ActivitySection />
+    </div>
+  );
 
-      {/* Recent Activity */}
+  if (activeTab === 'products') return (
+    <div className="space-y-5">
       <div>
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hoạt động gần đây</p>
-          <button onClick={runs.refetch} className="p-1 rounded-lg hover:bg-white/40 dark:hover:bg-white/5 transition-all">
-            <RefreshCw size={12} className={`text-slate-400 ${runs.loading ? 'animate-spin' : ''}`} />
-          </button>
-        </div>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Công cụ sản phẩm</p>
         <div className="space-y-1.5">
-          {runList.slice(0, 6).map((run) => {
-            const isSuccess = run.status === 'COMPLETED' || run.status === 'success';
-            const isFailed = run.status === 'FAILED';
-            const time = run.startedAt ? new Date(run.startedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
-            return (
-              <div key={run.id} className="flex items-center space-x-2 p-2 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[12px]">
-                <div className={`p-1 rounded-lg flex-shrink-0 ${isSuccess ? 'bg-emerald-100 dark:bg-emerald-500/20' : isFailed ? 'bg-rose-100 dark:bg-rose-500/20' : 'bg-amber-100 dark:bg-amber-500/20'}`}>
-                  {isSuccess ? <CheckCircle2 size={12} className="text-emerald-500" /> : isFailed ? <AlertCircle size={12} className="text-rose-500" /> : <Clock size={12} className="text-amber-500" />}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate">{run.runType?.replace(/_/g, ' ')}</p>
-                  <p className="text-[9px] text-slate-400">{time}</p>
-                </div>
-                {run.productsOptimized > 0 && <span className="text-[9px] font-semibold text-emerald-600">{run.productsOptimized}/{run.productsTotal}</span>}
-              </div>
-            );
-          })}
-          {runList.length === 0 && <p className="text-[11px] text-slate-400 text-center py-2">Chưa có hoạt động</p>}
+          <ActionBtn icon={Zap} label="Tối ưu hàng loạt" color="indigo" onClick={() => handleQuickAction('optimize', 'Tối ưu sản phẩm')} />
+          <ActionBtn icon={RefreshCw} label="Đồng bộ từ Shopify" color="blue" onClick={() => handleQuickAction('sync', 'Đồng bộ cửa hàng')} />
+          <ActionBtn icon={Filter} label="Lọc sản phẩm" color="purple" onClick={() => addToast('Tính năng lọc đang phát triển', 'info')} />
         </div>
       </div>
+      <TaskSection />
+      <div>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Thống kê</p>
+        <div className="space-y-2 p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[14px] border border-white/[0.1] dark:border-white/[0.04]">
+          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Tổng SP</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{storeList[0]?.productCount || 0}</span></div>
+          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Đồng bộ lần cuối</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastSync}</span></div>
+          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Tối ưu lần cuối</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastOptimize}</span></div>
+        </div>
+      </div>
+      <ActivitySection />
+    </div>
+  );
+
+  if (activeTab === 'ads') return (
+    <div className="space-y-5">
+      <div>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Tạo chiến dịch</p>
+        <div className="space-y-1.5">
+          <ActionBtn icon={Eye} label="Meta Ads" color="blue" onClick={() => addToast('Chạy /ads-content-creator trong Claude Code', 'info')} />
+          <ActionBtn icon={Globe} label="Google Ads" color="emerald" onClick={() => addToast('Chạy /ads-content-creator trong Claude Code', 'info')} />
+          <ActionBtn icon={Video} label="TikTok Ads" color="rose" onClick={() => addToast('Chạy /ads-content-creator trong Claude Code', 'info')} />
+        </div>
+      </div>
+      <TaskSection />
+    </div>
+  );
+
+  if (activeTab === 'social') return (
+    <div className="space-y-5">
+      <div>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Tạo nội dung</p>
+        <div className="space-y-1.5">
+          <ActionBtn icon={FileText} label="Bài đăng mới" color="indigo" onClick={() => addToast('Chạy /social-content-creator trong Claude Code', 'info')} />
+          <ActionBtn icon={Image} label="Tạo prompt hình" color="purple" onClick={() => addToast('Chạy /social-content-creator trong Claude Code', 'info')} />
+          <ActionBtn icon={Video} label="Ý tưởng video" color="rose" onClick={() => addToast('Chạy /social-content-creator trong Claude Code', 'info')} />
+        </div>
+      </div>
+      <TaskSection />
+    </div>
+  );
+
+  if (activeTab === 'winning-products') return (
+    <div className="space-y-5">
+      <div>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Công cụ nghiên cứu</p>
+        <div className="space-y-1.5">
+          <ActionBtn icon={TrendingUp} label="Quét Trend" color="emerald" onClick={() => addToast('Chạy /winning-product-hunter trong Claude Code', 'info')} />
+          <ActionBtn icon={Eye} label="Spy Ads đối thủ" color="blue" onClick={() => addToast('Chạy /winning-product-hunter trong Claude Code', 'info')} />
+          <ActionBtn icon={ShoppingBag} label="Chấm điểm SP" color="amber" onClick={() => addToast('Chạy /winning-product-hunter trong Claude Code', 'info')} />
+        </div>
+      </div>
+      <TaskSection />
+    </div>
+  );
+
+  if (activeTab === 'intelligence') return (
+    <div className="space-y-5">
+      <div>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Hành động</p>
+        <div className="space-y-1.5">
+          <ActionBtn icon={Target} label="Crawl đối thủ" color="rose" onClick={() => addToast('Chạy /shopify-pipeline trong Claude Code', 'info')} />
+          <ActionBtn icon={Lightbulb} label="Phân tích thị trường" color="amber" onClick={() => addToast('Chạy /winning-product-hunter trong Claude Code', 'info')} />
+          <ActionBtn icon={RefreshCw} label="Cập nhật insights" color="blue" onClick={() => addToast('Chạy /shopify-pipeline trong Claude Code', 'info')} />
+        </div>
+      </div>
+      <TaskSection />
+      <ActivitySection />
+    </div>
+  );
+
+  if (activeTab === 'stores-manage') return (
+    <div className="space-y-5">
+      <div>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Quản lý</p>
+        <div className="space-y-1.5">
+          <ActionBtn icon={Plus} label="Thêm Niche mới" color="purple" onClick={() => addToast('Bấm "Thêm Niche" ở cột giữa', 'info')} />
+          <ActionBtn icon={Plus} label="Thêm Store mới" color="indigo" onClick={() => addToast('Bấm "Thêm Store" ở cột giữa', 'info')} />
+          <ActionBtn icon={RefreshCw} label="Đồng bộ tất cả" color="blue" onClick={() => handleQuickAction('sync', 'Đồng bộ cửa hàng')} />
+        </div>
+      </div>
+      <TaskSection />
+      <div>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Tổng quan</p>
+        <div className="space-y-2 p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[14px] border border-white/[0.1] dark:border-white/[0.04]">
+          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Niches</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{nicheList.length}</span></div>
+          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Stores</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{storeList.length}</span></div>
+          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Tổng SP</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{storeList.reduce((s,st) => s + (st.productCount||0), 0)}</span></div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Default: themes or any other tab
+  return (
+    <div className="space-y-5">
+      <div>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Thao tác nhanh</p>
+        <div className="space-y-1.5">
+          <ActionBtn icon={Package} label="Tối ưu sản phẩm" color="indigo" onClick={() => handleQuickAction('optimize', 'Tối ưu sản phẩm')} />
+          <ActionBtn icon={RefreshCw} label="Đồng bộ cửa hàng" color="blue" onClick={() => handleQuickAction('sync', 'Đồng bộ cửa hàng')} />
+        </div>
+      </div>
+      <TaskSection />
+      <ActivitySection />
     </div>
   );
 };
@@ -1282,7 +1397,7 @@ export default function App() {
         {/* Col 3: Right Panel - STICKY (lg+ only) */}
         <div className="hidden lg:flex my-6 mr-6 flex-col w-72 xl:w-80">
           <GlassCard className="h-full flex flex-col !p-5 shadow-2xl overflow-y-auto hide-scrollbar">
-            <RightPanel tasks={tasks} runs={runs} stores={stores} handleQuickAction={handleQuickAction} addToast={addToast} />
+            <RightPanel activeTab={activeTab} tasks={tasks} runs={runs} stores={stores} niches={niches} handleQuickAction={handleQuickAction} addToast={addToast} />
           </GlassCard>
         </div>
       </div>
