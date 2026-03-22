@@ -998,14 +998,14 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Setup Store mới</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Thiết lập hệ thống Shopify đầy đủ cho store mới</p>
+        <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Xây dựng và xuất bản store Shopify hoàn chỉnh, sẵn sàng bán hàng</p>
       </div>
 
       {/* Pipeline Form */}
       {(
         <GlassCard>
           <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Xây dựng Store Shopify hoàn chỉnh</h2>
-          <p className="text-xs text-slate-500 mb-4">Thiết lập hệ thống Shopify đầy đủ: phân tích đối thủ, kết nối store Shopify của bạn, đồng bộ sản phẩm qua API, tối ưu SEO toàn bộ. Phù hợp khi bạn đã có store Shopify và muốn hoàn thiện hệ thống.</p>
+          <p className="text-xs text-slate-500 mb-4">Tự động xây dựng store Shopify hoàn chỉnh từ A-Z: phân tích đối thủ, đồng bộ sản phẩm, tối ưu SEO toàn bộ, sẵn sàng xuất bản và bán hàng ngay.</p>
           <div className="space-y-3">
             <div>
               <label className="text-[11px] font-semibold text-slate-500 mb-1 block">URL đối thủ (tùy chọn - để phân tích đối thủ)</label>
