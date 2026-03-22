@@ -424,23 +424,40 @@ const AdsView = ({ skillOutputs, addToast }) => {
         ))}
       </div>
 
-      <GlassCard>
-        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Quy trình</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { step: '1', title: 'Nghiên cứu', desc: 'Phân tích ads đối thủ' },
-            { step: '2', title: 'Tạo nội dung', desc: 'AI tạo prompt, copy, script' },
-            { step: '3', title: 'Xuất file', desc: 'Lưu vào ~/Documents/' },
-            { step: '4', title: 'Tự tiến hóa', desc: 'Học từ kết quả thực tế' },
-          ].map((s, i) => (
-            <div key={i} className="p-3 md:p-4 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/30 dark:border-white/5 text-center">
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-2 font-bold text-sm md:text-lg">{s.step}</div>
-              <p className="font-bold text-slate-700 dark:text-slate-200 text-xs md:text-sm">{s.title}</p>
-              <p className="text-[10px] md:text-xs text-slate-500 mt-0.5">{s.desc}</p>
-            </div>
-          ))}
+      {/* Nội dung chi tiết từ skill outputs */}
+      {outputs.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white">Nội dung đã tạo</h2>
+          {outputs.map((output) => {
+            let content = {};
+            let meta = {};
+            try { content = JSON.parse(output.content); } catch(e) { content = { raw: output.content }; }
+            try { meta = JSON.parse(output.metadata); } catch(e) { meta = {}; }
+            return (
+              <GlassCard key={output.id} className="!p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Badge type={output.outputType === 'META_AD' ? 'active' : output.outputType === 'GOOGLE_AD' ? 'success' : 'pending'} text={meta.platform || output.outputType} />
+                    <span className="text-xs text-slate-400">{meta.format || meta.campaign || ''}</span>
+                  </div>
+                  <span className="text-[10px] text-slate-400">{new Date(output.createdAt).toLocaleDateString('vi-VN')}</span>
+                </div>
+                <h3 className="font-bold text-sm text-slate-800 dark:text-white mb-2">{output.title}</h3>
+                {content.headline && <p className="text-sm text-indigo-600 dark:text-indigo-400 font-semibold mb-1">{content.headline}</p>}
+                {content.primaryText && <p className="text-xs text-slate-600 dark:text-slate-300 mb-2">{content.primaryText}</p>}
+                {content.headlines && <div className="mb-2">{content.headlines.map((h, i) => <p key={i} className="text-xs text-slate-700 dark:text-slate-200 font-medium">• {h}</p>)}</div>}
+                {content.descriptions && <div className="mb-2">{content.descriptions.map((d, i) => <p key={i} className="text-[11px] text-slate-500">{d}</p>)}</div>}
+                {content.hook && <p className="text-sm font-semibold text-rose-600 dark:text-rose-400 mb-1">{content.hook}</p>}
+                {content.script && <pre className="text-[11px] text-slate-500 bg-white/30 dark:bg-slate-800/30 p-2 rounded-xl mb-2 whitespace-pre-wrap">{content.script}</pre>}
+                {content.keywords && <div className="flex flex-wrap gap-1 mb-2">{content.keywords.map((k, i) => <span key={i} className="px-2 py-0.5 bg-indigo-100/80 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 text-[10px] rounded-full">{k}</span>)}</div>}
+                {content.hashtags && <div className="flex flex-wrap gap-1 mb-2">{content.hashtags.map((h, i) => <span key={i} className="px-2 py-0.5 bg-purple-100/80 dark:bg-purple-500/20 text-purple-600 dark:text-purple-300 text-[10px] rounded-full">{h}</span>)}</div>}
+                {content.targeting && <div className="mt-2 p-2 bg-blue-50/50 dark:bg-blue-500/10 rounded-xl"><p className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">Targeting: {content.targeting.age} | {content.targeting.interests?.join(', ')}</p></div>}
+                {(content.imagePrompt || content.videoPrompt) && <div className="mt-2 p-2 bg-amber-50/50 dark:bg-amber-500/10 rounded-xl"><p className="text-[10px] text-amber-700 dark:text-amber-300"><span className="font-semibold">Prompt:</span> {content.imagePrompt || content.videoPrompt}</p></div>}
+              </GlassCard>
+            );
+          })}
         </div>
-      </GlassCard>
+      )}
     </div>
   );
 };
@@ -478,6 +495,33 @@ const SocialView = ({ stores, skillOutputs }) => {
         ))}
       </div>
 
+      {/* Nội dung posts chi tiết */}
+      {outputs.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white">Bài đăng đã tạo</h2>
+          {outputs.map((output) => {
+            let content = {};
+            let meta = {};
+            try { content = JSON.parse(output.content); } catch(e) { content = { raw: output.content }; }
+            try { meta = JSON.parse(output.metadata); } catch(e) { meta = {}; }
+            return (
+              <GlassCard key={output.id} className="!p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Badge type={content.type === 'Educational' ? 'active' : content.type === 'Storytelling' ? 'pending' : 'success'} text={content.type || meta.contentType || 'Post'} />
+                    <Badge type="neutral" text={content.platform || meta.platform || ''} />
+                  </div>
+                  <span className="text-[10px] text-slate-400">{content.bestTime && `Best: ${content.bestTime}`}</span>
+                </div>
+                <h3 className="font-bold text-sm text-slate-800 dark:text-white mb-2">{output.title}</h3>
+                {content.caption && <pre className="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap bg-white/30 dark:bg-slate-800/30 p-3 rounded-xl mb-2 leading-relaxed">{content.caption}</pre>}
+                {content.imagePrompt && <div className="p-2 bg-amber-50/50 dark:bg-amber-500/10 rounded-xl"><p className="text-[10px] text-amber-700 dark:text-amber-300"><span className="font-semibold">Image Prompt:</span> {content.imagePrompt}</p></div>}
+              </GlassCard>
+            );
+          })}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
         <GlassCard>
           <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Loại nội dung</h2>
@@ -512,8 +556,9 @@ const SocialView = ({ stores, skillOutputs }) => {
   );
 };
 
-const WinningProductsView = ({ competitors, addToast }) => {
+const WinningProductsView = ({ competitors, skillOutputs, addToast }) => {
   const competitorList = competitors.data || fallbackCompetitors;
+  const outputs = skillOutputs?.data || [];
 
   const handleCrawl = async () => {
     addToast('Đang crawl đối thủ...', 'info');
@@ -558,13 +603,57 @@ const WinningProductsView = ({ competitors, addToast }) => {
         ))}
       </div>
 
-      <GlassCard>
-        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Báo cáo</h2>
-        <div className="p-3 bg-white/40 dark:bg-slate-800/40 rounded-2xl border border-white/30 dark:border-white/5 font-mono text-xs md:text-sm text-slate-600 dark:text-slate-300">
-          ~/Documents/winning-product-reports/
+      {/* Reports chi tiết */}
+      {outputs.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white">Báo cáo nghiên cứu</h2>
+          {outputs.map((output) => {
+            let content = {};
+            let meta = {};
+            try { content = JSON.parse(output.content); } catch(e) { content = { raw: output.content }; }
+            try { meta = JSON.parse(output.metadata); } catch(e) { meta = {}; }
+            return (
+              <GlassCard key={output.id} className="!p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <Badge type={meta.confidence > 0.9 ? 'failed' : 'pending'} text={meta.category || 'Report'} />
+                  <span className="text-[10px] text-slate-400">{meta.confidence && `Confidence: ${Math.round(meta.confidence * 100)}%`}</span>
+                </div>
+                <h3 className="font-bold text-sm text-slate-800 dark:text-white mb-3">{output.title}</h3>
+                {content.product && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                    <div className="p-2 bg-emerald-50/50 dark:bg-emerald-500/10 rounded-xl text-center"><p className="text-lg font-bold text-emerald-600">{content.score}</p><p className="text-[10px] text-slate-500">Score</p></div>
+                    <div className="p-2 bg-blue-50/50 dark:bg-blue-500/10 rounded-xl text-center"><p className="text-xs font-bold text-blue-600">{content.trend}</p><p className="text-[10px] text-slate-500">Trend</p></div>
+                    <div className="p-2 bg-amber-50/50 dark:bg-amber-500/10 rounded-xl text-center"><p className="text-xs font-bold text-amber-600">{content.marginPotential}</p><p className="text-[10px] text-slate-500">Margin</p></div>
+                    <div className="p-2 bg-purple-50/50 dark:bg-purple-500/10 rounded-xl text-center"><p className="text-xs font-bold text-purple-600">{content.sellingPrice}</p><p className="text-[10px] text-slate-500">Giá bán</p></div>
+                  </div>
+                )}
+                {content.whyWinning && <p className="text-xs text-slate-600 dark:text-slate-300 mb-2"><span className="font-semibold">Tại sao win:</span> {content.whyWinning}</p>}
+                {content.competitors && (
+                  <div className="space-y-2 mb-2">
+                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">Đối thủ phân tích:</p>
+                    {content.competitors.map((c, i) => (
+                      <div key={i} className="flex items-center justify-between p-2 bg-white/30 dark:bg-slate-800/30 rounded-xl">
+                        <div><p className="text-xs font-bold text-slate-700 dark:text-slate-200">{c.name}</p><p className="text-[10px] text-slate-500">{c.platform} | {c.adSpend}</p></div>
+                        <Badge type="neutral" text={`CTR ${c.ctr}`} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {content.insights && <div className="space-y-1 mb-2">{content.insights.map((ins, i) => <p key={i} className="text-[11px] text-slate-500">• {ins}</p>)}</div>}
+                {content.recommendation && <div className="p-2 bg-indigo-50/50 dark:bg-indigo-500/10 rounded-xl"><p className="text-[11px] text-indigo-600 dark:text-indigo-300"><span className="font-semibold">Khuyến nghị:</span> {content.recommendation}</p></div>}
+                {content.sources && <div className="mt-2 flex flex-wrap gap-1">{content.sources.map((s, i) => <span key={i} className="px-2 py-0.5 bg-slate-100/80 dark:bg-slate-700/50 text-[9px] text-slate-500 rounded-full">{s}</span>)}</div>}
+              </GlassCard>
+            );
+          })}
         </div>
-        <p className="text-xs text-slate-500 mt-2">Chạy <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[11px] font-mono">/winning-product-hunter</code> trong Claude Code.</p>
-      </GlassCard>
+      )}
+
+      {outputs.length === 0 && (
+        <GlassCard>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Báo cáo</h2>
+          <p className="text-xs text-slate-500">Chạy <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[11px] font-mono">/winning-product-hunter</code> trong Claude Code để tạo reports.</p>
+        </GlassCard>
+      )}
     </div>
   );
 };
@@ -694,6 +783,7 @@ export default function App() {
   const themes = useApi(() => api.getThemes(), []);
   const adsOutputs = useApi(() => api.getSkillOutputs('ads-content-creator'), []);
   const socialOutputs = useApi(() => api.getSkillOutputs('social-content-creator'), []);
+  const winningOutputs = useApi(() => api.getSkillOutputs('winning-product-hunter'), []);
 
   // Use fallback stores for sidebar
   const sidebarStores = stores.data || fallbackStores;
@@ -844,7 +934,7 @@ export default function App() {
             {activeTab === 'products' && <ProductsView products={products} addToast={addToast} />}
             {activeTab === 'ads' && <AdsView skillOutputs={adsOutputs} addToast={addToast} />}
             {activeTab === 'social' && <SocialView stores={stores} skillOutputs={socialOutputs} />}
-            {activeTab === 'winning-products' && <WinningProductsView competitors={competitors} addToast={addToast} />}
+            {activeTab === 'winning-products' && <WinningProductsView competitors={competitors} skillOutputs={winningOutputs} addToast={addToast} />}
             {activeTab === 'intelligence' && <IntelligenceView insights={insights} competitors={competitors} addToast={addToast} />}
             {activeTab === 'themes' && <ThemesView themes={themes} />}
           </div>
