@@ -925,7 +925,7 @@ const ThemesView = ({ themes }) => {
 const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
   const [running, setRunning] = useState(false);
   const [steps, setSteps] = useState([]);
-  const [fullForm, setFullForm] = useState({ url: '', repo: '', storeName: '', domain: '', niche: '' });
+  const [fullForm, setFullForm] = useState({ url: '', repo: '', storeName: '', domain: '', niche: '', accessToken: '' });
 
   const inputClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[14px] py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200 placeholder-slate-400";
 
@@ -936,8 +936,10 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
 
   const runFullPipeline = async () => {
     if (!fullForm.storeName || !fullForm.domain || !fullForm.niche) return addToast('Vui lòng điền đầy đủ thông tin (tên store, domain, niche)', 'error');
-    // Dùng chung token từ tài khoản Shopify chính
-    const autoTokenKey = 'SHOPIFY_ACCESS_TOKEN_HEARTTOSOUL';
+    // Nếu có nhập token riêng → dùng key mới, nếu không → dùng chung token truongnq.vie
+    const autoTokenKey = fullForm.accessToken
+      ? `SHOPIFY_ACCESS_TOKEN_${fullForm.storeName.toUpperCase().replace(/[^A-Z0-9]/g, '')}`
+      : 'SHOPIFY_ACCESS_TOKEN_HEARTTOSOUL';
 
     setRunning(true);
     const hasCrawl = !!fullForm.url;
@@ -1030,9 +1032,10 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
               <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Domain Shopify *</label>
               <input className={inputClass} placeholder="my-store.myshopify.com" value={fullForm.domain} onChange={e => setFullForm({...fullForm, domain: e.target.value})} disabled={running} />
             </div>
-            <div className="p-3 bg-emerald-500/[0.06] dark:bg-emerald-500/[0.08] rounded-[14px] border border-emerald-500/[0.15] dark:border-emerald-400/[0.1]">
-              <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center"><CheckCircle2 size={14} className="mr-1.5" /> Shopify API đã kết nối</p>
-              <p className="text-[10px] text-slate-500 mt-1">Store mới sẽ tự động sử dụng token từ tài khoản Shopify hiện tại.</p>
+            <div>
+              <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Shopify Access Token</label>
+              <input className={inputClass} type="password" placeholder="Bỏ trống nếu store tạo trên email truongnq.vie" value={fullForm.accessToken || ''} onChange={e => setFullForm({...fullForm, accessToken: e.target.value})} disabled={running} />
+              <p className="text-[9px] text-emerald-600 dark:text-emerald-400 mt-1">✓ Bỏ trống = tự động dùng token tài khoản truongnq.vie@gmail.com</p>
             </div>
             <GlassButton variant="primary" icon={Rocket} onClick={runFullPipeline} disabled={running}>
               {running ? 'Đang chạy...' : 'Bắt đầu Pipeline'}
