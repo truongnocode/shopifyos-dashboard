@@ -926,10 +926,11 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
   const selectClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[16px] py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200";
 
   const pipelineSkills = [
+    // === THU THẬP DỮ LIỆU ===
     {
-      id: 'crawl', icon: Eye, label: 'Crawl store đối thủ',
-      desc: 'Thu thập toàn bộ sản phẩm, variants, hình ảnh, giá từ store đối thủ - Export CSV 48 cột chuẩn Shopify',
-      color: 'blue',
+      id: 'crawl', icon: Eye, label: 'Crawl đối thủ',
+      desc: 'Thu thập SP, bộ sưu tập, giá từ store đối thủ',
+      color: 'blue', group: 'data',
       inputs: [{ key: 'url', label: 'URL đối thủ', placeholder: 'competitor.myshopify.com', type: 'text', required: true }],
       run: async (data) => {
         if (!data.url) throw new Error('Nhập URL đối thủ');
@@ -938,39 +939,14 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
       formatResult: (r) => {
         const cols = r.collections?.length || 0;
         const prods = r.productsCrawled || 0;
-        const dataType = prods > 0 && cols > 0 ? '🟢 Sản phẩm + Bộ sưu tập' : prods > 0 ? '🔵 Sản phẩm' : cols > 0 ? '🟡 Bộ sưu tập' : '⚪ Không có dữ liệu';
+        const dataType = prods > 0 && cols > 0 ? '🟢 SP + Bộ sưu tập' : prods > 0 ? '🔵 Sản phẩm' : cols > 0 ? '🟡 Bộ sưu tập' : '⚪ Không có';
         return { 'Loại dữ liệu': dataType, 'Sản phẩm': prods, 'Bộ sưu tập': cols, 'Session': r.sessionId || '' };
       }
     },
     {
-      id: 'research', icon: BrainCircuit, label: 'Nghiên cứu thị trường',
-      desc: 'Chạy /winning-product-hunter hoặc /shopify-pipeline trong Claude Code',
-      color: 'purple',
-      inputs: [{ key: 'keywords', label: 'Niche / Keywords (để tham khảo)', placeholder: 'vd: Jewelry, LED Art, Home Decor', type: 'text', required: true }],
-      run: async () => {
-        return { claudeCode: true, message: 'Mở Claude Code và chạy /winning-product-hunter hoặc /shopify-pipeline mode research. Kết quả sẽ tự động hiện trên dashboard.' };
-      },
-      formatResult: (r) => ({ 'Hướng dẫn': r.message })
-    },
-    {
-      id: 'create-store', icon: Store, label: 'Tạo Store',
-      desc: 'Tạo store mới trong hệ thống ShopifyOS',
-      color: 'blue',
-      inputs: [
-        { key: 'storeName', label: 'Tên store', placeholder: 'My New Store', type: 'text', required: true },
-        { key: 'domain', label: 'Domain Shopify', placeholder: 'my-store.myshopify.com', type: 'text', required: true },
-        { key: 'niche', label: 'Niche', placeholder: 'vd: Jewelry', type: 'text', required: true },
-      ],
-      run: async (data) => {
-        if (!data.storeName || !data.domain || !data.niche) throw new Error('Điền đầy đủ tên store, domain, niche');
-        return await api.createStore({ name: data.storeName, domain: data.domain, nicheName: data.niche, envTokenKey: 'SHOPIFY_ACCESS_TOKEN_HEARTTOSOUL' });
-      },
-      formatResult: (r) => ({ 'Store': r.name, 'Domain': r.domain, 'ID': r.id })
-    },
-    {
-      id: 'sync', icon: RefreshCw, label: 'Đồng bộ sản phẩm',
-      desc: 'Pull sản phẩm từ Shopify API vào hệ thống',
-      color: 'emerald',
+      id: 'sync', icon: RefreshCw, label: 'Đồng bộ SP',
+      desc: 'Pull SP từ Shopify API vào hệ thống',
+      color: 'emerald', group: 'data',
       inputs: [{ key: 'storeId', label: 'Chọn store', type: 'store-select', required: true }],
       run: async (data) => {
         if (!data.storeId) throw new Error('Chọn store trước');
@@ -978,10 +954,11 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
       },
       formatResult: (r) => ({ 'Sản phẩm đã đồng bộ': r.synced })
     },
+    // === TỐI ƯU ===
     {
       id: 'optimize', icon: Sparkles, label: 'Tối ưu SEO',
-      desc: 'AI tối ưu title, description, tags cho sản phẩm',
-      color: 'indigo',
+      desc: 'AI tối ưu title, description, tags',
+      color: 'indigo', group: 'optimize',
       inputs: [{ key: 'storeId', label: 'Chọn store', type: 'store-select', required: true }],
       run: async (data) => {
         if (!data.storeId) throw new Error('Chọn store trước');
@@ -998,9 +975,9 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
       formatResult: (r) => ({ 'Sản phẩm đã tối ưu': r.optimized })
     },
     {
-      id: 'import-crawled', icon: Package, label: 'Import SP đã crawl',
-      desc: 'Import sản phẩm từ đối thủ vào store của bạn',
-      color: 'amber',
+      id: 'import-crawled', icon: Package, label: 'Import SP',
+      desc: 'Import SP đã crawl vào store',
+      color: 'amber', group: 'optimize',
       inputs: [{ key: 'storeId', label: 'Chọn store', type: 'store-select', required: true }],
       run: async (data) => {
         if (!data.storeId) throw new Error('Chọn store trước');
@@ -1014,23 +991,39 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
       },
       formatResult: (r) => ({ 'Sản phẩm đã import': r.imported })
     },
+    // === THIẾT LẬP ===
+    {
+      id: 'create-store', icon: Store, label: 'Tạo Store',
+      desc: 'Tạo store mới trong hệ thống',
+      color: 'purple', group: 'setup',
+      inputs: [
+        { key: 'storeName', label: 'Tên store', placeholder: 'My New Store', type: 'text', required: true },
+        { key: 'domain', label: 'Domain Shopify', placeholder: 'my-store.myshopify.com', type: 'text', required: true },
+        { key: 'niche', label: 'Niche', placeholder: 'vd: Jewelry', type: 'text', required: true },
+      ],
+      run: async (data) => {
+        if (!data.storeName || !data.domain || !data.niche) throw new Error('Điền đầy đủ tên store, domain, niche');
+        return await api.createStore({ name: data.storeName, domain: data.domain, nicheName: data.niche, envTokenKey: 'SHOPIFY_ACCESS_TOKEN_HEARTTOSOUL' });
+      },
+      formatResult: (r) => ({ 'Store': r.name, 'Domain': r.domain, 'ID': r.id })
+    },
     {
       id: 'convert-theme', icon: Palette, label: 'Convert Theme',
-      desc: 'Chuyển React/HTML sang Shopify Liquid (Claude Code)',
-      color: 'rose',
+      desc: 'React/HTML → Shopify Liquid',
+      color: 'rose', group: 'setup',
       inputs: [{ key: 'repo', label: 'GitHub repo URL', placeholder: 'https://github.com/user/theme', type: 'text', required: true }],
       run: async () => {
-        return { claudeCode: true, message: 'Tác vụ này cần chạy qua Claude Code. Gõ /shopify-pipeline trong terminal.' };
+        return { claudeCode: true, message: 'Mở Claude Code và chạy /shopify-pipeline mode convert-theme.' };
       },
       formatResult: (r) => ({ 'Hướng dẫn': r.message })
     },
     {
       id: 'setup-store', icon: Settings, label: 'Setup Store',
-      desc: 'Tạo menus, collections, settings, pages (Claude Code)',
-      color: 'amber',
+      desc: 'Menus, collections, settings, pages',
+      color: 'emerald', group: 'setup',
       inputs: [{ key: 'storeId', label: 'Chọn store', type: 'store-select', required: true }],
       run: async () => {
-        return { claudeCode: true, message: 'Tác vụ này cần chạy qua Claude Code. Gõ /shopify-pipeline trong terminal.' };
+        return { claudeCode: true, message: 'Mở Claude Code và chạy /shopify-pipeline mode setup-store.' };
       },
       formatResult: (r) => ({ 'Hướng dẫn': r.message })
     },
@@ -1187,37 +1180,49 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
 
       {/* Custom Mode */}
       {pipeMode === 'custom' && (<>
-        {/* Skill Selector - always visible as horizontal pills */}
-        <div className="flex flex-wrap gap-1.5">
-          {pipelineSkills.map(skill => {
-            const Icon = skill.icon;
-            const isActive = selectedSkill?.id === skill.id;
+        {/* Skill Selector - grouped icon grid */}
+        <GlassCard className="!p-4">
+          {[
+            { label: 'Thu thập', group: 'data' },
+            { label: 'Tối ưu', group: 'optimize' },
+            { label: 'Thiết lập', group: 'setup' },
+          ].map(({ label, group }) => {
+            const skills = pipelineSkills.filter(s => s.group === group);
             return (
-              <button
-                key={skill.id}
-                onClick={() => { setSelectedSkill(skill); setSkillFormData({}); setSkillResult(null); setSteps([]); }}
-                disabled={running}
-                className={`flex items-center space-x-2 px-3.5 py-2 rounded-[14px] border transition-all text-xs font-semibold cursor-pointer ${
-                  isActive
-                    ? `${colorMap[skill.color].bg} ${colorMap[skill.color].text} border-current shadow-sm`
-                    : 'bg-white/[0.06] dark:bg-slate-800/[0.08] border-white/[0.08] dark:border-white/[0.04] text-slate-600 dark:text-slate-300 hover:bg-white/[0.14] dark:hover:bg-slate-700/[0.18]'
-                } ${running ? 'opacity-50 pointer-events-none' : 'active:scale-[0.97]'}`}
-              >
-                <Icon size={14} />
-                <span>{skill.label}</span>
-              </button>
+              <div key={group} className="mb-3 last:mb-0">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{label}</p>
+                <div className="flex flex-wrap gap-2">
+                  {skills.map(skill => {
+                    const Icon = skill.icon;
+                    const isActive = selectedSkill?.id === skill.id;
+                    return (
+                      <button
+                        key={skill.id}
+                        onClick={() => { setSelectedSkill(skill); setSkillFormData({}); setSkillResult(null); setSteps([]); }}
+                        disabled={running}
+                        className={`flex flex-col items-center justify-center w-[72px] h-[68px] rounded-[16px] border transition-all cursor-pointer group ${
+                          isActive
+                            ? `${colorMap[skill.color].bg} ${colorMap[skill.color].text} border-current shadow-md scale-[1.02]`
+                            : 'bg-white/[0.04] dark:bg-slate-800/[0.06] border-white/[0.06] dark:border-white/[0.03] text-slate-500 dark:text-slate-400 hover:bg-white/[0.12] dark:hover:bg-slate-700/[0.14] hover:scale-[1.02]'
+                        } ${running ? 'opacity-40 pointer-events-none' : 'active:scale-[0.96]'}`}
+                        title={skill.desc}
+                      >
+                        <Icon size={20} className={`mb-1 transition-transform ${isActive ? '' : 'group-hover:scale-110'}`} />
+                        <span className="text-[10px] font-semibold leading-tight text-center">{skill.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
-        </div>
+        </GlassCard>
 
         {/* No skill selected - show hint */}
         {!selectedSkill && (
-          <GlassCard>
-            <div className="text-center py-6">
-              <Sparkles size={32} className="mx-auto mb-3 text-slate-300 dark:text-slate-600" />
-              <p className="text-sm text-slate-500">Chọn một tác vụ phía trên để bắt đầu</p>
-            </div>
-          </GlassCard>
+          <div className="text-center py-4">
+            <p className="text-xs text-slate-400">Chọn một tác vụ phía trên để bắt đầu</p>
+          </div>
         )}
 
         {/* Skill Form (stays visible while running, inputs disabled) */}
