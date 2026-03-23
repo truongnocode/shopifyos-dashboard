@@ -48,4 +48,14 @@ export const api = {
   createStore: (data) => postJSON('/api/shopify/stores', data),
   deleteStore: (id) => fetch(`${API_BASE}/api/shopify/stores?id=${id}`, { method: 'DELETE' }).then(r => r.json()),
   importCrawled: (storeId, sessionId) => postJSON('/api/shopify', { action: 'import-crawled', storeId, sessionId }),
+  exportCrawl: (sessionId, format = 'json') => fetchJSON(`/api/shopify/crawl-export?sessionId=${sessionId}&format=${format}`),
+  downloadCrawlCsv: async (sessionId) => {
+    const res = await fetch(`${API_BASE}/api/shopify/crawl-export?sessionId=${sessionId}&format=csv`);
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `crawl-${sessionId}.csv`;
+    a.click();
+  },
 };

@@ -950,7 +950,7 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
         const cols = r.collections?.length || 0;
         const prods = r.productsCrawled || 0;
         const dataType = prods > 0 && cols > 0 ? '🟢 Sản phẩm + Bộ sưu tập' : prods > 0 ? '🔵 Sản phẩm' : cols > 0 ? '🟡 Bộ sưu tập' : '⚪ Không có dữ liệu';
-        return { 'Loại dữ liệu': dataType, 'Sản phẩm': prods, 'Bộ sưu tập': cols };
+        return { 'Loại dữ liệu': dataType, 'Sản phẩm': prods, 'Bộ sưu tập': cols, 'Session': r.sessionId || '' };
       }
     },
     {
@@ -1322,10 +1322,26 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
                   <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Hoàn tất thành công</p>
                 </div>
               </div>
-              <button onClick={() => { const json = JSON.stringify(skillResult, null, 2); const blob = new Blob([json], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${selectedSkill?.id || 'result'}-${Date.now()}.json`; a.click(); }} className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[14px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 transition-all text-xs font-semibold cursor-pointer">
-                <FileText size={14} />
-                <span>Tải JSON</span>
-              </button>
+              <div className="flex items-center space-x-1.5">
+                {skillResult.sessionId && (
+                  <>
+                    <button onClick={() => api.downloadCrawlCsv(skillResult.sessionId).catch(e => addToast(`Lỗi: ${e.message}`, 'error'))} className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[14px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-all text-xs font-semibold cursor-pointer" title="Tải CSV tương thích Shopify Import">
+                      <FileText size={14} />
+                      <span>CSV (Shopify)</span>
+                    </button>
+                    <button onClick={() => api.exportCrawl(skillResult.sessionId).then(data => { const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `crawl-full-${skillResult.sessionId}.json`; a.click(); }).catch(e => addToast(`Lỗi: ${e.message}`, 'error'))} className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[14px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 transition-all text-xs font-semibold cursor-pointer" title="Tải JSON đầy đủ (title, mô tả, giá, hình ảnh, tags)">
+                      <FileText size={14} />
+                      <span>JSON (đầy đủ)</span>
+                    </button>
+                  </>
+                )}
+                {!skillResult.sessionId && (
+                  <button onClick={() => { const json = JSON.stringify(skillResult, null, 2); const blob = new Blob([json], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${selectedSkill?.id || 'result'}-${Date.now()}.json`; a.click(); }} className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[14px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 transition-all text-xs font-semibold cursor-pointer">
+                    <FileText size={14} />
+                    <span>Tải JSON</span>
+                  </button>
+                )}
+              </div>
             </div>
             {selectedSkill?.formatResult && (
               <div className="space-y-1.5 mb-3">
@@ -1391,10 +1407,26 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
                           <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{String(value)}</span>
                         </div>
                       ))}
-                      <button onClick={() => { const json = JSON.stringify(r.raw, null, 2); const blob = new Blob([json], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${r.skill.replace(/\s+/g, '-').toLowerCase()}-${r.id}.json`; a.click(); }} className="flex items-center space-x-1.5 text-[10px] font-semibold text-indigo-500 hover:text-indigo-600 transition-colors mt-1 cursor-pointer">
-                        <FileText size={12} />
-                        <span>Tải JSON</span>
-                      </button>
+                      <div className="flex items-center space-x-3 mt-1">
+                        {r.raw?.sessionId && (
+                          <>
+                            <button onClick={() => api.downloadCrawlCsv(r.raw.sessionId).catch(() => {})} className="flex items-center space-x-1 text-[10px] font-semibold text-emerald-500 hover:text-emerald-600 transition-colors cursor-pointer">
+                              <FileText size={12} />
+                              <span>CSV (Shopify)</span>
+                            </button>
+                            <button onClick={() => api.exportCrawl(r.raw.sessionId).then(data => { const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `crawl-full-${r.raw.sessionId}.json`; a.click(); }).catch(() => {})} className="flex items-center space-x-1 text-[10px] font-semibold text-indigo-500 hover:text-indigo-600 transition-colors cursor-pointer">
+                              <FileText size={12} />
+                              <span>JSON (đầy đủ)</span>
+                            </button>
+                          </>
+                        )}
+                        {!r.raw?.sessionId && (
+                          <button onClick={() => { const json = JSON.stringify(r.raw, null, 2); const blob = new Blob([json], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${r.skill.replace(/\s+/g, '-').toLowerCase()}-${r.id}.json`; a.click(); }} className="flex items-center space-x-1 text-[10px] font-semibold text-indigo-500 hover:text-indigo-600 transition-colors cursor-pointer">
+                            <FileText size={12} />
+                            <span>Tải JSON</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
