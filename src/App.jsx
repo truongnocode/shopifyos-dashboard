@@ -1174,16 +1174,20 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
 
       {/* Custom Mode */}
       {mode === 'custom' && (<>
-        {/* Skill Selector - 3-column grouped cards */}
-        <div className="grid grid-cols-3 gap-3">
+        {/* Skill Selector - premium 3-column grouped cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { label: 'Thu thập dữ liệu', group: 'data', emoji: '📥' },
-            { label: 'Tối ưu hóa', group: 'optimize', emoji: '✨' },
-            { label: 'Thiết lập store', group: 'setup', emoji: '🏗️' },
-          ].map(({ label, group, emoji }) => (
-            <div key={group} className="bg-white/[0.06] dark:bg-slate-800/[0.06] rounded-[18px] border border-white/[0.08] dark:border-white/[0.04] p-3">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">{emoji} {label}</p>
-              <div className="space-y-1">
+            { label: 'Thu thập', group: 'data', gradient: 'from-blue-500/20 to-cyan-500/20 dark:from-blue-500/10 dark:to-cyan-500/10', borderGlow: 'hover:border-blue-400/30 dark:hover:border-blue-500/20' },
+            { label: 'Tối ưu', group: 'optimize', gradient: 'from-violet-500/20 to-indigo-500/20 dark:from-violet-500/10 dark:to-indigo-500/10', borderGlow: 'hover:border-violet-400/30 dark:hover:border-violet-500/20' },
+            { label: 'Thiết lập', group: 'setup', gradient: 'from-emerald-500/20 to-teal-500/20 dark:from-emerald-500/10 dark:to-teal-500/10', borderGlow: 'hover:border-emerald-400/30 dark:hover:border-emerald-500/20' },
+          ].map(({ label, group, gradient, borderGlow }) => (
+            <div key={group} className={`relative overflow-hidden rounded-[20px] border border-white/[0.1] dark:border-white/[0.05] ${borderGlow} transition-all duration-300 backdrop-blur-[8px]`}>
+              {/* Gradient header */}
+              <div className={`bg-gradient-to-br ${gradient} px-4 py-3 border-b border-white/[0.08] dark:border-white/[0.04]`}>
+                <p className="text-[11px] font-bold text-slate-700 dark:text-slate-200 tracking-wide">{label}</p>
+              </div>
+              {/* Skill list */}
+              <div className="p-2 space-y-0.5 bg-white/[0.03] dark:bg-slate-900/[0.1]">
                 {pipelineSkills.filter(s => s.group === group).map(skill => {
                   const Icon = skill.icon;
                   const isActive = selectedSkill?.id === skill.id;
@@ -1192,19 +1196,24 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
                       key={skill.id}
                       onClick={() => { setSelectedSkill(skill); setSkillFormData({}); setSkillResult(null); setSteps([]); }}
                       disabled={running}
-                      className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-[14px] transition-all cursor-pointer text-left group ${
+                      className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-[14px] transition-all duration-200 cursor-pointer text-left group ${
                         isActive
-                          ? `${colorMap[skill.color].bg} ${colorMap[skill.color].text} shadow-sm`
-                          : 'hover:bg-white/[0.08] dark:hover:bg-slate-700/[0.12] text-slate-600 dark:text-slate-400'
-                      } ${running ? 'opacity-40 pointer-events-none' : 'active:scale-[0.98]'}`}
+                          ? `bg-white/[0.15] dark:bg-white/[0.08] ${colorMap[skill.color].text} shadow-[0_2px_12px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.2)]`
+                          : 'hover:bg-white/[0.08] dark:hover:bg-white/[0.04] text-slate-600 dark:text-slate-400 hover:translate-x-0.5'
+                      } ${running ? 'opacity-30 pointer-events-none' : 'active:scale-[0.98]'}`}
                     >
-                      <div className={`p-1.5 rounded-[10px] flex-shrink-0 ${isActive ? '' : `${colorMap[skill.color].bg} ${colorMap[skill.color].text}`}`}>
-                        <Icon size={14} />
+                      <div className={`p-2 rounded-[12px] flex-shrink-0 transition-all duration-200 ${
+                        isActive
+                          ? `${colorMap[skill.color].bg} shadow-[0_0_12px_rgba(99,102,241,0.15)]`
+                          : `${colorMap[skill.color].bg} group-hover:shadow-[0_0_8px_rgba(99,102,241,0.1)] group-hover:scale-110`
+                      }`}>
+                        <Icon size={16} strokeWidth={isActive ? 2.5 : 2} />
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold leading-tight">{skill.label}</p>
-                        <p className="text-[9px] text-slate-400 leading-tight truncate">{skill.desc}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className={`text-[12px] font-semibold leading-tight ${isActive ? '' : 'text-slate-700 dark:text-slate-300'}`}>{skill.label}</p>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-tight mt-0.5 truncate">{skill.desc}</p>
                       </div>
+                      {isActive && <div className="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0 animate-pulse" />}
                     </button>
                   );
                 })}
@@ -1215,8 +1224,8 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
 
         {/* No skill selected */}
         {!selectedSkill && !skillResult && (
-          <div className="text-center py-4 opacity-40">
-            <p className="text-xs text-slate-400">↑ Chọn một công cụ để bắt đầu</p>
+          <div className="text-center py-5">
+            <p className="text-xs text-slate-400/60">Chọn một công cụ phía trên để bắt đầu</p>
           </div>
         )}
 
