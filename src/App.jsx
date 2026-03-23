@@ -1242,26 +1242,33 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
           </GlassCard>
         )}
 
-        {/* Step 2: Skill Form */}
-        {selectedSkill && !skillResult && !running && (
+        {/* Step 2+3: Skill Form (stays visible while running, inputs disabled) */}
+        {selectedSkill && !skillResult && (
           <GlassCard>
-            <button
-              onClick={() => { setSelectedSkill(null); setSkillFormData({}); setSteps([]); }}
-              className="flex items-center space-x-1 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors mb-4 cursor-pointer"
-            >
-              <ChevronRight size={16} className="rotate-180" />
-              <span>Quay lại</span>
-            </button>
+            {!running && (
+              <button
+                onClick={() => { setSelectedSkill(null); setSkillFormData({}); setSteps([]); }}
+                className="flex items-center space-x-1 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors mb-4 cursor-pointer"
+              >
+                <ChevronRight size={16} className="rotate-180" />
+                <span>Quay lại</span>
+              </button>
+            )}
             <div className="flex items-center space-x-3 mb-4">
               <div className={`p-3 rounded-[16px] ${colorMap[selectedSkill.color].bg} ${colorMap[selectedSkill.color].text}`}>
-                <selectedSkill.icon size={22} />
+                {running ? <RefreshCw size={22} className="animate-spin" /> : <selectedSkill.icon size={22} />}
               </div>
               <div>
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">{selectedSkill.label}</h2>
-                <p className="text-xs text-slate-500">{selectedSkill.desc}</p>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white">{running ? `Đang chạy: ${selectedSkill.label}` : selectedSkill.label}</h2>
+                <p className="text-xs text-slate-500">{running ? 'Đang xử lý... theo dõi tiến trình ở cột phải' : selectedSkill.desc}</p>
               </div>
             </div>
-            <div className="space-y-3 mb-4">
+            {running && (
+              <div className="w-full h-1.5 bg-white/10 dark:bg-slate-800/20 rounded-full overflow-hidden mb-4">
+                <div className="h-full bg-indigo-500 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+              </div>
+            )}
+            <div className={`space-y-3 mb-4 ${running ? 'opacity-50 pointer-events-none' : ''}`}>
               {selectedSkill.inputs.map(inp => (
                 <div key={inp.key}>
                   <label className="text-[11px] font-semibold text-slate-500 mb-1 block">{inp.label} {inp.required && '*'}</label>
@@ -1270,6 +1277,7 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
                       className={selectClass}
                       value={skillFormData[inp.key] || ''}
                       onChange={e => setSkillFormData({ ...skillFormData, [inp.key]: e.target.value })}
+                      disabled={running}
                     >
                       <option value="">-- Chọn store --</option>
                       {(stores.data || []).map(s => (
@@ -1282,32 +1290,17 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
                       placeholder={inp.placeholder || ''}
                       value={skillFormData[inp.key] || ''}
                       onChange={e => setSkillFormData({ ...skillFormData, [inp.key]: e.target.value })}
+                      disabled={running}
                     />
                   )}
                 </div>
               ))}
             </div>
-            <GlassButton variant="primary" icon={Play} onClick={runSkill}>
-              Chạy {selectedSkill.label}
-            </GlassButton>
-          </GlassCard>
-        )}
-
-        {/* Step 3: Running state */}
-        {running && selectedSkill && (
-          <GlassCard>
-            <div className="flex items-center space-x-3 mb-3">
-              <div className={`p-2.5 rounded-[16px] ${colorMap[selectedSkill?.color || 'blue'].bg} ${colorMap[selectedSkill?.color || 'blue'].text}`}>
-                <RefreshCw size={18} className="animate-spin" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Đang chạy: {selectedSkill?.label}</h2>
-                <p className="text-xs text-slate-500">{steps[0]?.detail || 'Đang xử lý...'}</p>
-              </div>
-            </div>
-            <div className="w-full h-1.5 bg-white/10 dark:bg-slate-800/20 rounded-full overflow-hidden">
-              <div className="h-full bg-indigo-500 rounded-full animate-pulse" style={{ width: '60%' }}></div>
-            </div>
+            {!running && (
+              <GlassButton variant="primary" icon={Play} onClick={runSkill}>
+                Chạy {selectedSkill.label}
+              </GlassButton>
+            )}
           </GlassCard>
         )}
 
