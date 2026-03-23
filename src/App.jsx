@@ -918,8 +918,14 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
   const [selectedSkill, setSelectedSkill] = useState(null);
   const [skillFormData, setSkillFormData] = useState({});
   const [skillResult, setSkillResult] = useState(null);
-  const [resultHistory, setResultHistory] = useState([]);
+  const [resultHistory, setResultHistory] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('shopifyos-result-history') || '[]'); } catch { return []; }
+  });
   const [expandedResults, setExpandedResults] = useState({});
+
+  useEffect(() => {
+    try { localStorage.setItem('shopifyos-result-history', JSON.stringify(resultHistory)); } catch {}
+  }, [resultHistory]);
 
   const inputClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[16px] py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200 placeholder-slate-400";
   const selectClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[16px] py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200";
@@ -1039,7 +1045,7 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
       updateTask(taskId, { status: 'completed', detail: 'Hoàn tất', result: 'OK' });
       setSkillResult(result);
       const formatted = selectedSkill.formatResult ? selectedSkill.formatResult(result) : {};
-      setResultHistory(prev => [{ id: Date.now(), skill: selectedSkill.label, icon: selectedSkill.icon, color: selectedSkill.color, data: formatted, raw: result, time: new Date().toLocaleString('vi-VN') }, ...prev.slice(0, 19)]);
+      setResultHistory(prev => [{ id: Date.now(), skill: selectedSkill.label, skillId: selectedSkill.id, color: selectedSkill.color, data: formatted, raw: result, time: new Date().toLocaleString('vi-VN') }, ...prev.slice(0, 19)]);
       addToast(`${selectedSkill.label} hoàn tất!`, 'success');
       stores.refetch(); runs.refetch();
     } catch (e) {
@@ -1111,7 +1117,7 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
 
       updateTask(taskId, { status: 'completed', detail: 'Hoàn tất', result: `${totalOpt} SP tối ưu` });
       const pipelineResult = { store: store.name, synced: syncResult.synced, optimized: totalOpt };
-      setResultHistory(prev => [{ id: Date.now(), skill: 'Full Pipeline', icon: Rocket, color: 'purple', data: { 'Store': store.name, 'Đồng bộ': `${syncResult.synced} SP`, 'Tối ưu': `${totalOpt} SP` }, raw: pipelineResult, time: new Date().toLocaleString('vi-VN') }, ...prev.slice(0, 19)]);
+      setResultHistory(prev => [{ id: Date.now(), skill: 'Full Pipeline', skillId: 'full-pipeline', color: 'purple', data: { 'Store': store.name, 'Đồng bộ': `${syncResult.synced} SP`, 'Tối ưu': `${totalOpt} SP` }, raw: pipelineResult, time: new Date().toLocaleString('vi-VN') }, ...prev.slice(0, 19)]);
       addToast('Pipeline hoàn tất!', 'success');
       stores.refetch(); runs.refetch();
     } catch (e) {
@@ -1355,7 +1361,8 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
         ) : (
         <div className="space-y-1.5">
             {resultHistory.map((r) => {
-              const Icon = r.icon;
+              const skillDef = pipelineSkills.find(s => s.id === r.skillId);
+              const Icon = skillDef?.icon || Activity;
               const isExpanded = expandedResults[r.id];
               return (
                 <div key={r.id} className="bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[16px] border border-white/[0.08] dark:border-white/[0.04] overflow-hidden">
