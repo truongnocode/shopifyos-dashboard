@@ -2,6 +2,11 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Scale up all font sizes globally */
+html {
+  font-size: 17px;
+}
+
 @layer utilities {
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
