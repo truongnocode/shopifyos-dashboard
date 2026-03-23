@@ -938,8 +938,8 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
 
   const pipelineSkills = [
     {
-      id: 'crawl', icon: Eye, label: 'Phân tích đối thủ',
-      desc: 'Crawl sản phẩm, bộ sưu tập, giá từ store đối thủ',
+      id: 'crawl', icon: Eye, label: 'Crawl store đối thủ',
+      desc: 'Thu thập toàn bộ sản phẩm, variants, hình ảnh, giá từ store đối thủ - Export CSV 48 cột chuẩn Shopify',
       color: 'blue',
       inputs: [{ key: 'url', label: 'URL đối thủ', placeholder: 'competitor.myshopify.com', type: 'text', required: true }],
       run: async (data) => {
@@ -1102,7 +1102,7 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
     setRunning(true);
     const hasCrawl = !!fullForm.url;
     const stepList = [];
-    if (hasCrawl) stepList.push({ title: 'Phân tích đối thủ', status: 'pending', detail: '' });
+    if (hasCrawl) stepList.push({ title: 'Crawl store đối thủ', status: 'pending', detail: '' });
     stepList.push({ title: 'Tạo store', status: 'pending', detail: '' });
     stepList.push({ title: 'Đồng bộ sản phẩm', status: 'pending', detail: '' });
     stepList.push({ title: 'Tối ưu SEO', status: 'pending', detail: '' });
@@ -1116,7 +1116,7 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
     try {
       if (hasCrawl) {
         updateStep(stepIdx, 'running', 'Đang phân tích trang web đối thủ...');
-        updateTask(taskId, { detail: 'Phân tích đối thủ...' });
+        updateTask(taskId, { detail: 'Crawl store đối thủ...' });
         const crawlResult = await api.crawlCompetitor(fullForm.url);
         updateStep(stepIdx, 'done', `${crawlResult.productsCrawled} SP, ${crawlResult.collections?.length || 0} bộ sưu tập`);
         stepIdx++;
