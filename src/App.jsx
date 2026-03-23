@@ -1187,46 +1187,42 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
 
       {/* Custom Mode */}
       {pipeMode === 'custom' && (<>
-        {/* Step 1: Skill Selector */}
-        {!selectedSkill && !skillResult && (
+        {/* Skill Selector - always visible as horizontal pills */}
+        <div className="flex flex-wrap gap-1.5">
+          {pipelineSkills.map(skill => {
+            const Icon = skill.icon;
+            const isActive = selectedSkill?.id === skill.id;
+            return (
+              <button
+                key={skill.id}
+                onClick={() => { setSelectedSkill(skill); setSkillFormData({}); setSkillResult(null); setSteps([]); }}
+                disabled={running}
+                className={`flex items-center space-x-2 px-3.5 py-2 rounded-[14px] border transition-all text-xs font-semibold cursor-pointer ${
+                  isActive
+                    ? `${colorMap[skill.color].bg} ${colorMap[skill.color].text} border-current shadow-sm`
+                    : 'bg-white/[0.06] dark:bg-slate-800/[0.08] border-white/[0.08] dark:border-white/[0.04] text-slate-600 dark:text-slate-300 hover:bg-white/[0.14] dark:hover:bg-slate-700/[0.18]'
+                } ${running ? 'opacity-50 pointer-events-none' : 'active:scale-[0.97]'}`}
+              >
+                <Icon size={14} />
+                <span>{skill.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* No skill selected - show hint */}
+        {!selectedSkill && (
           <GlassCard>
-            <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Chọn tác vụ</h2>
-            <p className="text-xs text-slate-500 mb-4">Chọn bước cần thực hiện. Mỗi bước hoạt động độc lập.</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              {pipelineSkills.map(skill => {
-                const Icon = skill.icon;
-                return (
-                  <button
-                    key={skill.id}
-                    onClick={() => { setSelectedSkill(skill); setSkillFormData({}); setSkillResult(null); setSteps([]); }}
-                    className="flex items-center space-x-3 p-3.5 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[18px] border border-white/[0.08] dark:border-white/[0.04] hover:bg-white/[0.14] dark:hover:bg-slate-700/[0.18] transition-all active:scale-[0.97] cursor-pointer text-left group"
-                  >
-                    <div className={`p-2.5 rounded-[16px] ${colorMap[skill.color].bg} ${colorMap[skill.color].text} flex-shrink-0 transition-transform group-hover:scale-110`}>
-                      <Icon size={18} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-slate-800 dark:text-white">{skill.label}</p>
-                      <p className="text-[10px] text-slate-500 leading-tight">{skill.desc}</p>
-                    </div>
-                  </button>
-                );
-              })}
+            <div className="text-center py-6">
+              <Sparkles size={32} className="mx-auto mb-3 text-slate-300 dark:text-slate-600" />
+              <p className="text-sm text-slate-500">Chọn một tác vụ phía trên để bắt đầu</p>
             </div>
           </GlassCard>
         )}
 
-        {/* Step 2+3: Skill Form (stays visible while running, inputs disabled) */}
+        {/* Skill Form (stays visible while running, inputs disabled) */}
         {selectedSkill && !skillResult && (
           <GlassCard>
-            {!running && (
-              <button
-                onClick={() => { setSelectedSkill(null); setSkillFormData({}); setSteps([]); }}
-                className="flex items-center space-x-1 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors mb-4 cursor-pointer"
-              >
-                <ChevronRight size={16} className="rotate-180" />
-                <span>Quay lại</span>
-              </button>
-            )}
             <div className="flex items-center space-x-3 mb-4">
               <div className={`p-3 rounded-[16px] ${colorMap[selectedSkill.color].bg} ${colorMap[selectedSkill.color].text}`}>
                 {running ? <RefreshCw size={22} className="animate-spin" /> : <selectedSkill.icon size={22} />}
@@ -1277,7 +1273,7 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
           </GlassCard>
         )}
 
-        {/* Step 4: Results - compact with actions */}
+        {/* Results */}
         {skillResult && (
           <GlassCard>
             <div className="flex items-center justify-between mb-3">
@@ -1297,13 +1293,13 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
                       <FileText size={14} />
                       <span>CSV (Shopify)</span>
                     </button>
-                    <button onClick={() => api.exportCrawl(skillResult.sessionId).then(data => { const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `crawl-full-${skillResult.sessionId}.json`; a.click(); }).catch(e => addToast(`Lỗi: ${e.message}`, 'error'))} className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[14px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 transition-all text-xs font-semibold cursor-pointer" title="Tải JSON đầy đủ (title, mô tả, giá, hình ảnh, tags)">
+                    <button onClick={() => api.exportCrawl(skillResult.sessionId).then(data => { const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `crawl-full-${skillResult.sessionId}.json`; a.click(); }).catch(e => addToast(`Lỗi: ${e.message}`, 'error'))} className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[14px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 transition-all text-xs font-semibold cursor-pointer" title="Tải JSON đầy đủ">
                       <FileText size={14} />
                       <span>JSON (đầy đủ)</span>
                     </button>
                   </>
                 )}
-                {!skillResult.sessionId && (
+                {!skillResult.sessionId && !skillResult.claudeCode && (
                   <button onClick={() => { const json = JSON.stringify(skillResult, null, 2); const blob = new Blob([json], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${selectedSkill?.id || 'result'}-${Date.now()}.json`; a.click(); }} className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[14px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 transition-all text-xs font-semibold cursor-pointer">
                     <FileText size={14} />
                     <span>Tải JSON</span>
@@ -1329,10 +1325,39 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
                 </p>
               </div>
             )}
-            <div className="flex items-center space-x-2">
-              <GlassButton variant="primary" icon={Rocket} onClick={() => { setSkillResult(null); setSelectedSkill(null); setSteps([]); setSkillFormData({}); }}>
-                Chạy tác vụ khác
-              </GlassButton>
+            {/* Suggestion: after crawl → optimize */}
+            {skillResult.sessionId && selectedSkill?.id === 'crawl' && (
+              <div className="p-3 bg-indigo-50/50 dark:bg-indigo-500/10 rounded-[14px] border border-indigo-200/30 dark:border-indigo-500/10 mb-3">
+                <p className="text-xs text-indigo-700 dark:text-indigo-300 font-medium mb-2">
+                  <Sparkles size={14} className="inline mr-1.5 -mt-0.5" />
+                  Bước tiếp theo: Tối ưu SEO cho dữ liệu vừa crawl
+                </p>
+                <div className="flex items-center space-x-2">
+                  <button onClick={() => { setSkillResult(null); const opt = pipelineSkills.find(s => s.id === 'optimize'); if (opt) { setSelectedSkill(opt); setSkillFormData({}); } }} className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[12px] bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-600 dark:text-indigo-400 transition-all text-[11px] font-semibold cursor-pointer">
+                    <Sparkles size={12} />
+                    <span>Tối ưu SEO</span>
+                  </button>
+                  <button onClick={() => { setSkillResult(null); const imp = pipelineSkills.find(s => s.id === 'import-crawled'); if (imp) { setSelectedSkill(imp); setSkillFormData({}); } }} className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[12px] bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 transition-all text-[11px] font-semibold cursor-pointer">
+                    <Package size={12} />
+                    <span>Import vào Store</span>
+                  </button>
+                </div>
+              </div>
+            )}
+            {/* Suggestion: after optimize → import */}
+            {selectedSkill?.id === 'optimize' && !skillResult.claudeCode && (
+              <div className="p-3 bg-emerald-50/50 dark:bg-emerald-500/10 rounded-[14px] border border-emerald-200/30 dark:border-emerald-500/10 mb-3">
+                <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium mb-2">
+                  <Sparkles size={14} className="inline mr-1.5 -mt-0.5" />
+                  Bước tiếp theo: Import sản phẩm đã tối ưu vào Store
+                </p>
+                <button onClick={() => { setSkillResult(null); const imp = pipelineSkills.find(s => s.id === 'import-crawled'); if (imp) { setSelectedSkill(imp); setSkillFormData({}); } }} className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[12px] bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 transition-all text-[11px] font-semibold cursor-pointer">
+                  <Package size={12} />
+                  <span>Import vào Store</span>
+                </button>
+              </div>
+            )}
+            <div className="flex items-center space-x-2 mt-3">
               <GlassButton variant="glass" icon={RefreshCw} onClick={() => { setSkillResult(null); setSteps([]); }}>
                 Chạy lại
               </GlassButton>
