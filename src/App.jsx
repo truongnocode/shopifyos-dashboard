@@ -1180,192 +1180,178 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
 
       {/* Custom Mode */}
       {pipeMode === 'custom' && (<>
-        {/* Skill Selector - grouped icon grid */}
-        <GlassCard className="!p-4">
-          {[
-            { label: 'Thu thập', group: 'data' },
-            { label: 'Tối ưu', group: 'optimize' },
-            { label: 'Thiết lập', group: 'setup' },
-          ].map(({ label, group }) => {
-            const skills = pipelineSkills.filter(s => s.group === group);
+        {/* Skill Selector - compact inline with group separators */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {pipelineSkills.map((skill, i) => {
+            const Icon = skill.icon;
+            const isActive = selectedSkill?.id === skill.id;
+            const prevGroup = i > 0 ? pipelineSkills[i - 1].group : null;
+            const showSep = prevGroup && prevGroup !== skill.group;
             return (
-              <div key={group} className="mb-3 last:mb-0">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{label}</p>
-                <div className="flex flex-wrap gap-2">
-                  {skills.map(skill => {
-                    const Icon = skill.icon;
-                    const isActive = selectedSkill?.id === skill.id;
-                    return (
-                      <button
-                        key={skill.id}
-                        onClick={() => { setSelectedSkill(skill); setSkillFormData({}); setSkillResult(null); setSteps([]); }}
-                        disabled={running}
-                        className={`flex flex-col items-center justify-center w-[72px] h-[68px] rounded-[16px] border transition-all cursor-pointer group ${
-                          isActive
-                            ? `${colorMap[skill.color].bg} ${colorMap[skill.color].text} border-current shadow-md scale-[1.02]`
-                            : 'bg-white/[0.04] dark:bg-slate-800/[0.06] border-white/[0.06] dark:border-white/[0.03] text-slate-500 dark:text-slate-400 hover:bg-white/[0.12] dark:hover:bg-slate-700/[0.14] hover:scale-[1.02]'
-                        } ${running ? 'opacity-40 pointer-events-none' : 'active:scale-[0.96]'}`}
-                        title={skill.desc}
-                      >
-                        <Icon size={20} className={`mb-1 transition-transform ${isActive ? '' : 'group-hover:scale-110'}`} />
-                        <span className="text-[10px] font-semibold leading-tight text-center">{skill.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              <React.Fragment key={skill.id}>
+                {showSep && <div className="w-px h-6 bg-slate-300/30 dark:bg-slate-600/30 mx-1" />}
+                <button
+                  onClick={() => { setSelectedSkill(skill); setSkillFormData({}); setSkillResult(null); setSteps([]); }}
+                  disabled={running}
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-[14px] border transition-all text-xs font-semibold cursor-pointer whitespace-nowrap ${
+                    isActive
+                      ? `${colorMap[skill.color].bg} ${colorMap[skill.color].text} border-current shadow-sm`
+                      : 'bg-white/[0.04] dark:bg-slate-800/[0.06] border-white/[0.06] dark:border-white/[0.03] text-slate-500 dark:text-slate-400 hover:bg-white/[0.12] dark:hover:bg-slate-700/[0.14]'
+                  } ${running ? 'opacity-40 pointer-events-none' : 'active:scale-[0.96]'}`}
+                  title={skill.desc}
+                >
+                  <Icon size={14} />
+                  <span>{skill.label}</span>
+                </button>
+              </React.Fragment>
             );
           })}
-        </GlassCard>
+        </div>
 
-        {/* No skill selected - show hint */}
-        {!selectedSkill && (
-          <div className="text-center py-4">
+        {/* No skill selected */}
+        {!selectedSkill && !skillResult && (
+          <div className="text-center py-6 opacity-50">
             <p className="text-xs text-slate-400">Chọn một tác vụ phía trên để bắt đầu</p>
           </div>
         )}
 
-        {/* Skill Form (stays visible while running, inputs disabled) */}
+        {/* Skill Form + Running state */}
         {selectedSkill && !skillResult && (
           <GlassCard>
-            <div className="flex items-center space-x-3 mb-4">
-              <div className={`p-3 rounded-[16px] ${colorMap[selectedSkill.color].bg} ${colorMap[selectedSkill.color].text}`}>
-                {running ? <RefreshCw size={22} className="animate-spin" /> : <selectedSkill.icon size={22} />}
+            <div className="flex items-center space-x-3 mb-3">
+              <div className={`p-2.5 rounded-[14px] ${colorMap[selectedSkill.color].bg} ${colorMap[selectedSkill.color].text}`}>
+                {running ? <RefreshCw size={18} className="animate-spin" /> : <selectedSkill.icon size={18} />}
               </div>
-              <div>
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">{running ? `Đang chạy: ${selectedSkill.label}` : selectedSkill.label}</h2>
-                <p className="text-xs text-slate-500">{running ? 'Đang xử lý... theo dõi tiến trình ở cột phải' : selectedSkill.desc}</p>
+              <div className="flex-1">
+                <h2 className="text-base font-bold text-slate-800 dark:text-white">{running ? `Đang chạy: ${selectedSkill.label}` : selectedSkill.label}</h2>
+                <p className="text-[11px] text-slate-500">{running ? 'Theo dõi tiến trình ở cột phải →' : selectedSkill.desc}</p>
               </div>
             </div>
             {running && (
-              <div className="w-full h-1.5 bg-white/10 dark:bg-slate-800/20 rounded-full overflow-hidden mb-4">
+              <div className="w-full h-1 bg-white/10 dark:bg-slate-800/20 rounded-full overflow-hidden mb-3">
                 <div className="h-full bg-indigo-500 rounded-full animate-pulse" style={{ width: '60%' }}></div>
               </div>
             )}
-            <div className={`space-y-3 mb-4 ${running ? 'opacity-50 pointer-events-none' : ''}`}>
+            <div className={`space-y-2.5 ${running ? 'opacity-40 pointer-events-none' : ''}`}>
               {selectedSkill.inputs.map(inp => (
                 <div key={inp.key}>
                   <label className="text-[11px] font-semibold text-slate-500 mb-1 block">{inp.label} {inp.required && '*'}</label>
                   {inp.type === 'store-select' ? (
-                    <select
-                      className={selectClass}
-                      value={skillFormData[inp.key] || ''}
-                      onChange={e => setSkillFormData({ ...skillFormData, [inp.key]: e.target.value })}
-                      disabled={running}
-                    >
+                    <select className={selectClass} value={skillFormData[inp.key] || ''} onChange={e => setSkillFormData({ ...skillFormData, [inp.key]: e.target.value })} disabled={running}>
                       <option value="">-- Chọn store --</option>
-                      {(stores.data || []).map(s => (
-                        <option key={s.id} value={s.id}>{s.name} ({s.domain})</option>
-                      ))}
+                      {(stores.data || []).map(s => (<option key={s.id} value={s.id}>{s.name} ({s.domain})</option>))}
                     </select>
                   ) : (
-                    <input
-                      className={inputClass}
-                      placeholder={inp.placeholder || ''}
-                      value={skillFormData[inp.key] || ''}
-                      onChange={e => setSkillFormData({ ...skillFormData, [inp.key]: e.target.value })}
-                      disabled={running}
-                    />
+                    <input className={inputClass} placeholder={inp.placeholder || ''} value={skillFormData[inp.key] || ''} onChange={e => setSkillFormData({ ...skillFormData, [inp.key]: e.target.value })} disabled={running} />
                   )}
                 </div>
               ))}
+              {!running && (
+                <GlassButton variant="primary" icon={Play} onClick={runSkill}>
+                  Chạy {selectedSkill.label}
+                </GlassButton>
+              )}
             </div>
-            {!running && (
-              <GlassButton variant="primary" icon={Play} onClick={runSkill}>
-                Chạy {selectedSkill.label}
-              </GlassButton>
-            )}
           </GlassCard>
         )}
 
-        {/* Results */}
-        {skillResult && (
+        {/* Results + form to run again */}
+        {skillResult && selectedSkill && (
           <GlassCard>
+            {/* Result header */}
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-3">
-                <div className="p-2.5 rounded-[16px] bg-emerald-100/60 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-                  <CheckCircle2 size={20} />
+              <div className="flex items-center space-x-2.5">
+                <div className="p-2 rounded-[12px] bg-emerald-100/60 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                  <CheckCircle2 size={16} />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-slate-800 dark:text-white">{selectedSkill?.label}</h2>
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Hoàn tất thành công</p>
+                  <p className="text-sm font-bold text-slate-800 dark:text-white">{selectedSkill.label}</p>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Hoàn tất</p>
                 </div>
               </div>
+              {/* Download buttons */}
               <div className="flex items-center space-x-1.5">
                 {skillResult.sessionId && (
                   <>
-                    <button onClick={() => api.downloadCrawlCsv(skillResult.sessionId).catch(e => addToast(`Lỗi: ${e.message}`, 'error'))} className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[14px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-all text-xs font-semibold cursor-pointer" title="Tải CSV tương thích Shopify Import">
-                      <FileText size={14} />
-                      <span>CSV (Shopify)</span>
+                    <button onClick={() => api.downloadCrawlCsv(skillResult.sessionId).catch(e => addToast(`Lỗi: ${e.message}`, 'error'))} className="flex items-center space-x-1 px-2.5 py-1 rounded-[12px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-all text-[11px] font-semibold cursor-pointer">
+                      <FileText size={12} />
+                      <span>CSV</span>
                     </button>
-                    <button onClick={() => api.exportCrawl(skillResult.sessionId).then(data => { const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `crawl-full-${skillResult.sessionId}.json`; a.click(); }).catch(e => addToast(`Lỗi: ${e.message}`, 'error'))} className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[14px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 transition-all text-xs font-semibold cursor-pointer" title="Tải JSON đầy đủ">
-                      <FileText size={14} />
-                      <span>JSON (đầy đủ)</span>
+                    <button onClick={() => api.exportCrawl(skillResult.sessionId).then(data => { const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `crawl-full-${skillResult.sessionId}.json`; a.click(); }).catch(e => addToast(`Lỗi: ${e.message}`, 'error'))} className="flex items-center space-x-1 px-2.5 py-1 rounded-[12px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 transition-all text-[11px] font-semibold cursor-pointer">
+                      <FileText size={12} />
+                      <span>JSON</span>
                     </button>
                   </>
                 )}
                 {!skillResult.sessionId && !skillResult.claudeCode && (
-                  <button onClick={() => { const json = JSON.stringify(skillResult, null, 2); const blob = new Blob([json], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${selectedSkill?.id || 'result'}-${Date.now()}.json`; a.click(); }} className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[14px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 transition-all text-xs font-semibold cursor-pointer">
-                    <FileText size={14} />
-                    <span>Tải JSON</span>
+                  <button onClick={() => { const json = JSON.stringify(skillResult, null, 2); const blob = new Blob([json], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${selectedSkill.id}-${Date.now()}.json`; a.click(); }} className="flex items-center space-x-1 px-2.5 py-1 rounded-[12px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 transition-all text-[11px] font-semibold cursor-pointer">
+                    <FileText size={12} />
+                    <span>JSON</span>
                   </button>
                 )}
               </div>
             </div>
-            {selectedSkill?.formatResult && (
-              <div className="space-y-1.5 mb-3">
+
+            {/* Result data */}
+            {selectedSkill.formatResult && (
+              <div className="space-y-1 mb-3">
                 {Object.entries(selectedSkill.formatResult(skillResult)).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between py-2 px-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px]">
-                    <span className="text-xs font-semibold text-slate-500">{key}</span>
-                    <span className="text-sm font-bold text-slate-800 dark:text-white">{String(value)}</span>
+                  <div key={key} className="flex items-center justify-between py-1.5 px-2.5 bg-white/[0.05] dark:bg-slate-800/[0.06] rounded-[12px]">
+                    <span className="text-[11px] font-semibold text-slate-500">{key}</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-white">{String(value)}</span>
                   </div>
                 ))}
               </div>
             )}
+
+            {/* Claude Code hint */}
             {skillResult.claudeCode && (
-              <div className="p-3 bg-amber-50/50 dark:bg-amber-500/10 rounded-[14px] border border-amber-200/30 dark:border-amber-500/10 mb-3">
-                <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
-                  <Lightbulb size={14} className="inline mr-1.5 -mt-0.5" />
+              <div className="p-2.5 bg-amber-50/50 dark:bg-amber-500/10 rounded-[12px] border border-amber-200/30 dark:border-amber-500/10 mb-3">
+                <p className="text-[11px] text-amber-700 dark:text-amber-300 font-medium">
+                  <Lightbulb size={12} className="inline mr-1 -mt-0.5" />
                   {skillResult.message}
                 </p>
               </div>
             )}
-            {/* Suggestion: after crawl → optimize */}
-            {skillResult.sessionId && selectedSkill?.id === 'crawl' && (
-              <div className="p-3 bg-indigo-50/50 dark:bg-indigo-500/10 rounded-[14px] border border-indigo-200/30 dark:border-indigo-500/10 mb-3">
-                <p className="text-xs text-indigo-700 dark:text-indigo-300 font-medium mb-2">
-                  <Sparkles size={14} className="inline mr-1.5 -mt-0.5" />
-                  Bước tiếp theo: Tối ưu SEO cho dữ liệu vừa crawl
-                </p>
-                <div className="flex items-center space-x-2">
-                  <button onClick={() => { setSkillResult(null); const opt = pipelineSkills.find(s => s.id === 'optimize'); if (opt) { setSelectedSkill(opt); setSkillFormData({}); } }} className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[12px] bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-600 dark:text-indigo-400 transition-all text-[11px] font-semibold cursor-pointer">
-                    <Sparkles size={12} />
-                    <span>Tối ưu SEO</span>
-                  </button>
-                  <button onClick={() => { setSkillResult(null); const imp = pipelineSkills.find(s => s.id === 'import-crawled'); if (imp) { setSelectedSkill(imp); setSkillFormData({}); } }} className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[12px] bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 transition-all text-[11px] font-semibold cursor-pointer">
-                    <Package size={12} />
-                    <span>Import vào Store</span>
-                  </button>
-                </div>
+
+            {/* Next step suggestions */}
+            {skillResult.sessionId && selectedSkill.id === 'crawl' && (
+              <div className="flex items-center space-x-2 mb-3 p-2.5 bg-indigo-50/40 dark:bg-indigo-500/8 rounded-[12px] border border-indigo-200/20 dark:border-indigo-500/10">
+                <Sparkles size={12} className="text-indigo-500 flex-shrink-0" />
+                <span className="text-[10px] text-indigo-600 dark:text-indigo-300 font-medium">Tiếp theo:</span>
+                <button onClick={() => { setSkillResult(null); const s = pipelineSkills.find(s => s.id === 'optimize'); if (s) { setSelectedSkill(s); setSkillFormData({}); } }} className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer">Tối ưu SEO</button>
+                <span className="text-[10px] text-slate-400">hoặc</span>
+                <button onClick={() => { setSkillResult(null); const s = pipelineSkills.find(s => s.id === 'import-crawled'); if (s) { setSelectedSkill(s); setSkillFormData({}); } }} className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer">Import SP</button>
               </div>
             )}
-            {/* Suggestion: after optimize → import */}
-            {selectedSkill?.id === 'optimize' && !skillResult.claudeCode && (
-              <div className="p-3 bg-emerald-50/50 dark:bg-emerald-500/10 rounded-[14px] border border-emerald-200/30 dark:border-emerald-500/10 mb-3">
-                <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium mb-2">
-                  <Sparkles size={14} className="inline mr-1.5 -mt-0.5" />
-                  Bước tiếp theo: Import sản phẩm đã tối ưu vào Store
-                </p>
-                <button onClick={() => { setSkillResult(null); const imp = pipelineSkills.find(s => s.id === 'import-crawled'); if (imp) { setSelectedSkill(imp); setSkillFormData({}); } }} className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[12px] bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 transition-all text-[11px] font-semibold cursor-pointer">
-                  <Package size={12} />
-                  <span>Import vào Store</span>
-                </button>
+            {selectedSkill.id === 'optimize' && !skillResult.claudeCode && (
+              <div className="flex items-center space-x-2 mb-3 p-2.5 bg-emerald-50/40 dark:bg-emerald-500/8 rounded-[12px] border border-emerald-200/20 dark:border-emerald-500/10">
+                <Sparkles size={12} className="text-emerald-500 flex-shrink-0" />
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-300 font-medium">Tiếp theo:</span>
+                <button onClick={() => { setSkillResult(null); const s = pipelineSkills.find(s => s.id === 'import-crawled'); if (s) { setSelectedSkill(s); setSkillFormData({}); } }} className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer">Import vào Store</button>
               </div>
             )}
-            <div className="flex items-center space-x-2 mt-3">
-              <GlassButton variant="glass" icon={RefreshCw} onClick={() => { setSkillResult(null); setSteps([]); }}>
-                Chạy lại
-              </GlassButton>
+
+            {/* Run again - inline form */}
+            <div className="pt-2.5 mt-2.5 border-t border-white/[0.06] dark:border-white/[0.03]">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Chạy lại</p>
+              <div className="space-y-2">
+                {selectedSkill.inputs.map(inp => (
+                  <div key={inp.key}>
+                    {inp.type === 'store-select' ? (
+                      <select className={selectClass} value={skillFormData[inp.key] || ''} onChange={e => setSkillFormData({ ...skillFormData, [inp.key]: e.target.value })}>
+                        <option value="">-- Chọn store --</option>
+                        {(stores.data || []).map(s => (<option key={s.id} value={s.id}>{s.name} ({s.domain})</option>))}
+                      </select>
+                    ) : (
+                      <input className={inputClass} placeholder={inp.placeholder || ''} value={skillFormData[inp.key] || ''} onChange={e => setSkillFormData({ ...skillFormData, [inp.key]: e.target.value })} />
+                    )}
+                  </div>
+                ))}
+                <GlassButton variant="glass" icon={RefreshCw} onClick={() => { setSkillResult(null); setSteps([]); }}>
+                  Chạy lại {selectedSkill.label}
+                </GlassButton>
+              </div>
             </div>
           </GlassCard>
         )}
