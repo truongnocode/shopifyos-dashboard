@@ -1174,38 +1174,49 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
 
       {/* Custom Mode */}
       {mode === 'custom' && (<>
-        {/* Skill Selector - compact inline with group separators */}
-        <div className="flex flex-wrap items-center gap-1.5">
-          {pipelineSkills.map((skill, i) => {
-            const Icon = skill.icon;
-            const isActive = selectedSkill?.id === skill.id;
-            const prevGroup = i > 0 ? pipelineSkills[i - 1].group : null;
-            const showSep = prevGroup && prevGroup !== skill.group;
-            return (
-              <React.Fragment key={skill.id}>
-                {showSep && <div className="w-px h-6 bg-slate-300/30 dark:bg-slate-600/30 mx-1" />}
-                <button
-                  onClick={() => { setSelectedSkill(skill); setSkillFormData({}); setSkillResult(null); setSteps([]); }}
-                  disabled={running}
-                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-[14px] border transition-all text-xs font-semibold cursor-pointer whitespace-nowrap ${
-                    isActive
-                      ? `${colorMap[skill.color].bg} ${colorMap[skill.color].text} border-current shadow-sm`
-                      : 'bg-white/[0.04] dark:bg-slate-800/[0.06] border-white/[0.06] dark:border-white/[0.03] text-slate-500 dark:text-slate-400 hover:bg-white/[0.12] dark:hover:bg-slate-700/[0.14]'
-                  } ${running ? 'opacity-40 pointer-events-none' : 'active:scale-[0.96]'}`}
-                  title={skill.desc}
-                >
-                  <Icon size={14} />
-                  <span>{skill.label}</span>
-                </button>
-              </React.Fragment>
-            );
-          })}
+        {/* Skill Selector - 3-column grouped cards */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: 'Thu thập dữ liệu', group: 'data', emoji: '📥' },
+            { label: 'Tối ưu hóa', group: 'optimize', emoji: '✨' },
+            { label: 'Thiết lập store', group: 'setup', emoji: '🏗️' },
+          ].map(({ label, group, emoji }) => (
+            <div key={group} className="bg-white/[0.06] dark:bg-slate-800/[0.06] rounded-[18px] border border-white/[0.08] dark:border-white/[0.04] p-3">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">{emoji} {label}</p>
+              <div className="space-y-1">
+                {pipelineSkills.filter(s => s.group === group).map(skill => {
+                  const Icon = skill.icon;
+                  const isActive = selectedSkill?.id === skill.id;
+                  return (
+                    <button
+                      key={skill.id}
+                      onClick={() => { setSelectedSkill(skill); setSkillFormData({}); setSkillResult(null); setSteps([]); }}
+                      disabled={running}
+                      className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-[14px] transition-all cursor-pointer text-left group ${
+                        isActive
+                          ? `${colorMap[skill.color].bg} ${colorMap[skill.color].text} shadow-sm`
+                          : 'hover:bg-white/[0.08] dark:hover:bg-slate-700/[0.12] text-slate-600 dark:text-slate-400'
+                      } ${running ? 'opacity-40 pointer-events-none' : 'active:scale-[0.98]'}`}
+                    >
+                      <div className={`p-1.5 rounded-[10px] flex-shrink-0 ${isActive ? '' : `${colorMap[skill.color].bg} ${colorMap[skill.color].text}`}`}>
+                        <Icon size={14} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold leading-tight">{skill.label}</p>
+                        <p className="text-[9px] text-slate-400 leading-tight truncate">{skill.desc}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* No skill selected */}
         {!selectedSkill && !skillResult && (
-          <div className="text-center py-6 opacity-50">
-            <p className="text-xs text-slate-400">Chọn một tác vụ phía trên để bắt đầu</p>
+          <div className="text-center py-4 opacity-40">
+            <p className="text-xs text-slate-400">↑ Chọn một công cụ để bắt đầu</p>
           </div>
         )}
 
