@@ -946,7 +946,12 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
         if (!data.url) throw new Error('Nhập URL đối thủ');
         return await api.crawlCompetitor(data.url);
       },
-      formatResult: (r) => ({ 'Sản phẩm crawl được': r.productsCrawled, 'Bộ sưu tập': r.collections?.length || 0, 'Collections': r.collections?.join(', ') || 'N/A' })
+      formatResult: (r) => {
+        const cols = r.collections?.length || 0;
+        const prods = r.productsCrawled || 0;
+        const dataType = prods > 0 && cols > 0 ? '🟢 Sản phẩm + Bộ sưu tập' : prods > 0 ? '🔵 Sản phẩm' : cols > 0 ? '🟡 Bộ sưu tập' : '⚪ Không có dữ liệu';
+        return { 'Loại dữ liệu': dataType, 'Sản phẩm': prods, 'Bộ sưu tập': cols };
+      }
     },
     {
       id: 'research', icon: BrainCircuit, label: 'Nghiên cứu thị trường',
@@ -1317,11 +1322,10 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
                   <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Hoàn tất thành công</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-1.5">
-                <button onClick={() => { const json = JSON.stringify(skillResult, null, 2); const blob = new Blob([json], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${selectedSkill?.id || 'result'}-${Date.now()}.json`; a.click(); }} className="p-2 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] hover:bg-white/[0.15] dark:hover:bg-slate-700/[0.2] transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" title="Tải JSON">
-                  <FileText size={16} />
-                </button>
-              </div>
+              <button onClick={() => { const json = JSON.stringify(skillResult, null, 2); const blob = new Blob([json], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${selectedSkill?.id || 'result'}-${Date.now()}.json`; a.click(); }} className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[14px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 transition-all text-xs font-semibold cursor-pointer">
+                <FileText size={14} />
+                <span>Tải JSON</span>
+              </button>
             </div>
             {selectedSkill?.formatResult && (
               <div className="space-y-1.5 mb-3">
@@ -1353,13 +1357,15 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
         )}
       </>)}
 
-      {/* Result History - collapsible */}
-      {resultHistory.length > 0 && (
-        <GlassCard>
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3 flex items-center">
-            <Activity size={18} className="mr-2 text-indigo-500" /> Lịch sử kết quả
-          </h2>
-          <div className="space-y-1.5">
+      {/* Result History - always visible */}
+      <GlassCard>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3 flex items-center">
+          <Activity size={18} className="mr-2 text-indigo-500" /> Lịch sử kết quả
+        </h2>
+        {resultHistory.length === 0 ? (
+          <p className="text-xs text-slate-400 text-center py-4">Chưa có kết quả nào. Chạy một tác vụ để bắt đầu.</p>
+        ) : (
+        <div className="space-y-1.5">
             {resultHistory.map((r) => {
               const Icon = r.icon;
               const isExpanded = expandedResults[r.id];
@@ -1395,8 +1401,8 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
               );
             })}
           </div>
-        </GlassCard>
-      )}
+        )}
+      </GlassCard>
 
       {/* Pipeline Progress - only for auto mode running */}
       {pipeMode === 'auto' && steps.length > 0 && (
