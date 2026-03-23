@@ -1294,7 +1294,7 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
         )}
 
         {/* Step 3: Running state */}
-        {running && steps.length > 0 && (
+        {running && selectedSkill && (
           <GlassCard>
             <div className="flex items-center space-x-3 mb-3">
               <div className={`p-2.5 rounded-[16px] ${colorMap[selectedSkill?.color || 'blue'].bg} ${colorMap[selectedSkill?.color || 'blue'].text}`}>
