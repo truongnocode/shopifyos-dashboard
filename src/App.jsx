@@ -678,36 +678,25 @@ const WinningProductsView = ({ competitors, skillOutputs, insights, addToast }) 
   const outputs = skillOutputs?.data || [];
   const insightList = insights?.data || fallbackInsights;
 
-  const handleCrawl = async () => {
-    addToast('Đang crawl đối thủ...', 'info');
-    try {
-      await api.crawlCompetitor('', competitorList[0]?.id);
-      addToast('Crawl hoàn tất!', 'success');
-      competitors.refetch();
-    } catch (e) {
-      addToast(`Lỗi: ${e.message}`, 'error');
-    }
-  };
-
   return (
     <div className="space-y-6 md:space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Nghiên cứu sản phẩm</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Tìm SP tiềm năng, phân tích đối thủ, theo dõi thị trường</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Chạy /winning-product-hunter trong Claude Code để tìm SP tiềm năng</p>
         </div>
-        <button onClick={competitors.refetch} className="p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
+        <button onClick={() => { competitors.refetch(); skillOutputs?.refetch?.(); insights?.refetch?.(); }} className="p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all active:scale-95">
           <RefreshCw size={18} className={`text-slate-500 dark:text-slate-400 ${competitors.loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
         {[
-          { icon: TrendingUp, title: 'Quét Trend', desc: 'Phát hiện micro-trends từ TikTok, Amazon, Google', color: 'emerald' },
-          { icon: Eye, title: 'Spy Ads', desc: 'Phân tích ads đối thủ trên Meta, TikTok, Google', color: 'blue' },
-          { icon: ShoppingBag, title: 'Chấm điểm SP', desc: 'Score theo demand, cạnh tranh, biên lợi', color: 'amber' },
+          { icon: TrendingUp, title: 'Quét Trend', desc: 'Chạy /winning-product-hunter trong Claude Code', color: 'emerald', skill: '/winning-product-hunter' },
+          { icon: Eye, title: 'Spy Ads', desc: 'Chạy /winning-product-hunter trong Claude Code', color: 'blue', skill: '/winning-product-hunter' },
+          { icon: ShoppingBag, title: 'Chấm điểm SP', desc: 'Chạy /winning-product-hunter trong Claude Code', color: 'amber', skill: '/winning-product-hunter' },
         ].map((f, i) => (
-          <GlassCard key={i} hoverEffect className="cursor-pointer !p-5" onClick={handleCrawl}>
+          <GlassCard key={i} hoverEffect className="cursor-pointer !p-5" onClick={() => addToast(`Mở Claude Code và chạy ${f.skill}`, 'info')}>
             <div className="flex items-center space-x-3 md:block">
               <div className={`p-3 md:p-4 rounded-[18px] w-fit md:mb-4 ${colorMap[f.color].bg} ${colorMap[f.color].text}`}>
                 <f.icon size={22} />
@@ -955,15 +944,13 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
     },
     {
       id: 'research', icon: BrainCircuit, label: 'Nghiên cứu thị trường',
-      desc: 'Phân tích trends, keywords, buyer personas cho niche',
+      desc: 'Chạy /winning-product-hunter hoặc /shopify-pipeline trong Claude Code',
       color: 'purple',
-      inputs: [{ key: 'keywords', label: 'Niche / Keywords', placeholder: 'vd: Jewelry, LED Art, Home Decor', type: 'text', required: true }],
-      run: async (data) => {
-        if (!data.keywords) throw new Error('Nhập niche hoặc keywords');
-        const r = await api.createInsight({ category: 'TREND', title: `Market research: ${data.keywords}`, description: `Auto-generated market analysis for ${data.keywords}`, source: 'shopify-pipeline', relevance: 0.8 });
-        return { insight: r, message: 'Đã tạo insight thành công' };
+      inputs: [{ key: 'keywords', label: 'Niche / Keywords (để tham khảo)', placeholder: 'vd: Jewelry, LED Art, Home Decor', type: 'text', required: true }],
+      run: async () => {
+        return { claudeCode: true, message: 'Mở Claude Code và chạy /winning-product-hunter hoặc /shopify-pipeline mode research. Kết quả sẽ tự động hiện trên dashboard.' };
       },
-      formatResult: (r) => ({ 'Trạng thái': 'Insight đã tạo', 'Nội dung': r.insight?.title || r.message })
+      formatResult: (r) => ({ 'Hướng dẫn': r.message })
     },
     {
       id: 'create-store', icon: Store, label: 'Tạo Store',
@@ -1046,25 +1033,6 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
         return { claudeCode: true, message: 'Tác vụ này cần chạy qua Claude Code. Gõ /shopify-pipeline trong terminal.' };
       },
       formatResult: (r) => ({ 'Hướng dẫn': r.message })
-    },
-    {
-      id: 're-optimize', icon: BarChart3, label: 'Tái tối ưu',
-      desc: 'Optimize lại sản phẩm đã tối ưu trước đó',
-      color: 'purple',
-      inputs: [{ key: 'storeId', label: 'Chọn store', type: 'store-select', required: true }],
-      run: async (data) => {
-        if (!data.storeId) throw new Error('Chọn store trước');
-        let total = 0, more = true;
-        while (more) {
-          try {
-            const r = await api.optimizeStore(data.storeId);
-            total += r.optimized || 0;
-            if (!r.optimized || r.total === 0) more = false;
-          } catch { more = false; }
-        }
-        return { optimized: total };
-      },
-      formatResult: (r) => ({ 'Sản phẩm đã tái tối ưu': r.optimized })
     },
   ];
 
@@ -1734,7 +1702,6 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
         <div className="space-y-1.5">
           <ActionBtn icon={Zap} label="Tối ưu hàng loạt" color="indigo" onClick={() => handleQuickAction('optimize', 'Tối ưu sản phẩm')} />
           <ActionBtn icon={RefreshCw} label="Đồng bộ từ Shopify" color="blue" onClick={() => handleQuickAction('sync', 'Đồng bộ cửa hàng')} />
-          <ActionBtn icon={Filter} label="Lọc sản phẩm" color="purple" onClick={() => addToast('Tính năng lọc đang phát triển', 'info')} />
         </div>
       </div>
       <TaskSection />
@@ -1915,7 +1882,20 @@ export default function App() {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
   };
 
+  // Skills that need Claude Code terminal (not HTTP API)
+  const claudeCodeSkills = {
+    ads: '/ads-content-creator',
+    social: '/social-content-creator',
+    winning: '/winning-product-hunter',
+  };
+
   const handleQuickAction = async (action, label) => {
+    // Delegate to Claude Code for skills that don't have HTTP API
+    if (claudeCodeSkills[action]) {
+      addToast(`Mở Claude Code và chạy ${claudeCodeSkills[action]}`, 'info');
+      return;
+    }
+
     const taskId = addTask(label);
     addToast(`Đang chạy ${label}...`, 'info');
     try {
@@ -1930,7 +1910,8 @@ export default function App() {
         result = await api.syncStore(storeId);
         updateTask(taskId, { status: 'completed', detail: 'Hoàn tất', result: `${result.synced || 0} đã đồng bộ` });
       } else {
-        updateTask(taskId, { status: 'completed', detail: 'Đã kích hoạt', result: 'OK' });
+        updateTask(taskId, { status: 'failed', detail: 'Action không xác định' });
+        return;
       }
       addToast(`${label} hoàn tất!`, 'success');
       runs.refetch(); dashboard.refetch(); stores.refetch();
