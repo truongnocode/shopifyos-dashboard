@@ -922,14 +922,16 @@ const ThemesView = ({ themes }) => {
 };
 
 // --- PIPELINE VIEW ---
-const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
+const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, updateTask }) => {
   const [running, setRunning] = useState(false);
   const [steps, setSteps] = useState([]);
-  const [pipeMode, setPipeMode] = useState('auto'); // 'auto' or 'custom'
+  const [pipeMode, setPipeMode] = useState('auto');
   const [fullForm, setFullForm] = useState({ url: '', repo: '', storeName: '', domain: '', niche: '' });
   const [selectedSkill, setSelectedSkill] = useState(null);
   const [skillFormData, setSkillFormData] = useState({});
   const [skillResult, setSkillResult] = useState(null);
+  const [resultHistory, setResultHistory] = useState([]);
+  const [expandedResults, setExpandedResults] = useState({});
 
   const inputClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[16px] py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200 placeholder-slate-400";
   const selectClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[16px] py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200";
@@ -1065,15 +1067,18 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
     if (!selectedSkill) return;
     setRunning(true);
     setSkillResult(null);
-    setSteps([{ title: selectedSkill.label, status: 'running', detail: 'Đang xử lý...' }]);
+    const taskId = addTask(selectedSkill.label);
+    updateTask(taskId, { detail: 'Đang xử lý...' });
     try {
       const result = await selectedSkill.run(skillFormData);
-      setSteps([{ title: selectedSkill.label, status: 'done', detail: 'Hoàn tất' }]);
+      updateTask(taskId, { status: 'completed', detail: 'Hoàn tất', result: 'OK' });
       setSkillResult(result);
+      const formatted = selectedSkill.formatResult ? selectedSkill.formatResult(result) : {};
+      setResultHistory(prev => [{ id: Date.now(), skill: selectedSkill.label, icon: selectedSkill.icon, color: selectedSkill.color, data: formatted, raw: result, time: new Date().toLocaleString('vi-VN') }, ...prev.slice(0, 19)]);
       addToast(`${selectedSkill.label} hoàn tất!`, 'success');
       stores.refetch(); runs.refetch();
     } catch (e) {
-      setSteps([{ title: selectedSkill.label, status: 'failed', detail: e.message }]);
+      updateTask(taskId, { status: 'failed', detail: e.message });
       addToast(`Lỗi: ${e.message}`, 'error');
     } finally {
       setRunning(false);
@@ -1099,29 +1104,33 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
     setSteps(stepList);
     let stepIdx = 0;
 
+    // Add task to col 3 monitor
+    const taskId = addTask('Full Pipeline');
+    updateTask(taskId, { detail: 'Đang khởi chạy pipeline...' });
+
     try {
-      // Step: Crawl (optional)
       if (hasCrawl) {
         updateStep(stepIdx, 'running', 'Đang phân tích trang web đối thủ...');
+        updateTask(taskId, { detail: 'Phân tích đối thủ...' });
         const crawlResult = await api.crawlCompetitor(fullForm.url);
         updateStep(stepIdx, 'done', `${crawlResult.productsCrawled} SP, ${crawlResult.collections?.length || 0} bộ sưu tập`);
         stepIdx++;
       }
 
-      // Step: Create store
       updateStep(stepIdx, 'running', 'Đang tạo store trong hệ thống...');
+      updateTask(taskId, { detail: 'Tạo store...' });
       const store = await api.createStore({ name: fullForm.storeName, domain: fullForm.domain, nicheName: fullForm.niche, envTokenKey: autoTokenKey });
       updateStep(stepIdx, 'done', store.name);
       stepIdx++;
 
-      // Step: Sync from Shopify
       updateStep(stepIdx, 'running', 'Đang đồng bộ sản phẩm từ Shopify API...');
+      updateTask(taskId, { detail: 'Đồng bộ sản phẩm...' });
       const syncResult = await api.syncStore(store.id);
       updateStep(stepIdx, 'done', `${syncResult.synced} SP đã đồng bộ`);
       stepIdx++;
 
-      // Step: Optimize
       updateStep(stepIdx, 'running', 'Đang tối ưu SEO...');
+      updateTask(taskId, { detail: 'Tối ưu SEO...' });
       let totalOpt = 0;
       let more = true;
       while (more) {
@@ -1129,16 +1138,21 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
           const r = await api.optimizeStore(store.id);
           totalOpt += r.optimized || 0;
           if (!r.optimized || r.total === 0) more = false;
+          updateTask(taskId, { detail: `Đã tối ưu ${totalOpt} SP...` });
           updateStep(stepIdx, 'running', `Đã tối ưu ${totalOpt} SP...`);
         } catch { more = false; }
       }
       updateStep(stepIdx, 'done', `${totalOpt} SP đã tối ưu`);
 
+      updateTask(taskId, { status: 'completed', detail: 'Hoàn tất', result: `${totalOpt} SP tối ưu` });
+      const pipelineResult = { store: store.name, synced: syncResult.synced, optimized: totalOpt };
+      setResultHistory(prev => [{ id: Date.now(), skill: 'Full Pipeline', icon: Rocket, color: 'purple', data: { 'Store': store.name, 'Đồng bộ': `${syncResult.synced} SP`, 'Tối ưu': `${totalOpt} SP` }, raw: pipelineResult, time: new Date().toLocaleString('vi-VN') }, ...prev.slice(0, 19)]);
       addToast('Pipeline hoàn tất!', 'success');
       stores.refetch(); runs.refetch();
     } catch (e) {
       const failIdx = steps.findIndex(s => s.status === 'running');
       if (failIdx >= 0) updateStep(failIdx, 'failed', e.message);
+      updateTask(taskId, { status: 'failed', detail: e.message });
       addToast(`Lỗi: ${e.message}`, 'error');
     } finally {
       setRunning(false);
@@ -1297,22 +1311,29 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
           </GlassCard>
         )}
 
-        {/* Step 4: Results */}
+        {/* Step 4: Results - compact with actions */}
         {skillResult && (
           <GlassCard>
-            <div className="flex items-center space-x-3 mb-4">
-              <div className={`p-2.5 rounded-[16px] bg-emerald-100/60 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400`}>
-                <CheckCircle2 size={20} />
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-3">
+                <div className="p-2.5 rounded-[16px] bg-emerald-100/60 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                  <CheckCircle2 size={20} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-slate-800 dark:text-white">{selectedSkill?.label}</h2>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Hoàn tất thành công</p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Kết quả: {selectedSkill?.label}</h2>
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Hoàn tất thành công</p>
+              <div className="flex items-center space-x-1.5">
+                <button onClick={() => { const json = JSON.stringify(skillResult, null, 2); const blob = new Blob([json], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${selectedSkill?.id || 'result'}-${Date.now()}.json`; a.click(); }} className="p-2 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] hover:bg-white/[0.15] dark:hover:bg-slate-700/[0.2] transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" title="Tải JSON">
+                  <FileText size={16} />
+                </button>
               </div>
             </div>
             {selectedSkill?.formatResult && (
-              <div className="space-y-2 mb-4">
+              <div className="space-y-1.5 mb-3">
                 {Object.entries(selectedSkill.formatResult(skillResult)).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between p-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[16px] border border-white/[0.08] dark:border-white/[0.04]">
+                  <div key={key} className="flex items-center justify-between py-2 px-3 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px]">
                     <span className="text-xs font-semibold text-slate-500">{key}</span>
                     <span className="text-sm font-bold text-slate-800 dark:text-white">{String(value)}</span>
                   </div>
@@ -1320,7 +1341,7 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
               </div>
             )}
             {skillResult.claudeCode && (
-              <div className="p-3 bg-amber-50/50 dark:bg-amber-500/10 rounded-[16px] border border-amber-200/30 dark:border-amber-500/10 mb-4">
+              <div className="p-3 bg-amber-50/50 dark:bg-amber-500/10 rounded-[14px] border border-amber-200/30 dark:border-amber-500/10 mb-3">
                 <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
                   <Lightbulb size={14} className="inline mr-1.5 -mt-0.5" />
                   {skillResult.message}
@@ -1339,11 +1360,56 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction }) => {
         )}
       </>)}
 
-      {/* Pipeline Progress */}
-      {steps.length > 0 && (
+      {/* Result History - collapsible */}
+      {resultHistory.length > 0 && (
+        <GlassCard>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-3 flex items-center">
+            <Activity size={18} className="mr-2 text-indigo-500" /> Lịch sử kết quả
+          </h2>
+          <div className="space-y-1.5">
+            {resultHistory.map((r) => {
+              const Icon = r.icon;
+              const isExpanded = expandedResults[r.id];
+              return (
+                <div key={r.id} className="bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[16px] border border-white/[0.08] dark:border-white/[0.04] overflow-hidden">
+                  <button onClick={() => setExpandedResults(prev => ({ ...prev, [r.id]: !prev[r.id] }))} className="w-full flex items-center justify-between p-3 hover:bg-white/[0.04] dark:hover:bg-slate-700/[0.06] transition-all cursor-pointer">
+                    <div className="flex items-center space-x-2.5 min-w-0">
+                      <div className={`p-1.5 rounded-[12px] ${colorMap[r.color]?.bg || 'bg-slate-100'} ${colorMap[r.color]?.text || 'text-slate-500'} flex-shrink-0`}>
+                        <Icon size={14} />
+                      </div>
+                      <div className="text-left min-w-0">
+                        <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{r.skill}</p>
+                        <p className="text-[10px] text-slate-400">{r.time}</p>
+                      </div>
+                    </div>
+                    <ChevronRight size={14} className={`text-slate-400 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
+                  </button>
+                  {isExpanded && (
+                    <div className="px-3 pb-3 space-y-1.5 border-t border-white/[0.06] dark:border-white/[0.03] pt-2">
+                      {Object.entries(r.data).map(([key, value]) => (
+                        <div key={key} className="flex justify-between py-1.5 px-2.5 bg-white/[0.04] dark:bg-slate-800/[0.06] rounded-[12px]">
+                          <span className="text-[10px] font-semibold text-slate-500">{key}</span>
+                          <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{String(value)}</span>
+                        </div>
+                      ))}
+                      <button onClick={() => { const json = JSON.stringify(r.raw, null, 2); const blob = new Blob([json], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${r.skill.replace(/\s+/g, '-').toLowerCase()}-${r.id}.json`; a.click(); }} className="flex items-center space-x-1.5 text-[10px] font-semibold text-indigo-500 hover:text-indigo-600 transition-colors mt-1 cursor-pointer">
+                        <FileText size={12} />
+                        <span>Tải JSON</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </GlassCard>
+      )}
+
+      {/* Pipeline Progress - only for auto mode running */}
+      {pipeMode === 'auto' && steps.length > 0 && (
         <GlassCard className="border-l-4 border-indigo-500 !rounded-l-none">
           <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center">
-            <Activity size={18} className="mr-2 text-indigo-500" /> Tiến trình
+            <Activity size={18} className="mr-2 text-indigo-500" /> Tiến trình Pipeline
           </h2>
           <div className="space-y-2">
             {steps.map((s, i) => (
@@ -1958,7 +2024,7 @@ export default function App() {
             {activeTab === 'ads' && <AdsView skillOutputs={adsOutputs} addToast={addToast} />}
             {activeTab === 'social' && <SocialView stores={stores} skillOutputs={socialOutputs} />}
             {activeTab === 'winning-products' && <WinningProductsView competitors={competitors} skillOutputs={winningOutputs} insights={insights} addToast={addToast} />}
-            {activeTab === 'pipeline' && <PipelineView stores={stores} runs={runs} addToast={addToast} handleQuickAction={handleQuickAction} />}
+            {activeTab === 'pipeline' && <PipelineView stores={stores} runs={runs} addToast={addToast} handleQuickAction={handleQuickAction} addTask={addTask} updateTask={updateTask} />}
             {activeTab === 'stores-manage' && <StoresManageView niches={niches} stores={stores} addToast={addToast} />}
           </div>
         </div>
