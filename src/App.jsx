@@ -911,10 +911,9 @@ const ThemesView = ({ themes }) => {
 };
 
 // --- PIPELINE VIEW ---
-const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, updateTask }) => {
+const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction, addTask, updateTask }) => {
   const [running, setRunning] = useState(false);
   const [steps, setSteps] = useState([]);
-  const [pipeMode, setPipeMode] = useState('auto');
   const [fullForm, setFullForm] = useState({ url: '', repo: '', storeName: '', domain: '', niche: '' });
   const [selectedSkill, setSelectedSkill] = useState(null);
   const [skillFormData, setSkillFormData] = useState({});
@@ -1126,25 +1125,14 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-5 animate-fade-in">
       <div>
-        <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Setup Store mới</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Xây dựng và xuất bản store Shopify hoàn chỉnh, sẵn sàng bán hàng</p>
-      </div>
-
-      {/* Segmented Control - Apple Style */}
-      <div className="relative inline-flex p-[3px] bg-slate-200/70 dark:bg-slate-700/40 backdrop-blur-[8px] rounded-[14px]">
-        <div className={`absolute top-[3px] bottom-[3px] rounded-[12px] bg-white dark:bg-slate-600/60 shadow-[0_1px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ease-out ${pipeMode === 'auto' ? 'left-[3px] w-[calc(50%-3px)]' : 'left-[50%] w-[calc(50%-3px)]'}`}></div>
-        <button onClick={() => setPipeMode('auto')} className={`relative z-10 px-6 py-2 rounded-[12px] text-sm font-semibold transition-colors duration-200 ${pipeMode === 'auto' ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
-          Tự động
-        </button>
-        <button onClick={() => setPipeMode('custom')} className={`relative z-10 px-6 py-2 rounded-[12px] text-sm font-semibold transition-colors duration-200 ${pipeMode === 'custom' ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
-          Tùy chỉnh
-        </button>
+        <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">{mode === 'auto' ? 'Setup tự động' : 'Công cụ'}</h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-base">{mode === 'auto' ? 'Xây dựng store Shopify hoàn chỉnh từ A-Z, sẵn sàng bán hàng' : 'Chạy từng bước riêng lẻ theo nhu cầu'}</p>
       </div>
 
       {/* Auto Mode */}
-      {pipeMode === 'auto' && (
+      {mode === 'auto' && (
         <GlassCard>
           <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Xây dựng Store Shopify hoàn chỉnh</h2>
           <p className="text-xs text-slate-500 mb-4">Tự động xây dựng store Shopify hoàn chỉnh từ A-Z: phân tích đối thủ, đồng bộ sản phẩm, tối ưu SEO toàn bộ, sẵn sàng xuất bản và bán hàng ngay.</p>
@@ -1179,7 +1167,7 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
       )}
 
       {/* Custom Mode */}
-      {pipeMode === 'custom' && (<>
+      {mode === 'custom' && (<>
         {/* Skill Selector - compact inline with group separators */}
         <div className="flex flex-wrap items-center gap-1.5">
           {pipelineSkills.map((skill, i) => {
@@ -1421,7 +1409,7 @@ const PipelineView = ({ stores, runs, addToast, handleQuickAction, addTask, upda
       </GlassCard>
 
       {/* Pipeline Progress - only for auto mode running */}
-      {pipeMode === 'auto' && steps.length > 0 && (
+      {mode === 'auto' && steps.length > 0 && (
         <GlassCard className="border-l-4 border-indigo-500 !rounded-l-none">
           <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center">
             <Activity size={18} className="mr-2 text-indigo-500" /> Tiến trình Pipeline
@@ -1775,7 +1763,7 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
     </div>
   );
 
-  if (activeTab === 'pipeline') return (
+  if (activeTab === 'pipeline-auto' || activeTab === 'pipeline-custom') return (
     <div className="space-y-5">
       <div>
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Pipeline</p>
@@ -1869,8 +1857,9 @@ export default function App() {
       { id: 'social', icon: Share2, label: 'Mạng xã hội' },
       { id: 'winning-products', icon: TrendingUp, label: 'Nghiên cứu SP' },
     ]},
-    { group: 'Quản lý', items: [
-      { id: 'pipeline', icon: Rocket, label: 'Setup Store mới' },
+    { group: 'Quản lý Store', items: [
+      { id: 'pipeline-auto', icon: Rocket, label: 'Setup tự động' },
+      { id: 'pipeline-custom', icon: Zap, label: 'Công cụ' },
       { id: 'stores-manage', icon: Settings, label: 'Niche & Store' },
     ]},
   ];
@@ -2052,7 +2041,8 @@ export default function App() {
             {activeTab === 'ads' && <AdsView skillOutputs={adsOutputs} addToast={addToast} />}
             {activeTab === 'social' && <SocialView stores={stores} skillOutputs={socialOutputs} />}
             {activeTab === 'winning-products' && <WinningProductsView competitors={competitors} skillOutputs={winningOutputs} insights={insights} addToast={addToast} />}
-            {activeTab === 'pipeline' && <PipelineView stores={stores} runs={runs} addToast={addToast} handleQuickAction={handleQuickAction} addTask={addTask} updateTask={updateTask} />}
+            {activeTab === 'pipeline-auto' && <PipelineView mode="auto" stores={stores} runs={runs} addToast={addToast} handleQuickAction={handleQuickAction} addTask={addTask} updateTask={updateTask} />}
+            {activeTab === 'pipeline-custom' && <PipelineView mode="custom" stores={stores} runs={runs} addToast={addToast} handleQuickAction={handleQuickAction} addTask={addTask} updateTask={updateTask} />}
             {activeTab === 'stores-manage' && <StoresManageView niches={niches} stores={stores} addToast={addToast} />}
           </div>
         </div>
