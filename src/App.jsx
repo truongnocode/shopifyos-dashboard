@@ -955,7 +955,15 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
       inputs: [{ key: 'storeId', label: 'Chọn store', type: 'store-select', required: true }],
       run: async (data) => {
         if (!data.storeId) throw new Error('Chọn store trước');
-        return await api.syncStore(data.storeId);
+        let total = 0, sinceId = undefined, hasMore = true;
+        while (hasMore) {
+          const r = await api.syncStore(data.storeId, sinceId);
+          total += r.synced || 0;
+          hasMore = r.hasMore;
+          sinceId = r.lastProductId;
+          if (!r.synced) break;
+        }
+        return { synced: total };
       },
       formatResult: (r) => ({ 'Sản phẩm đã đồng bộ': r.synced })
     },

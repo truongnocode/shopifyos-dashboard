@@ -37,7 +37,7 @@ export const api = {
   getCompetitors: () => fetchJSON('/api/shopify/competitors'),
   getThemes: () => fetchJSON('/api/shopify/themes'),
   getSkillOutputs: (skill) => fetchJSON(`/api/shopify/skill-outputs${skill ? `?skill=${skill}` : ''}`),
-  syncStore: (storeId) => postJSON('/api/shopify', { action: 'sync', storeId }),
+  syncStore: (storeId, sinceId) => postJSON('/api/shopify', { action: 'sync', storeId, sinceId, limit: 50 }),
   crawlCompetitor: (url, storeId) => postJSON('/api/shopify', { action: 'crawl', url, storeId }),
   optimizeStore: (storeId) => postJSON('/api/shopify', { action: 'optimize', storeId }),
   createInsight: (data) => postJSON('/api/shopify/insights', data),
