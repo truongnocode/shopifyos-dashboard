@@ -1622,9 +1622,11 @@ const StoresManageView = ({ niches, stores, addToast }) => {
 };
 
 // --- SIDEBAR ITEM ---
-const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
-  <button onClick={onClick} className={`w-full flex items-center space-x-3 px-4 py-2.5 mb-0.5 rounded-[18px] transition-all duration-300 ${active ? 'bg-white/80 dark:bg-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.05)] text-indigo-600 dark:text-indigo-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-white/40 dark:hover:bg-white/5 font-medium'}`}>
-    <Icon size={20} strokeWidth={active ? 2.5 : 2} /><span className="text-sm">{label}</span>
+const SidebarItem = ({ icon: Icon, label, active, onClick, compact }) => (
+  <button onClick={onClick} className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-[14px] transition-all duration-200 group relative ${active ? 'bg-white/[0.2] dark:bg-white/[0.08] shadow-[0_1px_8px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.25)] dark:shadow-[0_1px_8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.06)] text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-white/[0.1] dark:hover:bg-white/[0.04] font-medium'}`}>
+    <Icon size={compact ? 16 : 18} strokeWidth={active ? 2.5 : 1.8} />
+    <span className={`flex-1 text-left ${compact ? 'text-[12px]' : 'text-[13px]'}`}>{label}</span>
+    <ChevronRight size={12} className={`flex-shrink-0 transition-all duration-200 ${active ? 'opacity-60' : 'opacity-0 -translate-x-1 group-hover:opacity-40 group-hover:translate-x-0'}`} />
   </button>
 );
 
@@ -2018,48 +2020,77 @@ export default function App() {
       )}
 
       <div className="relative z-10 flex h-screen overflow-hidden">
-        {/* Desktop Sidebar */}
-        <div className="hidden md:flex my-6 ml-6 flex-col w-64 lg:w-72">
-          <GlassCard className="h-full flex flex-col !p-5 shadow-2xl overflow-y-auto hide-scrollbar">
-            <div className="flex items-center space-x-3 mb-6 px-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white shadow-lg"><Zap size={22} /></div>
-              <span className="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-indigo-600 dark:from-white dark:to-indigo-400">ShopifyOS</span>
+        {/* Desktop Sidebar - Floating Island */}
+        <div className="hidden md:flex my-3 ml-3 flex-col w-60 lg:w-[260px]">
+          <div className="h-full flex flex-col rounded-[24px] bg-white/[0.12] dark:bg-white/[0.04] border border-white/[0.18] dark:border-white/[0.06] backdrop-blur-[20px] backdrop-saturate-[180%] shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.2)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] overflow-hidden">
+            {/* Specular highlight */}
+            <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/10 to-transparent" />
+
+            {/* Logo */}
+            <div className="flex items-center space-x-2.5 px-5 pt-5 pb-4">
+              <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[12px] flex items-center justify-center text-white shadow-[0_2px_8px_rgba(99,102,241,0.3)]"><Zap size={18} /></div>
+              <span className="text-lg font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-indigo-600 dark:from-white dark:to-indigo-400">ShopifyOS</span>
             </div>
 
-            <div className="flex-1 space-y-5">
-              {navItems.map((group) => (
-                <div key={group.group}>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4 mb-2">{group.group}</p>
-                  <div className="space-y-0.5">
-                    {group.items.map((item) => (
-                      <SidebarItem key={item.id} icon={item.icon} label={item.label} active={activeTab === item.id} onClick={() => setActiveTab(item.id)} />
-                    ))}
-                  </div>
-                </div>
-              ))}
+            {/* Scrollable nav */}
+            <div className="flex-1 overflow-y-auto hide-scrollbar px-3 pb-3 space-y-2">
+
+              {/* Pinned / Favorites */}
+              <div className="rounded-[16px] bg-white/[0.06] dark:bg-white/[0.02] border border-white/[0.08] dark:border-white/[0.03] p-1.5">
+                <p className="text-[9px] font-bold text-slate-400/70 uppercase tracking-[0.1em] px-2.5 pt-1 pb-1.5">Ghim</p>
+                <SidebarItem icon={LayoutDashboard} label="Bảng điều khiển" active={activeTab === 'command-center'} onClick={() => setActiveTab('command-center')} compact />
+                <SidebarItem icon={Zap} label="Công cụ" active={activeTab === 'pipeline-custom'} onClick={() => setActiveTab('pipeline-custom')} compact />
+              </div>
+
+              {/* Bento Block: Hệ thống */}
+              <div className="rounded-[16px] bg-white/[0.06] dark:bg-white/[0.02] border border-white/[0.08] dark:border-white/[0.03] p-1.5">
+                <p className="text-[9px] font-bold text-slate-400/70 uppercase tracking-[0.1em] px-2.5 pt-1 pb-1.5">Hệ thống</p>
+                <SidebarItem icon={Package} label="Sản phẩm" active={activeTab === 'products'} onClick={() => setActiveTab('products')} compact />
+                <div className="mx-2.5 border-b border-white/[0.06] dark:border-white/[0.03]" />
+                <SidebarItem icon={Rocket} label="Setup tự động" active={activeTab === 'pipeline-auto'} onClick={() => setActiveTab('pipeline-auto')} compact />
+                <div className="mx-2.5 border-b border-white/[0.06] dark:border-white/[0.03]" />
+                <SidebarItem icon={Settings} label="Niche & Store" active={activeTab === 'stores-manage'} onClick={() => setActiveTab('stores-manage')} compact />
+              </div>
+
+              {/* Bento Block: AI Skills */}
+              <div className="rounded-[16px] bg-white/[0.06] dark:bg-white/[0.02] border border-white/[0.08] dark:border-white/[0.03] p-1.5">
+                <p className="text-[9px] font-bold text-slate-400/70 uppercase tracking-[0.1em] px-2.5 pt-1 pb-1.5">AI Skills</p>
+                <SidebarItem icon={Sparkles} label="Tối ưu SP" active={activeTab === 'products'} onClick={() => setActiveTab('products')} compact />
+                <div className="mx-2.5 border-b border-white/[0.06] dark:border-white/[0.03]" />
+                <SidebarItem icon={Megaphone} label="Quảng cáo" active={activeTab === 'ads'} onClick={() => setActiveTab('ads')} compact />
+                <div className="mx-2.5 border-b border-white/[0.06] dark:border-white/[0.03]" />
+                <SidebarItem icon={Share2} label="Mạng xã hội" active={activeTab === 'social'} onClick={() => setActiveTab('social')} compact />
+                <div className="mx-2.5 border-b border-white/[0.06] dark:border-white/[0.03]" />
+                <SidebarItem icon={TrendingUp} label="Nghiên cứu SP" active={activeTab === 'winning-products'} onClick={() => setActiveTab('winning-products')} compact />
+              </div>
+
+              {/* Stores */}
+              <div className="rounded-[16px] bg-white/[0.06] dark:bg-white/[0.02] border border-white/[0.08] dark:border-white/[0.03] p-1.5">
+                <p className="text-[9px] font-bold text-slate-400/70 uppercase tracking-[0.1em] px-2.5 pt-1 pb-1.5">Stores</p>
+                {sidebarStores.map((store, i) => (
+                  <React.Fragment key={store.id}>
+                    {i > 0 && <div className="mx-2.5 border-b border-white/[0.06] dark:border-white/[0.03]" />}
+                    <div className="flex items-center space-x-2.5 px-3 py-1.5 rounded-[12px] hover:bg-white/[0.08] dark:hover:bg-white/[0.03] transition-colors cursor-pointer group">
+                      <span className="text-sm">{store.icon || '\u{1F3EA}'}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 truncate">{store.name}</p>
+                        <p className="text-[9px] text-slate-400/70 truncate">{store.domain}</p>
+                      </div>
+                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${store.isActive || store.status === 'active' ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+                    </div>
+                  </React.Fragment>
+                ))}
+              </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-white/30 dark:border-white/10 px-2 space-y-2">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Stores</p>
-              {sidebarStores.map((store) => (
-                <div key={store.id} className="flex items-center space-x-3 p-2 rounded-[14px] hover:bg-white/40 dark:hover:bg-white/5 transition-colors cursor-pointer">
-                  <span className="text-lg">{store.icon || '\u{1F3EA}'}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{store.name}</p>
-                    <p className="text-[10px] text-slate-400 truncate">{store.domain}</p>
-                  </div>
-                  <span className={`w-2 h-2 rounded-full ${store.isActive || store.status === 'active' ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-3 pt-3 border-t border-white/40 dark:border-white/10 px-2">
-              <button onClick={() => setIsDark(!isDark)} className="w-full flex items-center justify-center p-2.5 rounded-[18px] bg-white/[0.1] dark:bg-slate-800/[0.12] hover:bg-white/80 dark:hover:bg-slate-700/80 text-slate-600 dark:text-slate-300 transition-all border border-white/40 dark:border-white/10">
-                {isDark ? <Sun size={18} /> : <Moon size={18} />}
-                <span className="ml-2 text-sm font-medium">{isDark ? 'Sáng' : 'Tối'}</span>
+            {/* Bottom: Theme toggle */}
+            <div className="px-3 pb-3 pt-1">
+              <button onClick={() => setIsDark(!isDark)} className="w-full flex items-center justify-center p-2 rounded-[14px] bg-white/[0.06] dark:bg-white/[0.03] hover:bg-white/[0.12] dark:hover:bg-white/[0.06] text-slate-500 dark:text-slate-400 transition-all border border-white/[0.08] dark:border-white/[0.03]">
+                {isDark ? <Sun size={14} /> : <Moon size={14} />}
+                <span className="ml-2 text-[11px] font-medium">{isDark ? 'Sáng' : 'Tối'}</span>
               </button>
             </div>
-          </GlassCard>
+          </div>
         </div>
 
         {/* Col 2: Main Content - SCROLLABLE */}
