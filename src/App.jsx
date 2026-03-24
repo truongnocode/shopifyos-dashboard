@@ -952,24 +952,25 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
     // === TỐI ƯU ===
     {
       id: 'optimize', icon: Sparkles, label: 'Tối ưu SEO',
-      desc: 'AI tối ưu title, description, tags',
+      desc: 'Tối ưu hoặc tái tối ưu title, description, tags',
       color: 'indigo', group: 'optimize',
       inputs: [{ key: 'storeId', label: 'Chọn store', type: 'store-select', required: true }],
+      storeInfo: true,
       run: async (data) => {
         if (!data.storeId) throw new Error('Chọn store trước');
-        const firstCheck = await api.optimizeStore(data.storeId);
-        if (firstCheck.allOptimized) return { optimized: 0, message: firstCheck.message, totalProducts: firstCheck.totalProducts };
-        let total = firstCheck.optimized || 0, more = total > 0;
+        // Always re-optimize (handles both new + already optimized)
+        let total = 0, more = true;
         while (more) {
           try {
-            const r = await api.optimizeStore(data.storeId);
+            const r = await api.optimizeStore(data.storeId, true);
             total += r.optimized || 0;
             if (!r.optimized || r.total === 0) more = false;
           } catch { more = false; }
         }
-        return { optimized: total };
+        const store = (stores.data || []).find(s => s.id === data.storeId);
+        return { optimized: total, storeName: store?.name, lastOptimized: store?.lastOptimizedAt };
       },
-      formatResult: (r) => r.message ? { 'Trạng thái': r.message, 'Tổng SP': r.totalProducts } : { 'Sản phẩm đã tối ưu': r.optimized }
+      formatResult: (r) => ({ 'Sản phẩm đã tối ưu': r.optimized, ...(r.storeName ? { 'Store': r.storeName } : {}) })
     },
     {
       id: 'import-crawled', icon: Package, label: 'Import SP',
@@ -1245,10 +1246,22 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
                 <div key={inp.key}>
                   <label className="text-[11px] font-semibold text-slate-500 mb-1 block">{inp.label} {inp.required && '*'}</label>
                   {inp.type === 'store-select' ? (
-                    <select className={selectClass} value={skillFormData[inp.key] || ''} onChange={e => setSkillFormData({ ...skillFormData, [inp.key]: e.target.value })} disabled={running}>
-                      <option value="">-- Chọn store --</option>
-                      {(stores.data || []).map(s => (<option key={s.id} value={s.id}>{s.name} ({s.domain})</option>))}
-                    </select>
+                    <>
+                      <select className={selectClass} value={skillFormData[inp.key] || ''} onChange={e => setSkillFormData({ ...skillFormData, [inp.key]: e.target.value })} disabled={running}>
+                        <option value="">-- Chọn store --</option>
+                        {(stores.data || []).map(s => (<option key={s.id} value={s.id}>{s.name} ({s.domain})</option>))}
+                      </select>
+                      {selectedSkill.storeInfo && skillFormData[inp.key] && (() => {
+                        const st = (stores.data || []).find(s => s.id === skillFormData[inp.key]);
+                        if (!st) return null;
+                        return (
+                          <div className="mt-1.5 flex items-center gap-3 text-[10px] text-slate-400">
+                            <span>SP: <b className="text-slate-600 dark:text-slate-300">{st.productCount || 0}</b></span>
+                            <span>Tối ưu lần cuối: <b className="text-slate-600 dark:text-slate-300">{st.lastOptimizedAt ? new Date(st.lastOptimizedAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Chưa có'}</b></span>
+                          </div>
+                        );
+                      })()}
+                    </>
                   ) : (
                     <input className={inputClass} placeholder={inp.placeholder || ''} value={skillFormData[inp.key] || ''} onChange={e => setSkillFormData({ ...skillFormData, [inp.key]: e.target.value })} disabled={running} />
                   )}

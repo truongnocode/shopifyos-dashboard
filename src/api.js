@@ -39,7 +39,7 @@ export const api = {
   getSkillOutputs: (skill) => fetchJSON(`/api/shopify/skill-outputs${skill ? `?skill=${skill}` : ''}`),
   syncStore: (storeId, sinceId) => postJSON('/api/shopify', { action: 'sync', storeId, sinceId, limit: 50 }),
   crawlCompetitor: (url, storeId) => postJSON('/api/shopify', { action: 'crawl', url, storeId }),
-  optimizeStore: (storeId) => postJSON('/api/shopify', { action: 'optimize', storeId }),
+  optimizeStore: (storeId, reOptimize = false) => postJSON('/api/shopify', { action: 'optimize', storeId, reOptimize }),
   createInsight: (data) => postJSON('/api/shopify/insights', data),
   saveSkillOutput: (data) => postJSON('/api/shopify/skill-outputs', data),
   getNiches: () => fetchJSON('/api/shopify/niches'),
