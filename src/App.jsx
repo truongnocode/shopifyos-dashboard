@@ -948,25 +948,7 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
         return { 'Loại dữ liệu': dataType, 'Sản phẩm': prods, 'Bộ sưu tập': cols, 'Session': r.sessionId || '' };
       }
     },
-    {
-      id: 'sync', icon: RefreshCw, label: 'Đồng bộ SP',
-      desc: 'Pull SP từ Shopify API vào hệ thống',
-      color: 'emerald', group: 'data',
-      inputs: [{ key: 'storeId', label: 'Chọn store', type: 'store-select', required: true }],
-      run: async (data) => {
-        if (!data.storeId) throw new Error('Chọn store trước');
-        let total = 0, sinceId = undefined, hasMore = true;
-        while (hasMore) {
-          const r = await api.syncStore(data.storeId, sinceId);
-          total += r.synced || 0;
-          hasMore = r.hasMore;
-          sinceId = r.lastProductId;
-          if (!r.synced) break;
-        }
-        return { synced: total };
-      },
-      formatResult: (r) => ({ 'Sản phẩm đã đồng bộ': r.synced })
-    },
+    // Đồng bộ SP tạm gỡ - cần token Shopify Admin API
     // === TỐI ƯU ===
     {
       id: 'optimize', icon: Sparkles, label: 'Tối ưu SEO',
@@ -1719,7 +1701,7 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Thao tác nhanh</p>
         <div className="space-y-1.5">
           <ActionBtn icon={Package} label="Tối ưu sản phẩm" color="indigo" onClick={() => handleQuickAction('optimize', 'Tối ưu sản phẩm')} />
-          <ActionBtn icon={RefreshCw} label="Đồng bộ cửa hàng" color="blue" onClick={() => handleQuickAction('sync', 'Đồng bộ cửa hàng')} />
+          {/* Đồng bộ cửa hàng tạm gỡ */}
           <ActionBtn icon={Megaphone} label="Tạo quảng cáo" color="rose" onClick={() => handleQuickAction('ads', 'Tạo quảng cáo')} />
           <ActionBtn icon={Share2} label="Nội dung MXH" color="emerald" onClick={() => handleQuickAction('social', 'Nội dung MXH')} />
           <ActionBtn icon={TrendingUp} label="Tìm SP tiềm năng" color="amber" onClick={() => handleQuickAction('winning', 'Tìm SP tiềm năng')} />
@@ -1744,7 +1726,7 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Công cụ sản phẩm</p>
         <div className="space-y-1.5">
           <ActionBtn icon={Zap} label="Tối ưu hàng loạt" color="indigo" onClick={() => handleQuickAction('optimize', 'Tối ưu sản phẩm')} />
-          <ActionBtn icon={RefreshCw} label="Đồng bộ từ Shopify" color="blue" onClick={() => handleQuickAction('sync', 'Đồng bộ cửa hàng')} />
+          {/* Đồng bộ từ Shopify tạm gỡ */}
         </div>
       </div>
       <TaskSection />
@@ -1810,7 +1792,7 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
           <ActionBtn icon={Rocket} label="Chạy Full Pipeline" color="purple" onClick={() => addToast('Gõ /shopify-pipeline trong Claude Code', 'info')} />
           <ActionBtn icon={Eye} label="Crawl đối thủ" color="blue" onClick={() => addToast('Gõ /shopify-pipeline trong Claude Code', 'info')} />
           <ActionBtn icon={Palette} label="Convert Theme" color="rose" onClick={() => addToast('Gõ /shopify-pipeline trong Claude Code', 'info')} />
-          <ActionBtn icon={RefreshCw} label="Đồng bộ store" color="emerald" onClick={() => handleQuickAction('sync', 'Đồng bộ cửa hàng')} />
+          {/* Đồng bộ store tạm gỡ */}
         </div>
       </div>
       <TaskSection />
@@ -1825,7 +1807,7 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
         <div className="space-y-1.5">
           <ActionBtn icon={Plus} label="Thêm Niche mới" color="purple" onClick={() => addToast('Bấm "Thêm Niche" ở cột giữa', 'info')} />
           <ActionBtn icon={Plus} label="Thêm Store mới" color="indigo" onClick={() => addToast('Bấm "Thêm Store" ở cột giữa', 'info')} />
-          <ActionBtn icon={RefreshCw} label="Đồng bộ tất cả" color="blue" onClick={() => handleQuickAction('sync', 'Đồng bộ cửa hàng')} />
+          {/* Đồng bộ tất cả tạm gỡ */}
         </div>
       </div>
       <TaskSection />
@@ -1847,7 +1829,7 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Thao tác nhanh</p>
         <div className="space-y-1.5">
           <ActionBtn icon={Package} label="Tối ưu sản phẩm" color="indigo" onClick={() => handleQuickAction('optimize', 'Tối ưu sản phẩm')} />
-          <ActionBtn icon={RefreshCw} label="Đồng bộ cửa hàng" color="blue" onClick={() => handleQuickAction('sync', 'Đồng bộ cửa hàng')} />
+          {/* Đồng bộ cửa hàng tạm gỡ */}
         </div>
       </div>
       <TaskSection />
