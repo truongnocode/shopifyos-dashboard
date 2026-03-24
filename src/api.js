@@ -48,6 +48,7 @@ export const api = {
   createStore: (data) => postJSON('/api/shopify/stores', data),
   deleteStore: (id) => fetch(`${API_BASE}/api/shopify/stores?id=${id}`, { method: 'DELETE' }).then(r => r.json()),
   importCrawled: (storeId, sessionId) => postJSON('/api/shopify', { action: 'import-crawled', storeId, sessionId }),
+  importFromFile: (storeId, products) => postJSON('/api/shopify', { action: 'import-file', storeId, products }),
   exportCrawl: (sessionId, format = 'json') => fetchJSON(`/api/shopify/crawl-export?sessionId=${sessionId}&format=${format}`),
   downloadCrawlCsv: async (sessionId) => {
     const res = await fetch(`${API_BASE}/api/shopify/crawl-export?sessionId=${sessionId}&format=csv`);

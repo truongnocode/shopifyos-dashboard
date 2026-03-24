@@ -9,7 +9,8 @@ import {
   Sparkles, BarChart3, Globe, Heart, Lightbulb,
   FileText, Image, Video, Hash, Rocket,
   Store, Gem, Menu, X, ChevronRight,
-  ChevronDown, Timer, CircleDot, Layers, History
+  ChevronDown, Timer, CircleDot, Layers, History,
+  Upload, FileUp, Database
 } from 'lucide-react';
 import { GlassCard, GlassButton, Badge, colorMap, LoadingSkeleton } from './components/ui';
 import { api } from './api';
@@ -979,20 +980,35 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
     },
     {
       id: 'import-crawled', icon: Package, label: 'Import SP',
-      desc: 'Import SP đã crawl vào store',
+      desc: 'Import SP từ file CSV/JSON hoặc từ crawl session',
       color: 'amber', group: 'optimize',
-      inputs: [{ key: 'storeId', label: 'Chọn store', type: 'store-select', required: true }],
-      run: async (data) => {
+      inputs: [
+        { key: 'storeId', label: 'Chọn store', type: 'store-select', required: true },
+        { key: 'importSource', label: 'Nguồn dữ liệu', type: 'import-source' },
+        { key: 'file', label: 'File sản phẩm (CSV/JSON)', type: 'file-upload', accept: '.csv,.json', showWhen: 'upload' },
+        { key: 'sessionId', label: 'Chọn crawl session', type: 'crawl-session-select', showWhen: 'crawl' },
+      ],
+      run: async (data, { updateProgress }) => {
         if (!data.storeId) throw new Error('Chọn store trước');
-        let total = 0, hasMore = true;
-        while (hasMore) {
-          const r = await api.importCrawled(data.storeId, '');
-          total += r.imported || 0;
-          if (!r.imported) hasMore = false;
+        const source = data.importSource || 'upload';
+        if (source === 'upload') {
+          if (!data._parsedProducts || data._parsedProducts.length === 0) throw new Error('Chọn file CSV/JSON chứa sản phẩm');
+          updateProgress?.(`Đang import ${data._parsedProducts.length} SP từ file...`);
+          const r = await api.importFromFile(data.storeId, data._parsedProducts);
+          return { imported: r.imported || data._parsedProducts.length, source: 'file', fileName: data._fileName || 'file' };
+        } else {
+          if (!data.sessionId) throw new Error('Chọn crawl session');
+          updateProgress?.('Đang import SP từ crawl session...');
+          let total = 0, hasMore = true;
+          while (hasMore) {
+            const r = await api.importCrawled(data.storeId, data.sessionId);
+            total += r.imported || 0;
+            if (!r.imported) hasMore = false;
+          }
+          return { imported: total, source: 'crawl', sessionId: data.sessionId };
         }
-        return { imported: total };
       },
-      formatResult: (r) => ({ 'Sản phẩm đã import': r.imported })
+      formatResult: (r) => ({ 'Sản phẩm đã import': r.imported, 'Nguồn': r.source === 'file' ? `File: ${r.fileName}` : `Crawl session` })
     },
     // === THIẾT LẬP ===
     {
@@ -1248,7 +1264,13 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
               </div>
             )}
             <div className={`space-y-2.5 ${running ? 'opacity-40 pointer-events-none' : ''}`}>
-              {selectedSkill.inputs.map(inp => (
+              {selectedSkill.inputs.map(inp => {
+                // Hide conditional inputs based on showWhen
+                if (inp.showWhen && skillFormData.importSource !== inp.showWhen) {
+                  // Default to 'upload' if not set
+                  if (!(inp.showWhen === 'upload' && !skillFormData.importSource)) return null;
+                }
+                return (
                 <div key={inp.key}>
                   <label className="text-[11px] font-semibold text-slate-500 mb-1 block">{inp.label} {inp.required && '*'}</label>
                   {inp.type === 'store-select' ? (
@@ -1268,11 +1290,98 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
                         );
                       })()}
                     </>
+                  ) : inp.type === 'import-source' ? (
+                    <div className="flex gap-1.5">
+                      {[{ value: 'upload', label: 'Upload file', icon: FileUp }, { value: 'crawl', label: 'Từ crawl', icon: Database }].map(opt => (
+                        <button key={opt.value} onClick={() => setSkillFormData({ ...skillFormData, [inp.key]: opt.value, file: undefined, sessionId: '', _parsedProducts: undefined, _fileName: undefined })}
+                          className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-[12px] text-xs font-semibold border transition-all ${
+                            (skillFormData[inp.key] || 'upload') === opt.value
+                              ? 'bg-amber-100/80 dark:bg-amber-500/15 border-amber-300/50 dark:border-amber-500/30 text-amber-700 dark:text-amber-300'
+                              : 'bg-white/[0.05] border-white/[0.08] text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                          }`}>
+                          <opt.icon size={13} /> {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  ) : inp.type === 'file-upload' ? (
+                    <div>
+                      <label className={`flex flex-col items-center justify-center w-full py-4 px-3 rounded-[14px] border-2 border-dashed cursor-pointer transition-all ${
+                        skillFormData._parsedProducts?.length
+                          ? 'border-emerald-300/50 dark:border-emerald-500/30 bg-emerald-50/30 dark:bg-emerald-500/5'
+                          : 'border-white/[0.12] dark:border-white/[0.06] bg-white/[0.04] hover:border-amber-300/40 dark:hover:border-amber-500/20 hover:bg-amber-50/20 dark:hover:bg-amber-500/5'
+                      }`}>
+                        <input type="file" accept={inp.accept || '.csv,.json'} className="hidden" onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            try {
+                              const text = ev.target.result;
+                              let products = [];
+                              if (file.name.endsWith('.json')) {
+                                const parsed = JSON.parse(text);
+                                products = Array.isArray(parsed) ? parsed : parsed.products || parsed.data || [];
+                              } else {
+                                // CSV parse
+                                const lines = text.split('\n').filter(l => l.trim());
+                                if (lines.length < 2) throw new Error('File CSV rỗng');
+                                const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+                                products = lines.slice(1).map(line => {
+                                  const vals = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+                                  const obj = {};
+                                  headers.forEach((h, i) => { obj[h] = vals[i] || ''; });
+                                  return obj;
+                                });
+                              }
+                              setSkillFormData(prev => ({ ...prev, _parsedProducts: products, _fileName: file.name }));
+                            } catch (err) {
+                              setSkillFormData(prev => ({ ...prev, _parsedProducts: [], _fileName: file.name, _parseError: err.message }));
+                            }
+                          };
+                          reader.readAsText(file);
+                        }} />
+                        {skillFormData._parsedProducts?.length ? (
+                          <>
+                            <CheckCircle2 size={20} className="text-emerald-500 mb-1" />
+                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{skillFormData._fileName}</span>
+                            <span className="text-[10px] text-emerald-500">{skillFormData._parsedProducts.length} sản phẩm tìm thấy</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload size={20} className="text-slate-400 mb-1" />
+                            <span className="text-xs text-slate-500">Kéo thả hoặc bấm để chọn file</span>
+                            <span className="text-[10px] text-slate-400">CSV, JSON</span>
+                          </>
+                        )}
+                        {skillFormData._parseError && (
+                          <span className="text-[10px] text-red-500 mt-1">{skillFormData._parseError}</span>
+                        )}
+                      </label>
+                      {/* Preview first few products */}
+                      {skillFormData._parsedProducts?.length > 0 && (
+                        <div className="mt-2 max-h-28 overflow-y-auto rounded-[10px] bg-white/[0.05] dark:bg-slate-800/[0.1] border border-white/[0.08] p-2">
+                          <p className="text-[10px] font-bold text-slate-400 mb-1">Preview ({Math.min(3, skillFormData._parsedProducts.length)} / {skillFormData._parsedProducts.length})</p>
+                          {skillFormData._parsedProducts.slice(0, 3).map((p, i) => (
+                            <div key={i} className="text-[10px] text-slate-500 dark:text-slate-400 truncate py-0.5 border-b border-white/[0.04] last:border-0">
+                              {p.title || p.Title || p.name || p.Handle || Object.values(p).slice(0, 3).join(' · ')}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : inp.type === 'crawl-session-select' ? (
+                    <select className={selectClass} value={skillFormData[inp.key] || ''} onChange={e => setSkillFormData({ ...skillFormData, [inp.key]: e.target.value })} disabled={running}>
+                      <option value="">-- Chọn crawl session --</option>
+                      {resultHistory.filter(r => r.skillId === 'crawl' && r.raw?.sessionId).map(r => (
+                        <option key={r.id} value={r.raw.sessionId}>{r.raw.sessionId?.slice(0, 8)}... - {r.data?.['Sản phẩm'] || '?'} SP - {r.time}</option>
+                      ))}
+                    </select>
                   ) : (
                     <input className={inputClass} placeholder={inp.placeholder || ''} value={skillFormData[inp.key] || ''} onChange={e => setSkillFormData({ ...skillFormData, [inp.key]: e.target.value })} disabled={running} />
                   )}
                 </div>
-              ))}
+                );
+              })}
               {!running && (
                 <GlassButton variant="primary" icon={Play} onClick={runSkill}>
                   Chạy {selectedSkill.label}
@@ -1365,14 +1474,14 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
             <div className="pt-2.5 mt-2.5 border-t border-white/[0.06] dark:border-white/[0.03]">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Chạy lại</p>
               <div className="space-y-2">
-                {selectedSkill.inputs.map(inp => (
+                {selectedSkill.inputs.filter(inp => !inp.showWhen).map(inp => (
                   <div key={inp.key}>
                     {inp.type === 'store-select' ? (
                       <select className={selectClass} value={skillFormData[inp.key] || ''} onChange={e => setSkillFormData({ ...skillFormData, [inp.key]: e.target.value })}>
                         <option value="">-- Chọn store --</option>
                         {(stores.data || []).map(s => (<option key={s.id} value={s.id}>{s.name} ({s.domain})</option>))}
                       </select>
-                    ) : (
+                    ) : inp.type === 'import-source' ? null : (
                       <input className={inputClass} placeholder={inp.placeholder || ''} value={skillFormData[inp.key] || ''} onChange={e => setSkillFormData({ ...skillFormData, [inp.key]: e.target.value })} />
                     )}
                   </div>
