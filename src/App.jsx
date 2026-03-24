@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   LayoutDashboard, Package, Palette, Settings,
   BrainCircuit, Moon, Sun, Plus, Play,
@@ -10,7 +10,8 @@ import {
   FileText, Image, Video, Hash, Rocket,
   Store, Gem, Menu, X, ChevronRight,
   ChevronDown, Timer, CircleDot, Layers, History,
-  Upload, FileUp, Database, ImagePlus, ScanEye, GraduationCap, RotateCcw
+  Upload, FileUp, Database, ImagePlus, ScanEye, GraduationCap, RotateCcw,
+  CheckSquare, Square, MinusSquare, ChevronLeft, XCircle, ThumbsUp, ThumbsDown, Undo2, ZoomIn
 } from 'lucide-react';
 import { GlassCard, GlassButton, Badge, colorMap, LoadingSkeleton } from './components/ui';
 import { api } from './api';
@@ -2176,24 +2177,184 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
 // Image Enhancement Views
 // ============================================
 
+// ============================================
+// Before/After Image Comparison Slider (pure CSS/React, no deps)
+// ============================================
+const BeforeAfterSlider = ({ beforeSrc, afterSrc, beforeLabel = 'Gốc', afterLabel = 'AI', height = 280 }) => {
+  const [position, setPosition] = useState(50);
+  const containerRef = useRef(null);
+  const dragging = useRef(false);
+
+  const handleMove = useCallback((clientX) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+    setPosition((x / rect.width) * 100);
+  }, []);
+
+  useEffect(() => {
+    const onMove = (e) => { if (dragging.current) handleMove(e.touches ? e.touches[0].clientX : e.clientX); };
+    const onUp = () => { dragging.current = false; };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchmove', onMove);
+    window.addEventListener('touchend', onUp);
+    return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); window.removeEventListener('touchmove', onMove); window.removeEventListener('touchend', onUp); };
+  }, [handleMove]);
+
+  return (
+    <div ref={containerRef} className="relative select-none cursor-col-resize rounded-xl overflow-hidden" style={{ height }}
+      onMouseDown={(e) => { dragging.current = true; handleMove(e.clientX); }}
+      onTouchStart={(e) => { dragging.current = true; handleMove(e.touches[0].clientX); }}>
+      {/* After (full width behind) */}
+      <img src={afterSrc} alt="After" className="absolute inset-0 w-full h-full object-contain bg-slate-100 dark:bg-slate-800" />
+      {/* Before (clipped) */}
+      <div className="absolute inset-0 overflow-hidden" style={{ width: `${position}%` }}>
+        <img src={beforeSrc} alt="Before" className="w-full h-full object-contain bg-slate-50 dark:bg-slate-900" style={{ width: containerRef.current?.offsetWidth || '100%', maxWidth: 'none' }} />
+      </div>
+      {/* Divider line */}
+      <div className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg z-10" style={{ left: `${position}%`, transform: 'translateX(-50%)' }}>
+        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center">
+          <ChevronLeft size={12} className="text-slate-600 -mr-1" />
+          <ChevronRight size={12} className="text-slate-600 -ml-1" />
+        </div>
+      </div>
+      {/* Labels */}
+      <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/60 text-white text-[10px] font-bold rounded-full z-20">{beforeLabel}</span>
+      <span className="absolute top-2 right-2 px-2 py-0.5 bg-indigo-600/80 text-white text-[10px] font-bold rounded-full z-20">{afterLabel}</span>
+    </div>
+  );
+};
+
+// ============================================
+// Product Selection Grid for Enhancement
+// ============================================
+const ProductSelectionGrid = ({ products, selectedIds, onToggle, onSelectAll, onDeselectAll, searchQuery, onSearchChange }) => {
+  const allSelected = products.length > 0 && selectedIds.size === products.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < products.length;
+
+  return (
+    <div>
+      {/* Toolbar */}
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div className="flex items-center space-x-3">
+          <button onClick={allSelected ? onDeselectAll : onSelectAll}
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/[0.12] transition-all text-sm">
+            {allSelected ? <CheckSquare size={16} className="text-indigo-500" /> : someSelected ? <MinusSquare size={16} className="text-amber-500" /> : <Square size={16} className="text-slate-400" />}
+            <span className="text-slate-700 dark:text-slate-200 font-medium">
+              {allSelected ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
+            </span>
+          </button>
+          {selectedIds.size > 0 && (
+            <span className="text-xs font-bold text-indigo-500 bg-indigo-500/10 px-2.5 py-1 rounded-full">
+              {selectedIds.size} / {products.length} đã chọn
+            </span>
+          )}
+        </div>
+        <div className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input type="text" value={searchQuery} onChange={e => onSearchChange(e.target.value)} placeholder="Tìm sản phẩm..."
+            className="pl-8 pr-3 py-1.5 rounded-xl bg-white/[0.08] border border-white/[0.12] text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 w-56" />
+        </div>
+      </div>
+
+      {/* Product Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 max-h-[420px] overflow-y-auto pr-1 hide-scrollbar">
+        {products.map(p => {
+          const isSelected = selectedIds.has(p.id);
+          const imgSrc = p.images?.[0]?.src || p.imageSrc || '';
+          return (
+            <div key={p.id} onClick={() => onToggle(p.id)}
+              className={`relative group cursor-pointer rounded-xl overflow-hidden border-2 transition-all duration-200 ${isSelected ? 'border-indigo-500 shadow-lg shadow-indigo-500/20 scale-[1.02]' : 'border-transparent hover:border-white/20'}`}>
+              <div className="aspect-square bg-slate-100 dark:bg-slate-800/60">
+                {imgSrc ? <img src={imgSrc} alt={p.title} className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full flex items-center justify-center"><Image size={24} className="text-slate-300" /></div>}
+              </div>
+              {/* Checkbox overlay */}
+              <div className={`absolute top-1.5 left-1.5 w-5 h-5 rounded-md flex items-center justify-center transition-all ${isSelected ? 'bg-indigo-500 text-white' : 'bg-black/30 text-white/70 opacity-0 group-hover:opacity-100'}`}>
+                {isSelected ? <CheckSquare size={14} /> : <Square size={14} />}
+              </div>
+              {/* Image count badge */}
+              {(p.images?.length || p.imageCount || 0) > 0 && (
+                <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-black/50 text-white text-[9px] font-bold rounded-full">
+                  {p.images?.length || p.imageCount || 0} ảnh
+                </div>
+              )}
+              {/* Product name */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6">
+                <p className="text-[11px] font-semibold text-white leading-tight line-clamp-2">{p.title}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const ImageEnhancementView = ({ stores, addToast }) => {
   const stats = useApi(() => api.getImageStats(), []);
   const [selectedStore, setSelectedStore] = useState('');
   const [approvalMode, setApprovalMode] = useState('SEMI_AUTO');
-  const [aiProvider, setAiProvider] = useState('GEMINI_FLASH');
+  const [aiProvider, setAiProvider] = useState('BANANA_PRO');
   const [productType, setProductType] = useState('');
   const [starting, setStarting] = useState(false);
+  const [step, setStep] = useState(1); // 1=config, 2=select products, 3=running
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [selectedProductIds, setSelectedProductIds] = useState(new Set());
+  const [searchQuery, setSearchQuery] = useState('');
 
   const s = stats.data?.stats || { totalRuns: 0, totalJobs: 0, pendingReview: 0, published: 0, approved: 0, rejected: 0, approvalRate: 0 };
   const runs = stats.data?.runs || [];
+  const storesList = stores.data || [];
+
+  const filteredProducts = useMemo(() => {
+    if (!searchQuery.trim()) return products;
+    const q = searchQuery.toLowerCase();
+    return products.filter(p => p.title?.toLowerCase().includes(q) || p.productType?.toLowerCase().includes(q));
+  }, [products, searchQuery]);
+
+  const loadProducts = async (storeId) => {
+    setLoadingProducts(true);
+    try {
+      const data = await api.getProducts(storeId);
+      setProducts(data.products || data || []);
+    } catch (e) { addToast('Lỗi tải SP: ' + e.message, 'error'); }
+    setLoadingProducts(false);
+  };
+
+  const handleStoreChange = (storeId) => {
+    setSelectedStore(storeId);
+    setSelectedProductIds(new Set());
+    setSearchQuery('');
+    if (storeId) loadProducts(storeId);
+    else setProducts([]);
+  };
+
+  const handleToggleProduct = (id) => {
+    setSelectedProductIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
 
   const handleStartRun = async () => {
     if (!selectedStore) { addToast('Chọn store trước', 'warning'); return; }
+    if (selectedProductIds.size === 0) { addToast('Chọn ít nhất 1 sản phẩm', 'warning'); return; }
     setStarting(true);
     try {
-      await api.createImageRun({ storeId: selectedStore, approvalMode, aiProvider, productType: productType || undefined });
-      addToast('Enhancement run đã tạo', 'success');
+      await api.createImageRun({
+        storeId: selectedStore,
+        approvalMode,
+        aiProvider,
+        productType: productType || undefined,
+        productIds: Array.from(selectedProductIds),
+      });
+      addToast(`Enhancement run đã tạo cho ${selectedProductIds.size} sản phẩm`, 'success');
       stats.refetch();
+      setStep(1);
+      setSelectedProductIds(new Set());
     } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
     setStarting(false);
   };
@@ -2205,8 +2366,6 @@ const ImageEnhancementView = ({ stores, addToast }) => {
     { label: 'Đã publish', value: s.published, color: 'emerald' },
     { label: 'Tỷ lệ duyệt', value: `${(s.approvalRate * 100).toFixed(0)}%`, color: 'violet' },
   ];
-
-  const storesList = stores.data || [];
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -2220,6 +2379,7 @@ const ImageEnhancementView = ({ stores, addToast }) => {
         </button>
       </div>
 
+      {/* Stats */}
       <div className="grid grid-cols-5 gap-3">
         {statCards.map(c => (
           <GlassCard key={c.label} className="!p-4 text-center">
@@ -2229,43 +2389,112 @@ const ImageEnhancementView = ({ stores, addToast }) => {
         ))}
       </div>
 
+      {/* Step Wizard */}
       <GlassCard className="!p-5">
-        <h2 className="text-base font-bold text-slate-900 dark:text-white mb-4">Tạo Enhancement Run mới</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-          <div>
-            <label className="text-[10px] font-bold text-slate-400 uppercase">Store</label>
-            <select value={selectedStore} onChange={e => setSelectedStore(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-xl bg-white/[0.08] dark:bg-white/[0.04] border border-white/[0.12] dark:border-white/[0.06] text-sm text-slate-700 dark:text-slate-200">
-              <option value="">Chọn store...</option>
-              {storesList.map(st => <option key={st.id} value={st.id}>{st.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="text-[10px] font-bold text-slate-400 uppercase">Approval Mode</label>
-            <select value={approvalMode} onChange={e => setApprovalMode(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-xl bg-white/[0.08] dark:bg-white/[0.04] border border-white/[0.12] dark:border-white/[0.06] text-sm text-slate-700 dark:text-slate-200">
-              <option value="SEMI_AUTO">Semi-Auto (score &ge; 0.8)</option>
-              <option value="MANUAL">Manual (duyệt tất cả)</option>
-              <option value="AUTO">Auto (chỉ flag thấp)</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-[10px] font-bold text-slate-400 uppercase">AI Provider</label>
-            <select value={aiProvider} onChange={e => setAiProvider(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-xl bg-white/[0.08] dark:bg-white/[0.04] border border-white/[0.12] dark:border-white/[0.06] text-sm text-slate-700 dark:text-slate-200">
-              <option value="GEMINI_FLASH">Gemini 2.5 Flash</option>
-              <option value="FLUX_2_MAX">FLUX 2 Max</option>
-              <option value="IDEOGRAM">Ideogram</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-[10px] font-bold text-slate-400 uppercase">Loại SP (tùy chọn)</label>
-            <input type="text" value={productType} onChange={e => setProductType(e.target.value)} placeholder="vd: preserved rose" className="w-full mt-1 px-3 py-2 rounded-xl bg-white/[0.08] dark:bg-white/[0.04] border border-white/[0.12] dark:border-white/[0.06] text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400" />
-          </div>
+        {/* Step indicators */}
+        <div className="flex items-center space-x-2 mb-5">
+          {[{ n: 1, label: 'Cấu hình' }, { n: 2, label: 'Chọn sản phẩm' }].map(({ n, label }) => (
+            <button key={n} onClick={() => n <= (selectedStore ? 2 : 1) && setStep(n)}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${step === n ? 'bg-indigo-500 text-white' : step > n ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-white/[0.06] text-slate-400'}`}>
+              {step > n ? <CheckCircle2 size={14} /> : <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px]">{n}</span>}
+              <span>{label}</span>
+            </button>
+          ))}
+          {selectedProductIds.size > 0 && (
+            <span className="ml-auto text-xs font-bold text-indigo-500">
+              {selectedProductIds.size} SP sẵn sàng
+            </span>
+          )}
         </div>
-        <GlassButton variant="primary" onClick={handleStartRun} disabled={starting}>
-          {starting ? <RefreshCw size={14} className="animate-spin mr-2" /> : <Play size={14} className="mr-2" />}
-          Bắt đầu Enhancement
-        </GlassButton>
+
+        {/* Step 1: Config */}
+        {step === 1 && (
+          <div>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white mb-4">Cấu hình Enhancement Run</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase">Store</label>
+                <select value={selectedStore} onChange={e => handleStoreChange(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-xl bg-white/[0.08] dark:bg-white/[0.04] border border-white/[0.12] dark:border-white/[0.06] text-sm text-slate-700 dark:text-slate-200">
+                  <option value="">Chọn store...</option>
+                  {storesList.map(st => <option key={st.id} value={st.id}>{st.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase">Approval Mode</label>
+                <select value={approvalMode} onChange={e => setApprovalMode(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-xl bg-white/[0.08] dark:bg-white/[0.04] border border-white/[0.12] dark:border-white/[0.06] text-sm text-slate-700 dark:text-slate-200">
+                  <option value="SEMI_AUTO">Semi-Auto (score &ge; 0.8)</option>
+                  <option value="MANUAL">Manual (duyệt tất cả)</option>
+                  <option value="AUTO">Auto (chỉ flag thấp)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase">AI Provider</label>
+                <select value={aiProvider} onChange={e => setAiProvider(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-xl bg-white/[0.08] dark:bg-white/[0.04] border border-white/[0.12] dark:border-white/[0.06] text-sm text-slate-700 dark:text-slate-200">
+                  <option value="BANANA_PRO">{'\uD83C\uDF4C'} Banana Pro (Gemini 3 Pro Image)</option>
+                  <option value="GEMINI_FLASH">{'\u26A1'} Banana 2 (Gemini 3.1 Flash Image)</option>
+                  <option value="IDEOGRAM">{'\uD83C\uDFA8'} Ideogram 2.0 (Text-heavy)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase">Loại SP (tùy chọn)</label>
+                <input type="text" value={productType} onChange={e => setProductType(e.target.value)} placeholder="vd: preserved rose" className="w-full mt-1 px-3 py-2 rounded-xl bg-white/[0.08] dark:bg-white/[0.04] border border-white/[0.12] dark:border-white/[0.06] text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400" />
+              </div>
+            </div>
+            <GlassButton variant="primary" onClick={() => { if (!selectedStore) { addToast('Chọn store trước', 'warning'); return; } setStep(2); }} disabled={!selectedStore}>
+              <ChevronRight size={14} className="mr-1" /> Tiếp: Chọn sản phẩm
+            </GlassButton>
+          </div>
+        )}
+
+        {/* Step 2: Select Products */}
+        {step === 2 && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-2">
+                <button onClick={() => setStep(1)} className="p-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] transition-colors">
+                  <ChevronLeft size={16} className="text-slate-400" />
+                </button>
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">Chọn sản phẩm cần tạo ảnh</h2>
+              </div>
+            </div>
+
+            {loadingProducts ? (
+              <div className="flex items-center justify-center py-12">
+                <RefreshCw size={24} className="animate-spin text-indigo-500 mr-3" />
+                <span className="text-slate-400">Đang tải sản phẩm...</span>
+              </div>
+            ) : products.length === 0 ? (
+              <div className="text-center py-12">
+                <Package size={32} className="mx-auto text-slate-300 mb-2" />
+                <p className="text-sm text-slate-400">Store chưa có sản phẩm. Sync trước.</p>
+              </div>
+            ) : (
+              <>
+                <ProductSelectionGrid
+                  products={filteredProducts}
+                  selectedIds={selectedProductIds}
+                  onToggle={handleToggleProduct}
+                  onSelectAll={() => setSelectedProductIds(new Set(filteredProducts.map(p => p.id)))}
+                  onDeselectAll={() => setSelectedProductIds(new Set())}
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                />
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/[0.06]">
+                  <p className="text-xs text-slate-400">
+                    {selectedProductIds.size} sản phẩm, ~{selectedProductIds.size * 3} ảnh sẽ được xử lý
+                  </p>
+                  <GlassButton variant="primary" onClick={handleStartRun} disabled={starting || selectedProductIds.size === 0}>
+                    {starting ? <RefreshCw size={14} className="animate-spin mr-2" /> : <Play size={14} className="mr-2" />}
+                    Bắt đầu Enhancement ({selectedProductIds.size} SP)
+                  </GlassButton>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </GlassCard>
 
+      {/* Enhancement Runs History */}
       <GlassCard className="!p-5">
         <h2 className="text-base font-bold text-slate-900 dark:text-white mb-4">Enhancement Runs</h2>
         {runs.length === 0 ? (
@@ -2295,9 +2524,16 @@ const ImageEnhancementView = ({ stores, addToast }) => {
   );
 };
 
+// ============================================
+// Image Review View — Before/After + Bulk Actions
+// ============================================
 const ImageReviewView = ({ addToast }) => {
   const review = useApi(() => api.getImageReview(), []);
   const jobs = review.data?.jobs || [];
+  const [selectedJobIds, setSelectedJobIds] = useState(new Set());
+  const [expandedJobId, setExpandedJobId] = useState(null);
+  const [filterStatus, setFilterStatus] = useState('all'); // all, pending, approved, rejected
+  const [processing, setProcessing] = useState(false);
 
   const rejectionReasons = [
     'Background không phù hợp',
@@ -2307,7 +2543,47 @@ const ImageReviewView = ({ addToast }) => {
     'Ánh sáng không khớp',
   ];
 
-  const handleApprove = async (jobId) => {
+  const filteredJobs = useMemo(() => {
+    if (filterStatus === 'all') return jobs;
+    return jobs.filter(j => j.status?.toLowerCase() === filterStatus);
+  }, [jobs, filterStatus]);
+
+  const allSelected = filteredJobs.length > 0 && selectedJobIds.size === filteredJobs.length;
+  const someSelected = selectedJobIds.size > 0 && selectedJobIds.size < filteredJobs.length;
+
+  const toggleJob = (id) => {
+    setSelectedJobIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkApprove = async () => {
+    if (selectedJobIds.size === 0) return;
+    setProcessing(true);
+    try {
+      await api.reviewBulk({ jobIds: Array.from(selectedJobIds), action: 'approve' });
+      addToast(`Đã duyệt ${selectedJobIds.size} ảnh`, 'success');
+      setSelectedJobIds(new Set());
+      review.refetch();
+    } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
+    setProcessing(false);
+  };
+
+  const handleBulkReject = async (reason) => {
+    if (selectedJobIds.size === 0) return;
+    setProcessing(true);
+    try {
+      await api.reviewBulk({ jobIds: Array.from(selectedJobIds), action: 'reject', reason });
+      addToast(`Đã từ chối ${selectedJobIds.size} ảnh`, 'success');
+      setSelectedJobIds(new Set());
+      review.refetch();
+    } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
+    setProcessing(false);
+  };
+
+  const handleSingleApprove = async (jobId) => {
     try {
       await api.reviewImage({ jobId, action: 'approve' });
       addToast('Đã duyệt ảnh', 'success');
@@ -2315,7 +2591,7 @@ const ImageReviewView = ({ addToast }) => {
     } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
   };
 
-  const handleReject = async (jobId, reason) => {
+  const handleSingleReject = async (jobId, reason) => {
     try {
       await api.reviewImage({ jobId, action: 'reject', reason });
       addToast('Đã từ chối ảnh', 'success');
@@ -2342,43 +2618,128 @@ const ImageReviewView = ({ addToast }) => {
           <p className="text-sm text-slate-400 mt-1">Tất cả ảnh đã được xử lý</p>
         </GlassCard>
       ) : (
-        <div className="space-y-4">
-          {jobs.map(job => (
-            <GlassCard key={job.id} className="!p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="font-bold text-slate-900 dark:text-white">{job.product?.title || 'Product'}</p>
-                  <p className="text-xs text-slate-400">
-                    Position {job.position} | {job.imageClassification} | {job.aiProvider}
-                    {job.qualityScore != null && <> | Score: <span className="text-indigo-400">{job.qualityScore.toFixed(2)}</span></>}
-                    {job.fidelityScore != null && <> | Fidelity: <span className="text-emerald-400">{job.fidelityScore.toFixed(2)}</span></>}
-                  </p>
-                </div>
-                <Badge type="warning">REVIEW</Badge>
+        <>
+          {/* Bulk Action Toolbar */}
+          <GlassCard className="!p-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center space-x-3">
+                <button onClick={() => allSelected ? setSelectedJobIds(new Set()) : setSelectedJobIds(new Set(filteredJobs.map(j => j.id)))}
+                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/[0.12] transition-all text-sm">
+                  {allSelected ? <CheckSquare size={16} className="text-indigo-500" /> : someSelected ? <MinusSquare size={16} className="text-amber-500" /> : <Square size={16} className="text-slate-400" />}
+                  <span className="text-slate-700 dark:text-slate-200 font-medium text-xs">
+                    {selectedJobIds.size > 0 ? `${selectedJobIds.size} đã chọn` : 'Chọn tất cả'}
+                  </span>
+                </button>
+
+                {selectedJobIds.size > 0 && (
+                  <>
+                    <GlassButton variant="primary" onClick={handleBulkApprove} disabled={processing} className="!py-1.5 !px-3 !text-xs">
+                      <ThumbsUp size={13} className="mr-1" /> Duyệt ({selectedJobIds.size})
+                    </GlassButton>
+                    <div className="relative group">
+                      <button className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 text-xs font-medium transition-colors">
+                        <ThumbsDown size={13} className="mr-1" /> Từ chối ({selectedJobIds.size})
+                      </button>
+                      <div className="absolute top-full left-0 mt-1 w-52 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-white/20 dark:border-white/10 py-1 z-50 hidden group-hover:block">
+                        {rejectionReasons.map(reason => (
+                          <button key={reason} onClick={() => handleBulkReject(reason)} className="w-full text-left px-3 py-2 text-xs hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors">
+                            {reason}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
-              <div className="grid grid-cols-2 gap-3 mb-3">
-                <div className="rounded-xl bg-slate-100 dark:bg-slate-800/50 p-3 text-center">
-                  <p className="text-[10px] text-slate-400 mb-1">Ảnh gốc</p>
-                  <p className="text-xs text-slate-500 truncate">{job.originalImagePath || 'N/A'}</p>
-                </div>
-                <div className="rounded-xl bg-slate-100 dark:bg-slate-800/50 p-3 text-center">
-                  <p className="text-[10px] text-slate-400 mb-1">Ảnh AI</p>
-                  <p className="text-xs text-slate-500 truncate">{job.compositedPath || 'N/A'}</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <GlassButton variant="primary" onClick={() => handleApprove(job.id)}>
-                  <CheckCircle2 size={14} className="mr-1" /> Duyệt
-                </GlassButton>
-                {rejectionReasons.map(reason => (
-                  <button key={reason} onClick={() => handleReject(job.id, reason)} className="px-2 py-1 text-[10px] rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors border border-red-500/20">
-                    {reason}
+
+              <div className="flex items-center space-x-1">
+                {['all', 'pending', 'approved', 'rejected'].map(f => (
+                  <button key={f} onClick={() => setFilterStatus(f)}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase transition-all ${filterStatus === f ? 'bg-indigo-500 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
+                    {f === 'all' ? 'Tất cả' : f === 'pending' ? 'Chờ duyệt' : f === 'approved' ? 'Đã duyệt' : 'Từ chối'}
                   </button>
                 ))}
               </div>
-            </GlassCard>
-          ))}
-        </div>
+            </div>
+          </GlassCard>
+
+          {/* Review Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredJobs.map(job => {
+              const isSelected = selectedJobIds.has(job.id);
+              const isExpanded = expandedJobId === job.id;
+              const originalSrc = job.originalImageUrl || job.originalImagePath || '';
+              const aiSrc = job.compositedUrl || job.compositedPath || '';
+
+              return (
+                <GlassCard key={job.id} className={`!p-0 overflow-hidden transition-all ${isSelected ? 'ring-2 ring-indigo-500' : ''}`}>
+                  {/* Card Header */}
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
+                    <div className="flex items-center space-x-2">
+                      <button onClick={() => toggleJob(job.id)} className="p-0.5">
+                        {isSelected ? <CheckSquare size={16} className="text-indigo-500" /> : <Square size={16} className="text-slate-400" />}
+                      </button>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{job.product?.title || 'Product'}</p>
+                        <p className="text-[10px] text-slate-400">Pos {job.position} | {job.imageClassification || 'N/A'} | {job.aiProvider}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      {job.qualityScore != null && (
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${job.qualityScore >= 0.8 ? 'bg-emerald-500/20 text-emerald-500' : job.qualityScore >= 0.5 ? 'bg-amber-500/20 text-amber-500' : 'bg-red-500/20 text-red-500'}`}>
+                          {(job.qualityScore * 100).toFixed(0)}%
+                        </span>
+                      )}
+                      <Badge type={job.status === 'APPROVED' ? 'success' : job.status === 'REJECTED' ? 'danger' : 'warning'}>
+                        {job.status || 'REVIEW'}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Image Comparison */}
+                  {originalSrc && aiSrc ? (
+                    <BeforeAfterSlider beforeSrc={originalSrc} afterSrc={aiSrc} height={isExpanded ? 400 : 220} />
+                  ) : (
+                    <div className="grid grid-cols-2 gap-0">
+                      <div className="aspect-square bg-slate-100 dark:bg-slate-800/60 flex flex-col items-center justify-center p-3">
+                        <p className="text-[10px] text-slate-400 mb-1">Ảnh gốc</p>
+                        {originalSrc ? <img src={originalSrc} alt="Original" className="max-h-40 object-contain rounded" /> : <Image size={24} className="text-slate-300" />}
+                      </div>
+                      <div className="aspect-square bg-slate-100 dark:bg-slate-800/60 flex flex-col items-center justify-center p-3">
+                        <p className="text-[10px] text-slate-400 mb-1">Ảnh AI</p>
+                        {aiSrc ? <img src={aiSrc} alt="AI" className="max-h-40 object-contain rounded" /> : <Image size={24} className="text-slate-300" />}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Card Actions */}
+                  <div className="flex items-center justify-between px-3 py-2 border-t border-white/[0.06]">
+                    <div className="flex items-center space-x-1.5">
+                      <button onClick={() => handleSingleApprove(job.id)} className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 text-xs font-medium transition-colors">
+                        <ThumbsUp size={12} /> <span>Duyệt</span>
+                      </button>
+                      <div className="relative group/rej">
+                        <button className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 text-xs font-medium transition-colors">
+                          <ThumbsDown size={12} /> <span>Từ chối</span>
+                        </button>
+                        <div className="absolute bottom-full left-0 mb-1 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-white/20 dark:border-white/10 py-1 z-50 hidden group-hover/rej:block">
+                          {rejectionReasons.map(reason => (
+                            <button key={reason} onClick={() => handleSingleReject(job.id, reason)} className="w-full text-left px-3 py-1.5 text-[11px] hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors">
+                              {reason}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <button onClick={() => setExpandedJobId(isExpanded ? null : job.id)} className="p-1 rounded-lg hover:bg-white/10 transition-colors text-slate-400">
+                      <ZoomIn size={14} />
+                    </button>
+                  </div>
+                </GlassCard>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );

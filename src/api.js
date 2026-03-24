@@ -55,6 +55,7 @@ export const api = {
   getImageLearning: (storeId) => fetchJSON(`/api/shopify/images/learning${storeId ? `?storeId=${storeId}` : ''}`),
   createImageRun: (data) => postJSON('/api/shopify/images', data),
   reviewImage: (data) => postJSON('/api/shopify/images/review', data),
+  reviewBulk: (data) => postJSON('/api/shopify/images/review', data),
   publishImages: (data) => postJSON('/api/shopify/images/publish', data),
   rollbackImages: (data) => postJSON('/api/shopify/images/rollback', data),
   exportCrawl: (sessionId, format = 'json') => fetchJSON(`/api/shopify/crawl-export?sessionId=${sessionId}&format=${format}`),
