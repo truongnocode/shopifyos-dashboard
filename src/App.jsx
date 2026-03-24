@@ -956,21 +956,22 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
       color: 'indigo', group: 'optimize',
       inputs: [{ key: 'storeId', label: 'Chọn store', type: 'store-select', required: true }],
       storeInfo: true,
-      run: async (data) => {
+      run: async (data, { updateProgress }) => {
         if (!data.storeId) throw new Error('Chọn store trước');
-        // Always re-optimize (handles both new + already optimized)
-        let total = 0, more = true;
+        let total = 0, batch = 0, more = true;
         while (more) {
           try {
+            batch++;
             const r = await api.optimizeStore(data.storeId, true);
             total += r.optimized || 0;
+            if (updateProgress) updateProgress(`Batch ${batch}: ${total} SP đã tối ưu...`);
             if (!r.optimized || r.total === 0) more = false;
           } catch { more = false; }
         }
         const store = (stores.data || []).find(s => s.id === data.storeId);
-        return { optimized: total, storeName: store?.name, lastOptimized: store?.lastOptimizedAt };
+        return { optimized: total, storeName: store?.name, batches: batch };
       },
-      formatResult: (r) => ({ 'Sản phẩm đã tối ưu': r.optimized, ...(r.storeName ? { 'Store': r.storeName } : {}) })
+      formatResult: (r) => ({ 'Sản phẩm đã tối ưu': r.optimized, 'Số batch': r.batches, ...(r.storeName ? { 'Store': r.storeName } : {}) })
     },
     {
       id: 'import-crawled', icon: Package, label: 'Import SP',
@@ -1033,8 +1034,9 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
     setSkillResult(null);
     const taskId = addTask(selectedSkill.label);
     updateTask(taskId, { detail: 'Đang xử lý...' });
+    const updateProgress = (msg) => updateTask(taskId, { detail: msg });
     try {
-      const result = await selectedSkill.run(skillFormData);
+      const result = await selectedSkill.run(skillFormData, { updateProgress });
       updateTask(taskId, { status: 'completed', detail: 'Hoàn tất', result: 'OK' });
       setSkillResult(result);
       const formatted = selectedSkill.formatResult ? selectedSkill.formatResult(result) : {};
