@@ -10,7 +10,7 @@ import {
   FileText, Image, Video, Hash, Rocket,
   Store, Gem, Menu, X, ChevronRight,
   ChevronDown, Timer, CircleDot, Layers, History,
-  Upload, FileUp, Database
+  Upload, FileUp, Database, ImagePlus, ScanEye, GraduationCap, RotateCcw
 } from 'lucide-react';
 import { GlassCard, GlassButton, Badge, colorMap, LoadingSkeleton } from './components/ui';
 import { api } from './api';
@@ -2172,6 +2172,311 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
 };
 
 // --- MAIN APP ---
+// ============================================
+// Image Enhancement Views
+// ============================================
+
+const ImageEnhancementView = ({ stores, addToast }) => {
+  const stats = useApi(() => api.getImageStats(), []);
+  const [selectedStore, setSelectedStore] = useState('');
+  const [approvalMode, setApprovalMode] = useState('SEMI_AUTO');
+  const [aiProvider, setAiProvider] = useState('GEMINI_FLASH');
+  const [productType, setProductType] = useState('');
+  const [starting, setStarting] = useState(false);
+
+  const s = stats.data?.stats || { totalRuns: 0, totalJobs: 0, pendingReview: 0, published: 0, approved: 0, rejected: 0, approvalRate: 0 };
+  const runs = stats.data?.runs || [];
+
+  const handleStartRun = async () => {
+    if (!selectedStore) { addToast('Chọn store trước', 'warning'); return; }
+    setStarting(true);
+    try {
+      await api.createImageRun({ storeId: selectedStore, approvalMode, aiProvider, productType: productType || undefined });
+      addToast('Enhancement run đã tạo', 'success');
+      stats.refetch();
+    } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
+    setStarting(false);
+  };
+
+  const statCards = [
+    { label: 'Tổng Runs', value: s.totalRuns, color: 'indigo' },
+    { label: 'Ảnh tạo', value: s.totalJobs, color: 'blue' },
+    { label: 'Chờ duyệt', value: s.pendingReview, color: 'amber' },
+    { label: 'Đã publish', value: s.published, color: 'emerald' },
+    { label: 'Tỷ lệ duyệt', value: `${(s.approvalRate * 100).toFixed(0)}%`, color: 'violet' },
+  ];
+
+  const storesList = stores.data || [];
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Image Enhancement</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">AI tạo ảnh sản phẩm chuyên nghiệp, zero distortion</p>
+        </div>
+        <button onClick={stats.refetch} className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors">
+          <RefreshCw size={16} className={stats.loading ? 'animate-spin text-indigo-500' : 'text-slate-400'} />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-5 gap-3">
+        {statCards.map(c => (
+          <GlassCard key={c.label} className="!p-4 text-center">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{c.label}</p>
+            <p className={`text-2xl font-black mt-1 ${colorMap[c.color]?.text || 'text-slate-900 dark:text-white'}`}>{c.value}</p>
+          </GlassCard>
+        ))}
+      </div>
+
+      <GlassCard className="!p-5">
+        <h2 className="text-base font-bold text-slate-900 dark:text-white mb-4">Tạo Enhancement Run mới</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+          <div>
+            <label className="text-[10px] font-bold text-slate-400 uppercase">Store</label>
+            <select value={selectedStore} onChange={e => setSelectedStore(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-xl bg-white/[0.08] dark:bg-white/[0.04] border border-white/[0.12] dark:border-white/[0.06] text-sm text-slate-700 dark:text-slate-200">
+              <option value="">Chọn store...</option>
+              {storesList.map(st => <option key={st.id} value={st.id}>{st.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] font-bold text-slate-400 uppercase">Approval Mode</label>
+            <select value={approvalMode} onChange={e => setApprovalMode(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-xl bg-white/[0.08] dark:bg-white/[0.04] border border-white/[0.12] dark:border-white/[0.06] text-sm text-slate-700 dark:text-slate-200">
+              <option value="SEMI_AUTO">Semi-Auto (score &ge; 0.8)</option>
+              <option value="MANUAL">Manual (duyệt tất cả)</option>
+              <option value="AUTO">Auto (chỉ flag thấp)</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] font-bold text-slate-400 uppercase">AI Provider</label>
+            <select value={aiProvider} onChange={e => setAiProvider(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-xl bg-white/[0.08] dark:bg-white/[0.04] border border-white/[0.12] dark:border-white/[0.06] text-sm text-slate-700 dark:text-slate-200">
+              <option value="GEMINI_FLASH">Gemini 2.5 Flash</option>
+              <option value="FLUX_2_MAX">FLUX 2 Max</option>
+              <option value="IDEOGRAM">Ideogram</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] font-bold text-slate-400 uppercase">Loại SP (tùy chọn)</label>
+            <input type="text" value={productType} onChange={e => setProductType(e.target.value)} placeholder="vd: preserved rose" className="w-full mt-1 px-3 py-2 rounded-xl bg-white/[0.08] dark:bg-white/[0.04] border border-white/[0.12] dark:border-white/[0.06] text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400" />
+          </div>
+        </div>
+        <GlassButton variant="primary" onClick={handleStartRun} disabled={starting}>
+          {starting ? <RefreshCw size={14} className="animate-spin mr-2" /> : <Play size={14} className="mr-2" />}
+          Bắt đầu Enhancement
+        </GlassButton>
+      </GlassCard>
+
+      <GlassCard className="!p-5">
+        <h2 className="text-base font-bold text-slate-900 dark:text-white mb-4">Enhancement Runs</h2>
+        {runs.length === 0 ? (
+          <p className="text-sm text-slate-400">Chưa có run nào. Tạo run mới ở trên.</p>
+        ) : (
+          <div className="space-y-2">
+            {runs.map(run => (
+              <div key={run.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.04] dark:bg-white/[0.02] border border-white/[0.06]">
+                <div className="flex items-center space-x-3">
+                  <Badge type={run.status === 'PUBLISHED' ? 'success' : run.status === 'FAILED' ? 'danger' : 'warning'}>{run.status}</Badge>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{run.store?.name || 'Store'}</span>
+                  <span className="text-xs text-slate-400">{run.approvalMode}</span>
+                </div>
+                <div className="flex items-center space-x-4 text-xs text-slate-500">
+                  <span>Gen: {run.imagesGenerated}</span>
+                  <span className="text-emerald-500">OK: {run.imagesApproved}</span>
+                  <span className="text-red-400">Reject: {run.imagesRejected}</span>
+                  <span className="text-indigo-400">Pub: {run.imagesPublished}</span>
+                  <span>${run.totalCost?.toFixed(2)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </GlassCard>
+    </div>
+  );
+};
+
+const ImageReviewView = ({ addToast }) => {
+  const review = useApi(() => api.getImageReview(), []);
+  const jobs = review.data?.jobs || [];
+
+  const rejectionReasons = [
+    'Background không phù hợp',
+    'Sản phẩm bị biến dạng',
+    'Text bị thay đổi',
+    'Chất lượng thấp',
+    'Ánh sáng không khớp',
+  ];
+
+  const handleApprove = async (jobId) => {
+    try {
+      await api.reviewImage({ jobId, action: 'approve' });
+      addToast('Đã duyệt ảnh', 'success');
+      review.refetch();
+    } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
+  };
+
+  const handleReject = async (jobId, reason) => {
+    try {
+      await api.reviewImage({ jobId, action: 'reject', reason });
+      addToast('Đã từ chối ảnh', 'success');
+      review.refetch();
+    } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
+  };
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Duyệt ảnh AI</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{jobs.length} ảnh chờ duyệt</p>
+        </div>
+        <button onClick={review.refetch} className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors">
+          <RefreshCw size={16} className={review.loading ? 'animate-spin text-indigo-500' : 'text-slate-400'} />
+        </button>
+      </div>
+
+      {jobs.length === 0 ? (
+        <GlassCard className="!p-8 text-center">
+          <CheckCircle2 size={40} className="mx-auto text-emerald-500 mb-3" />
+          <p className="text-lg font-bold text-slate-900 dark:text-white">Không có ảnh chờ duyệt</p>
+          <p className="text-sm text-slate-400 mt-1">Tất cả ảnh đã được xử lý</p>
+        </GlassCard>
+      ) : (
+        <div className="space-y-4">
+          {jobs.map(job => (
+            <GlassCard key={job.id} className="!p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <p className="font-bold text-slate-900 dark:text-white">{job.product?.title || 'Product'}</p>
+                  <p className="text-xs text-slate-400">
+                    Position {job.position} | {job.imageClassification} | {job.aiProvider}
+                    {job.qualityScore != null && <> | Score: <span className="text-indigo-400">{job.qualityScore.toFixed(2)}</span></>}
+                    {job.fidelityScore != null && <> | Fidelity: <span className="text-emerald-400">{job.fidelityScore.toFixed(2)}</span></>}
+                  </p>
+                </div>
+                <Badge type="warning">REVIEW</Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="rounded-xl bg-slate-100 dark:bg-slate-800/50 p-3 text-center">
+                  <p className="text-[10px] text-slate-400 mb-1">Ảnh gốc</p>
+                  <p className="text-xs text-slate-500 truncate">{job.originalImagePath || 'N/A'}</p>
+                </div>
+                <div className="rounded-xl bg-slate-100 dark:bg-slate-800/50 p-3 text-center">
+                  <p className="text-[10px] text-slate-400 mb-1">Ảnh AI</p>
+                  <p className="text-xs text-slate-500 truncate">{job.compositedPath || 'N/A'}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <GlassButton variant="primary" onClick={() => handleApprove(job.id)}>
+                  <CheckCircle2 size={14} className="mr-1" /> Duyệt
+                </GlassButton>
+                {rejectionReasons.map(reason => (
+                  <button key={reason} onClick={() => handleReject(job.id, reason)} className="px-2 py-1 text-[10px] rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors border border-red-500/20">
+                    {reason}
+                  </button>
+                ))}
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ImageLearningView = () => {
+  const learning = useApi(() => api.getImageLearning(), []);
+  const d = learning.data || { totalLogs: 0, overallApprovalRate: 0, byProductType: {}, byProvider: {}, topRejectionReasons: [] };
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">AI Learning Insights</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Tự học từ {d.totalLogs} lần tạo ảnh</p>
+        </div>
+        <button onClick={learning.refetch} className="p-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors">
+          <RefreshCw size={16} className={learning.loading ? 'animate-spin text-indigo-500' : 'text-slate-400'} />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <GlassCard className="!p-4 text-center">
+          <p className="text-[10px] font-bold text-slate-400 uppercase">Tổng lần tạo</p>
+          <p className="text-3xl font-black text-indigo-500 mt-1">{d.totalLogs}</p>
+        </GlassCard>
+        <GlassCard className="!p-4 text-center">
+          <p className="text-[10px] font-bold text-slate-400 uppercase">Tỷ lệ duyệt</p>
+          <p className={`text-3xl font-black mt-1 ${d.overallApprovalRate >= 0.8 ? 'text-emerald-500' : d.overallApprovalRate >= 0.5 ? 'text-amber-500' : 'text-red-500'}`}>
+            {(d.overallApprovalRate * 100).toFixed(0)}%
+          </p>
+        </GlassCard>
+      </div>
+
+      <GlassCard className="!p-5">
+        <h2 className="text-base font-bold text-slate-900 dark:text-white mb-3">Theo loại sản phẩm</h2>
+        {Object.keys(d.byProductType).length === 0 ? (
+          <p className="text-sm text-slate-400">Chưa có dữ liệu. Chạy enhancement để xem insights.</p>
+        ) : (
+          <div className="space-y-2">
+            {Object.entries(d.byProductType).map(([type, data]) => {
+              const rate = data.total > 0 ? data.approved / data.total : 0;
+              return (
+                <div key={type} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{type}</span>
+                  <div className="flex items-center space-x-4 text-xs">
+                    <span className="text-slate-400">{data.total} ảnh</span>
+                    <span className="text-emerald-500">{data.approved} OK</span>
+                    <span>Q: {data.avgQuality?.toFixed(2)}</span>
+                    <Badge type={rate >= 0.8 ? 'success' : rate >= 0.5 ? 'warning' : 'danger'}>{(rate * 100).toFixed(0)}%</Badge>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </GlassCard>
+
+      <GlassCard className="!p-5">
+        <h2 className="text-base font-bold text-slate-900 dark:text-white mb-3">Theo AI Provider</h2>
+        {Object.keys(d.byProvider).length === 0 ? (
+          <p className="text-sm text-slate-400">Chưa có dữ liệu.</p>
+        ) : (
+          <div className="space-y-2">
+            {Object.entries(d.byProvider).map(([provider, data]) => {
+              const rate = data.total > 0 ? data.approved / data.total : 0;
+              return (
+                <div key={provider} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{provider}</span>
+                  <div className="flex items-center space-x-4 text-xs">
+                    <span className="text-slate-400">{data.total} ảnh</span>
+                    <span>Q: {data.avgQuality?.toFixed(2)}</span>
+                    <Badge type={rate >= 0.8 ? 'success' : 'warning'}>{(rate * 100).toFixed(0)}%</Badge>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </GlassCard>
+
+      {d.topRejectionReasons.length > 0 && (
+        <GlassCard className="!p-5">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white mb-3">Lý do từ chối hàng đầu</h2>
+          <div className="space-y-2">
+            {d.topRejectionReasons.map(([reason, count]) => (
+              <div key={reason} className="flex items-center justify-between p-2 rounded-lg bg-red-500/5 border border-red-500/10">
+                <span className="text-sm text-slate-700 dark:text-slate-300">{reason}</span>
+                <Badge type="danger">{count}</Badge>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+      )}
+    </div>
+  );
+};
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('command-center');
   const [isDark, setIsDark] = useState(false);
@@ -2210,6 +2515,11 @@ export default function App() {
       { id: 'ads', icon: Megaphone, label: 'Quảng cáo' },
       { id: 'social', icon: Share2, label: 'Mạng xã hội' },
       { id: 'winning-products', icon: TrendingUp, label: 'Nghiên cứu SP' },
+    ]},
+    { group: 'Ảnh sản phẩm', items: [
+      { id: 'image-enhance', icon: ImagePlus, label: 'Enhancement' },
+      { id: 'image-review', icon: ScanEye, label: 'Duyệt ảnh' },
+      { id: 'image-learning', icon: GraduationCap, label: 'AI Learning' },
     ]},
     { group: 'Quản lý Store', items: [
       { id: 'pipeline-auto', icon: Rocket, label: 'Setup tự động' },
@@ -2375,6 +2685,16 @@ export default function App() {
                 <SidebarItem icon={Settings} label="Niche & Store" active={activeTab === 'stores-manage'} onClick={() => setActiveTab('stores-manage')} compact />
               </div>
 
+              {/* Bento Block: Ảnh sản phẩm */}
+              <div className="rounded-[16px] bg-white/[0.06] dark:bg-white/[0.02] border border-white/[0.08] dark:border-white/[0.03] p-1.5">
+                <p className="text-[9px] font-bold text-slate-400/70 uppercase tracking-[0.1em] px-2.5 pt-1 pb-1.5">Ảnh sản phẩm</p>
+                <SidebarItem icon={ImagePlus} label="Enhancement" active={activeTab === 'image-enhance'} onClick={() => setActiveTab('image-enhance')} compact />
+                <div className="mx-2.5 border-b border-white/[0.06] dark:border-white/[0.03]" />
+                <SidebarItem icon={ScanEye} label="Duyệt ảnh" active={activeTab === 'image-review'} onClick={() => setActiveTab('image-review')} compact />
+                <div className="mx-2.5 border-b border-white/[0.06] dark:border-white/[0.03]" />
+                <SidebarItem icon={GraduationCap} label="AI Learning" active={activeTab === 'image-learning'} onClick={() => setActiveTab('image-learning')} compact />
+              </div>
+
               {/* Bento Block: AI Skills */}
               <div className="rounded-[16px] bg-white/[0.06] dark:bg-white/[0.02] border border-white/[0.08] dark:border-white/[0.03] p-1.5">
                 <p className="text-[9px] font-bold text-slate-400/70 uppercase tracking-[0.1em] px-2.5 pt-1 pb-1.5">AI Skills</p>
@@ -2427,6 +2747,9 @@ export default function App() {
             {activeTab === 'pipeline-auto' && <PipelineView mode="auto" stores={stores} runs={runs} addToast={addToast} handleQuickAction={handleQuickAction} addTask={addTask} updateTask={updateTask} />}
             {activeTab === 'pipeline-custom' && <PipelineView mode="custom" stores={stores} runs={runs} addToast={addToast} handleQuickAction={handleQuickAction} addTask={addTask} updateTask={updateTask} />}
             {activeTab === 'stores-manage' && <StoresManageView niches={niches} stores={stores} addToast={addToast} />}
+            {activeTab === 'image-enhance' && <ImageEnhancementView stores={stores} addToast={addToast} />}
+            {activeTab === 'image-review' && <ImageReviewView addToast={addToast} />}
+            {activeTab === 'image-learning' && <ImageLearningView />}
           </div>
         </div>
 

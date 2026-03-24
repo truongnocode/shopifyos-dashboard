@@ -49,6 +49,14 @@ export const api = {
   deleteStore: (id) => fetch(`${API_BASE}/api/shopify/stores?id=${id}`, { method: 'DELETE' }).then(r => r.json()),
   importCrawled: (storeId, sessionId) => postJSON('/api/shopify', { action: 'import-crawled', storeId, sessionId }),
   importFromFile: (storeId, products) => postJSON('/api/shopify', { action: 'import-file', storeId, products }),
+  // Image Enhancement
+  getImageStats: (storeId) => fetchJSON(`/api/shopify/images${storeId ? `?storeId=${storeId}` : ''}`),
+  getImageReview: (storeId) => fetchJSON(`/api/shopify/images/review${storeId ? `?storeId=${storeId}` : ''}`),
+  getImageLearning: (storeId) => fetchJSON(`/api/shopify/images/learning${storeId ? `?storeId=${storeId}` : ''}`),
+  createImageRun: (data) => postJSON('/api/shopify/images', data),
+  reviewImage: (data) => postJSON('/api/shopify/images/review', data),
+  publishImages: (data) => postJSON('/api/shopify/images/publish', data),
+  rollbackImages: (data) => postJSON('/api/shopify/images/rollback', data),
   exportCrawl: (sessionId, format = 'json') => fetchJSON(`/api/shopify/crawl-export?sessionId=${sessionId}&format=${format}`),
   downloadCrawlCsv: async (sessionId) => {
     const res = await fetch(`${API_BASE}/api/shopify/crawl-export?sessionId=${sessionId}&format=csv`);
