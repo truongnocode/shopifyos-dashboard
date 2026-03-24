@@ -957,7 +957,9 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
       inputs: [{ key: 'storeId', label: 'Chọn store', type: 'store-select', required: true }],
       run: async (data) => {
         if (!data.storeId) throw new Error('Chọn store trước');
-        let total = 0, more = true;
+        const firstCheck = await api.optimizeStore(data.storeId);
+        if (firstCheck.allOptimized) return { optimized: 0, message: firstCheck.message, totalProducts: firstCheck.totalProducts };
+        let total = firstCheck.optimized || 0, more = total > 0;
         while (more) {
           try {
             const r = await api.optimizeStore(data.storeId);
@@ -967,7 +969,7 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
         }
         return { optimized: total };
       },
-      formatResult: (r) => ({ 'Sản phẩm đã tối ưu': r.optimized })
+      formatResult: (r) => r.message ? { 'Trạng thái': r.message, 'Tổng SP': r.totalProducts } : { 'Sản phẩm đã tối ưu': r.optimized }
     },
     {
       id: 'import-crawled', icon: Package, label: 'Import SP',
