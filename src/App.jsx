@@ -8,7 +8,8 @@ import {
   TrendingUp, ShoppingBag, Eye, ExternalLink,
   Sparkles, BarChart3, Globe, Heart, Lightbulb,
   FileText, Image, Video, Hash, Rocket,
-  Store, Gem, Menu, X, ChevronRight
+  Store, Gem, Menu, X, ChevronRight,
+  ChevronDown, Timer, CircleDot, Layers, History
 } from 'lucide-react';
 import { GlassCard, GlassButton, Badge, colorMap, LoadingSkeleton } from './components/ui';
 import { api } from './api';
@@ -1637,72 +1638,299 @@ const SidebarItem = ({ icon: Icon, label, active, onClick, compact }) => (
   </button>
 );
 
-// --- RIGHT PANEL (Column 3) ---
+// --- RIGHT PANEL (Column 3) - Redesigned with Vercel/Linear/GitHub patterns ---
 const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction, addToast }) => {
   const storeList = stores.data || [];
   const runList = runs.data || [];
   const nicheList = niches?.data || [];
-  const lastSync = storeList[0]?.lastSyncAt ? new Date(storeList[0].lastSyncAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'Chưa có';
-  const lastOptimize = storeList[0]?.lastOptimizedAt ? new Date(storeList[0].lastOptimizedAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'Chưa có';
+  const [rightTab, setRightTab] = useState('monitor'); // 'monitor' | 'history'
+  const [expandedTaskId, setExpandedTaskId] = useState(null);
+  const [expandedHistoryId, setExpandedHistoryId] = useState(null);
+  const [historyFilter, setHistoryFilter] = useState('all');
 
-  const inputClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[16px] py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200 placeholder-slate-400";
+  // Read persistent result history
+  const [resultHistory, setResultHistory] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('shopifyos-result-history') || '[]'); } catch { return []; }
+  });
+  useEffect(() => {
+    const interval = setInterval(() => {
+      try { setResultHistory(JSON.parse(localStorage.getItem('shopifyos-result-history') || '[]')); } catch {}
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
-  // Shared: Task Monitor
-  const TaskSection = () => tasks.length > 0 && (
+  // Derived data
+  const runningTasks = tasks.filter(t => t.status === 'running');
+  const completedTasks = tasks.filter(t => t.status !== 'running');
+  const totalRuns = resultHistory.length;
+  const successRuns = resultHistory.filter(r => !r.data?.['Lỗi']).length;
+  const totalOptimized = resultHistory.reduce((sum, r) => sum + (r.raw?.optimized || r.raw?.imported || r.raw?.productsCrawled || 0), 0);
+  const filteredHistory = historyFilter === 'all' ? resultHistory : resultHistory.filter(r => r.skillId === historyFilter);
+  const skillFilters = [...new Set(resultHistory.map(r => r.skillId))].filter(Boolean);
+
+  const getElapsed = (startedAt) => {
+    if (!startedAt) return '';
+    const secs = Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000);
+    if (secs < 60) return `${secs}s`;
+    const mins = Math.floor(secs / 60);
+    return `${mins}m${secs % 60}s`;
+  };
+
+  const getRelativeTime = (dateStr) => {
+    if (!dateStr) return '';
+    const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    if (diff < 60) return `${diff}s trước`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m trước`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h trước`;
+    return `${Math.floor(diff / 86400)}d trước`;
+  };
+
+  const statusConfig = {
+    running: { dot: 'bg-blue-500', ring: 'ring-blue-500/30', text: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-500/[0.06]', label: 'Đang chạy' },
+    completed: { dot: 'bg-emerald-500', ring: 'ring-emerald-500/30', text: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500/[0.04]', label: 'Hoàn tất' },
+    failed: { dot: 'bg-rose-500', ring: 'ring-rose-500/30', text: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-500/[0.04]', label: 'Lỗi' },
+  };
+
+  // === KPI CARDS (Retool-style) ===
+  const KPICards = () => {
+    const activeStore = storeList[0];
+    const productCount = activeStore?.productCount || 0;
+    const successRate = totalRuns > 0 ? Math.round(successRuns / totalRuns * 100) : 0;
+    return (
+      <div className="grid grid-cols-3 gap-1.5">
+        <div className="text-center p-2 rounded-[12px] bg-white/[0.06] dark:bg-slate-800/[0.08] border border-white/[0.08] dark:border-white/[0.03]">
+          <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{productCount}</p>
+          <p className="text-[8px] text-slate-400 mt-0.5">Sản phẩm</p>
+        </div>
+        <div className="text-center p-2 rounded-[12px] bg-white/[0.06] dark:bg-slate-800/[0.08] border border-white/[0.08] dark:border-white/[0.03]">
+          <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{successRate}%</p>
+          <p className="text-[8px] text-slate-400 mt-0.5">Thành công</p>
+        </div>
+        <div className="text-center p-2 rounded-[12px] bg-white/[0.06] dark:bg-slate-800/[0.08] border border-white/[0.08] dark:border-white/[0.03]">
+          <p className="text-sm font-bold text-amber-600 dark:text-amber-400">{totalOptimized}</p>
+          <p className="text-[8px] text-slate-400 mt-0.5">Đã xử lý</p>
+        </div>
+      </div>
+    );
+  };
+
+  // === LIVE TASK MONITOR (Vercel-style with status dots) ===
+  const LiveMonitor = () => (
     <div>
-      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Giám sát tác vụ</p>
-      <div className="space-y-1.5">
-        {tasks.map((task) => (
-          <div key={task.id} className="flex items-center justify-between p-2.5 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[16px] border border-white/[0.1] dark:border-white/[0.04]">
-            <div className="flex items-center space-x-2 min-w-0 flex-1">
-              <div className={`p-1.5 rounded-[14px] flex-shrink-0 ${task.status === 'running' ? 'bg-blue-100 dark:bg-blue-500/20' : task.status === 'completed' ? 'bg-emerald-100 dark:bg-emerald-500/20' : 'bg-rose-100 dark:bg-rose-500/20'}`}>
-                {task.status === 'running' ? <RefreshCw size={12} className="text-blue-500 animate-spin" /> : task.status === 'completed' ? <CheckCircle2 size={12} className="text-emerald-500" /> : <AlertCircle size={12} className="text-rose-500" />}
+      {/* Running tasks - Vercel deployment style */}
+      {runningTasks.map((task) => {
+        const cfg = statusConfig.running;
+        return (
+          <div key={task.id} className="mb-2 p-2.5 rounded-[14px] bg-blue-500/[0.05] dark:bg-blue-500/[0.08] border border-blue-400/15 dark:border-blue-500/10">
+            <div className="flex items-start space-x-2.5">
+              {/* Animated status dot */}
+              <div className="mt-1 relative flex-shrink-0">
+                <div className={`w-2 h-2 rounded-full ${cfg.dot}`}></div>
+                <div className={`absolute inset-0 w-2 h-2 rounded-full ${cfg.dot} animate-ping opacity-40`}></div>
               </div>
-              <div className="min-w-0">
-                <p className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate">{task.label}</p>
-                <p className="text-[9px] text-slate-500 truncate">{task.detail}</p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 truncate">{task.label}</p>
+                  <span className="text-[9px] font-mono text-blue-500/80 ml-1 flex-shrink-0">{getElapsed(task.startedAt)}</span>
+                </div>
+                <p className="text-[10px] text-blue-500/60 dark:text-blue-400/50 mt-0.5 truncate">{task.detail}</p>
+                {/* Slim progress bar */}
+                <div className="mt-1.5 h-[3px] bg-blue-200/20 dark:bg-blue-900/20 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all" style={{
+                    width: task.detail?.match(/Batch (\d+)/) ? `${Math.min(95, parseInt(task.detail.match(/Batch (\d+)/)?.[1] || '1') * 20)}%` : '40%',
+                    animation: 'pulse 2s ease-in-out infinite'
+                  }}></div>
+                </div>
               </div>
             </div>
-            {task.result && <span className="text-[9px] font-semibold text-emerald-600 flex-shrink-0 ml-1">{task.result}</span>}
-            {task.status === 'running' && <span className="text-[9px] text-blue-500 flex-shrink-0 ml-1 animate-pulse">...</span>}
           </div>
-        ))}
-      </div>
+        );
+      })}
+
+      {/* Completed/failed - GitHub Actions style timeline */}
+      {completedTasks.length > 0 && (
+        <div className="relative">
+          {/* Vertical timeline line */}
+          <div className="absolute left-[7px] top-2 bottom-2 w-[1px] bg-slate-200/50 dark:bg-slate-700/30"></div>
+          <div className="space-y-0.5">
+            {completedTasks.slice(0, 8).map((task) => {
+              const cfg = statusConfig[task.status] || statusConfig.failed;
+              const isExpanded = expandedTaskId === task.id;
+              return (
+                <div key={task.id}>
+                  <div
+                    onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
+                    className={`relative flex items-center space-x-2.5 p-1.5 pl-0 rounded-[10px] cursor-pointer transition-all hover:bg-white/[0.06] dark:hover:bg-slate-800/[0.08] group`}
+                  >
+                    {/* Status dot on timeline */}
+                    <div className="relative z-10 flex-shrink-0 ml-[3px]">
+                      <div className={`w-[10px] h-[10px] rounded-full ${cfg.dot} ring-2 ${cfg.ring} ring-offset-1 ring-offset-white dark:ring-offset-slate-900`}></div>
+                    </div>
+                    <div className="flex-1 min-w-0 flex items-center justify-between">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-medium text-slate-700 dark:text-slate-300 truncate">{task.label}</p>
+                      </div>
+                      <div className="flex items-center space-x-1 flex-shrink-0 ml-1">
+                        {task.result && <span className={`text-[9px] font-semibold ${cfg.text}`}>{task.result}</span>}
+                        <span className="text-[8px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">{getRelativeTime(task.startedAt)}</span>
+                        <ChevronDown size={9} className={`text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                      </div>
+                    </div>
+                  </div>
+                  {/* Expanded detail - step breakdown */}
+                  {isExpanded && (
+                    <div className="ml-6 mb-1 p-2 bg-white/[0.05] dark:bg-slate-800/[0.06] rounded-[8px] border border-white/[0.06] dark:border-white/[0.02]">
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] text-slate-500">Trạng thái</span>
+                          <span className={`text-[9px] font-semibold ${cfg.text}`}>{cfg.label}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] text-slate-500">Chi tiết</span>
+                          <span className="text-[9px] text-slate-600 dark:text-slate-400">{task.detail}</span>
+                        </div>
+                        {task.result && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-[9px] text-slate-500">Kết quả</span>
+                            <span className={`text-[9px] font-bold ${cfg.text}`}>{task.result}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] text-slate-500">Thời gian</span>
+                          <span className="text-[9px] text-slate-400">{task.startedAt ? new Date(task.startedAt).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : ''}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {tasks.length === 0 && (
+        <div className="text-center py-4">
+          <CircleDot size={20} className="mx-auto text-slate-300 dark:text-slate-600 mb-1.5" />
+          <p className="text-[10px] text-slate-400">Chưa có tác vụ nào</p>
+          <p className="text-[9px] text-slate-400/60 mt-0.5">Chạy công cụ ở cột giữa để bắt đầu</p>
+        </div>
+      )}
     </div>
   );
 
-  // Shared: Recent Activity
-  const ActivitySection = () => (
+  // === ACTIVITY HISTORY (Shopify Admin + GitHub style with filters) ===
+  const ActivityHistory = () => (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hoạt động gần đây</p>
-        <button onClick={runs.refetch} className="p-1 rounded-[14px] hover:bg-white/40 dark:hover:bg-white/5 transition-all">
-          <RefreshCw size={12} className={`text-slate-400 ${runs.loading ? 'animate-spin' : ''}`} />
-        </button>
-      </div>
-      <div className="space-y-1.5">
-        {runList.slice(0, 5).map((run) => {
-          const isOk = run.status === 'COMPLETED' || run.status === 'success';
-          const time = run.startedAt ? new Date(run.startedAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
-          return (
-            <div key={run.id} className="flex items-center space-x-2 p-2 bg-white/[0.06] dark:bg-slate-800/[0.08] rounded-[14px]">
-              <div className={`p-1 rounded-[14px] flex-shrink-0 ${isOk ? 'bg-emerald-100 dark:bg-emerald-500/20' : 'bg-amber-100 dark:bg-amber-500/20'}`}>
-                {isOk ? <CheckCircle2 size={12} className="text-emerald-500" /> : <Clock size={12} className="text-amber-500" />}
+      {/* Filter chips */}
+      {skillFilters.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-2.5">
+          <button
+            onClick={() => setHistoryFilter('all')}
+            className={`px-2 py-0.5 rounded-full text-[9px] font-medium transition-all ${
+              historyFilter === 'all' ? 'bg-indigo-500 text-white shadow-sm shadow-indigo-500/20' : 'bg-white/[0.08] dark:bg-slate-800/[0.1] text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+            }`}
+          >Tất cả ({totalRuns})</button>
+          {skillFilters.map(f => {
+            const count = resultHistory.filter(r => r.skillId === f).length;
+            return (
+              <button
+                key={f}
+                onClick={() => setHistoryFilter(f)}
+                className={`px-2 py-0.5 rounded-full text-[9px] font-medium transition-all ${
+                  historyFilter === f ? 'bg-indigo-500 text-white shadow-sm shadow-indigo-500/20' : 'bg-white/[0.08] dark:bg-slate-800/[0.1] text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                }`}
+              >{f === 'optimize' ? 'SEO' : f === 'crawl' ? 'Crawl' : f === 'import-crawled' ? 'Import' : f} ({count})</button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* History list - expandable timeline */}
+      <div className="space-y-1 max-h-[calc(100vh-420px)] overflow-y-auto hide-scrollbar">
+        {filteredHistory.length === 0 ? (
+          <div className="text-center py-4">
+            <History size={18} className="mx-auto text-slate-300 dark:text-slate-600 mb-1.5" />
+            <p className="text-[10px] text-slate-400">Chưa có lịch sử</p>
+          </div>
+        ) : (
+          filteredHistory.map((r) => {
+            const isExpanded = expandedHistoryId === r.id;
+            const hasError = r.data?.['Lỗi'];
+            const skillColorMap = { optimize: 'indigo', crawl: 'blue', 'import-crawled': 'amber' };
+            const sColor = skillColorMap[r.skillId] || 'emerald';
+            return (
+              <div key={r.id}>
+                <div
+                  onClick={() => setExpandedHistoryId(isExpanded ? null : r.id)}
+                  className="flex items-center space-x-2 p-2 rounded-[10px] cursor-pointer transition-all hover:bg-white/[0.06] dark:hover:bg-slate-800/[0.06] group"
+                >
+                  {/* Colored status dot */}
+                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${hasError ? 'bg-rose-500' : `bg-${sColor}-500`}`}
+                    style={{ backgroundColor: hasError ? '#f43f5e' : sColor === 'indigo' ? '#6366f1' : sColor === 'blue' ? '#3b82f6' : sColor === 'amber' ? '#f59e0b' : '#10b981' }}
+                  ></div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] font-medium text-slate-700 dark:text-slate-300 truncate">{r.skill}</p>
+                      <span className="text-[8px] text-slate-400 flex-shrink-0 ml-1">{r.time}</span>
+                    </div>
+                    {/* Quick summary inline */}
+                    {r.data && !isExpanded && (
+                      <p className="text-[9px] text-slate-400/70 truncate mt-0.5">
+                        {Object.entries(r.data).slice(0, 2).map(([k, v]) => `${k}: ${v}`).join(' · ')}
+                      </p>
+                    )}
+                  </div>
+                  <ChevronDown size={9} className={`text-slate-400 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />
+                </div>
+                {isExpanded && r.data && (
+                  <div className="ml-5 mb-1 p-2 bg-white/[0.05] dark:bg-slate-800/[0.06] rounded-[8px] border border-white/[0.05] dark:border-white/[0.02]">
+                    {Object.entries(r.data).map(([k, v]) => (
+                      <div key={k} className="flex justify-between py-0.5">
+                        <span className="text-[9px] text-slate-500">{k}</span>
+                        <span className={`text-[9px] font-semibold ${k === 'Lỗi' ? 'text-rose-500' : 'text-slate-700 dark:text-slate-300'}`}>{String(v)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate">{run.runType?.replace(/_/g, ' ')}</p>
-                <p className="text-[9px] text-slate-400">{time}</p>
-              </div>
-              {run.productsOptimized > 0 && <span className="text-[9px] font-semibold text-emerald-600">{run.productsOptimized}/{run.productsTotal}</span>}
-            </div>
-          );
-        })}
-        {runList.length === 0 && <p className="text-[11px] text-slate-400 text-center py-2">Chưa có hoạt động</p>}
+            );
+          })
+        )}
       </div>
+
+      {/* API runs - recent */}
+      {runList.length > 0 && (
+        <div className="mt-3 pt-3 border-t border-white/[0.06] dark:border-white/[0.03]">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">API Runs</p>
+            <button onClick={runs.refetch} className="p-0.5 rounded-full hover:bg-white/20 dark:hover:bg-white/5 transition-all">
+              <RefreshCw size={10} className={`text-slate-400 ${runs.loading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+          <div className="space-y-0.5">
+            {runList.slice(0, 5).map((run) => {
+              const isOk = run.status === 'COMPLETED' || run.status === 'success';
+              return (
+                <div key={run.id} className="flex items-center space-x-2 p-1.5 rounded-[8px] hover:bg-white/[0.04] dark:hover:bg-slate-800/[0.04] transition-all">
+                  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isOk ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-medium text-slate-600 dark:text-slate-300 truncate">{run.runType?.replace(/_/g, ' ')}</p>
+                  </div>
+                  <div className="flex items-center space-x-1.5 flex-shrink-0">
+                    {run.productsOptimized > 0 && <span className="text-[9px] font-semibold text-emerald-600 dark:text-emerald-400">{run.productsOptimized}/{run.productsTotal}</span>}
+                    <span className="text-[8px] text-slate-400">{getRelativeTime(run.startedAt)}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 
-  // Shared: Action Button
+  // === ACTION BUTTON ===
   const ActionBtn = ({ icon: Ic, label, color, onClick }) => (
     <button onClick={onClick} className="w-full flex items-center space-x-3 p-2.5 rounded-[16px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] hover:bg-white/[0.15] dark:hover:bg-slate-700/[0.2] transition-all active:scale-[0.98] cursor-pointer">
       <div className={`p-2 rounded-[12px] ${colorMap[color].bg} ${colorMap[color].text}`}><Ic size={16} /></div>
@@ -1710,147 +1938,121 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
     </button>
   );
 
-  // --- Context-specific panels ---
+  // === CONTEXT ACTIONS (varies by tab) ===
+  const ContextActions = () => {
+    if (activeTab === 'command-center') return (
+      <div className="space-y-1.5">
+        <ActionBtn icon={Package} label="Tối ưu sản phẩm" color="indigo" onClick={() => handleQuickAction('optimize', 'Tối ưu sản phẩm')} />
+        <ActionBtn icon={Megaphone} label="Tạo quảng cáo" color="rose" onClick={() => handleQuickAction('ads', 'Tạo quảng cáo')} />
+        <ActionBtn icon={Share2} label="Nội dung MXH" color="emerald" onClick={() => handleQuickAction('social', 'Nội dung MXH')} />
+        <ActionBtn icon={TrendingUp} label="Tìm SP tiềm năng" color="amber" onClick={() => handleQuickAction('winning', 'Tìm SP tiềm năng')} />
+      </div>
+    );
+    if (activeTab === 'products') return (
+      <div className="space-y-1.5">
+        <ActionBtn icon={Zap} label="Tối ưu hàng loạt" color="indigo" onClick={() => handleQuickAction('optimize', 'Tối ưu sản phẩm')} />
+      </div>
+    );
+    if (activeTab === 'ads') return (
+      <div className="space-y-1.5">
+        <ActionBtn icon={Eye} label="Meta Ads" color="blue" onClick={() => addToast('Chạy /ads-content-creator trong Claude Code', 'info')} />
+        <ActionBtn icon={Globe} label="Google Ads" color="emerald" onClick={() => addToast('Chạy /ads-content-creator trong Claude Code', 'info')} />
+        <ActionBtn icon={Video} label="TikTok Ads" color="rose" onClick={() => addToast('Chạy /ads-content-creator trong Claude Code', 'info')} />
+      </div>
+    );
+    if (activeTab === 'social') return (
+      <div className="space-y-1.5">
+        <ActionBtn icon={FileText} label="Bài đăng mới" color="indigo" onClick={() => addToast('Chạy /social-content-creator trong Claude Code', 'info')} />
+        <ActionBtn icon={Image} label="Tạo prompt hình" color="purple" onClick={() => addToast('Chạy /social-content-creator trong Claude Code', 'info')} />
+        <ActionBtn icon={Video} label="Ý tưởng video" color="rose" onClick={() => addToast('Chạy /social-content-creator trong Claude Code', 'info')} />
+      </div>
+    );
+    if (activeTab === 'winning-products') return (
+      <div className="space-y-1.5">
+        <ActionBtn icon={TrendingUp} label="Quét Trend" color="emerald" onClick={() => addToast('Chạy /winning-product-hunter trong Claude Code', 'info')} />
+        <ActionBtn icon={Eye} label="Spy Ads đối thủ" color="blue" onClick={() => addToast('Chạy /winning-product-hunter trong Claude Code', 'info')} />
+        <ActionBtn icon={ShoppingBag} label="Chấm điểm SP" color="amber" onClick={() => addToast('Chạy /winning-product-hunter trong Claude Code', 'info')} />
+      </div>
+    );
+    if (activeTab === 'pipeline-auto' || activeTab === 'pipeline-custom') return (
+      <div className="space-y-1.5">
+        <ActionBtn icon={Rocket} label="Chạy Full Pipeline" color="purple" onClick={() => addToast('Gõ /shopify-pipeline trong Claude Code', 'info')} />
+        <ActionBtn icon={Eye} label="Crawl đối thủ" color="blue" onClick={() => addToast('Gõ /shopify-pipeline trong Claude Code', 'info')} />
+        <ActionBtn icon={Palette} label="Convert Theme" color="rose" onClick={() => addToast('Gõ /shopify-pipeline trong Claude Code', 'info')} />
+      </div>
+    );
+    if (activeTab === 'stores-manage') return (
+      <div className="space-y-1.5">
+        <ActionBtn icon={Plus} label="Thêm Niche mới" color="purple" onClick={() => addToast('Bấm "Thêm Niche" ở cột giữa', 'info')} />
+        <ActionBtn icon={Plus} label="Thêm Store mới" color="indigo" onClick={() => addToast('Bấm "Thêm Store" ở cột giữa', 'info')} />
+      </div>
+    );
+    return (
+      <div className="space-y-1.5">
+        <ActionBtn icon={Package} label="Tối ưu sản phẩm" color="indigo" onClick={() => handleQuickAction('optimize', 'Tối ưu sản phẩm')} />
+      </div>
+    );
+  };
 
-  if (activeTab === 'command-center') return (
-    <div className="space-y-5">
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Thao tác nhanh</p>
-        <div className="space-y-1.5">
-          <ActionBtn icon={Package} label="Tối ưu sản phẩm" color="indigo" onClick={() => handleQuickAction('optimize', 'Tối ưu sản phẩm')} />
-          {/* Đồng bộ cửa hàng tạm gỡ */}
-          <ActionBtn icon={Megaphone} label="Tạo quảng cáo" color="rose" onClick={() => handleQuickAction('ads', 'Tạo quảng cáo')} />
-          <ActionBtn icon={Share2} label="Nội dung MXH" color="emerald" onClick={() => handleQuickAction('social', 'Nội dung MXH')} />
-          <ActionBtn icon={TrendingUp} label="Tìm SP tiềm năng" color="amber" onClick={() => handleQuickAction('winning', 'Tìm SP tiềm năng')} />
-        </div>
-      </div>
-      <TaskSection />
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Trạng thái cửa hàng</p>
-        <div className="space-y-2 p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[16px] border border-white/[0.1] dark:border-white/[0.04]">
-          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Sản phẩm</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{storeList[0]?.productCount || 0}</span></div>
-          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Đồng bộ lần cuối</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastSync}</span></div>
-          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Tối ưu lần cuối</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastOptimize}</span></div>
-        </div>
-      </div>
-      <ActivitySection />
-    </div>
-  );
-
-  if (activeTab === 'products') return (
-    <div className="space-y-5">
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Công cụ sản phẩm</p>
-        <div className="space-y-1.5">
-          <ActionBtn icon={Zap} label="Tối ưu hàng loạt" color="indigo" onClick={() => handleQuickAction('optimize', 'Tối ưu sản phẩm')} />
-          {/* Đồng bộ từ Shopify tạm gỡ */}
-        </div>
-      </div>
-      <TaskSection />
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Thống kê</p>
-        <div className="space-y-2 p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[16px] border border-white/[0.1] dark:border-white/[0.04]">
-          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Tổng SP</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{storeList[0]?.productCount || 0}</span></div>
-          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Đồng bộ lần cuối</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastSync}</span></div>
-          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Tối ưu lần cuối</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{lastOptimize}</span></div>
-        </div>
-      </div>
-      <ActivitySection />
-    </div>
-  );
-
-  if (activeTab === 'ads') return (
-    <div className="space-y-5">
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Tạo chiến dịch</p>
-        <div className="space-y-1.5">
-          <ActionBtn icon={Eye} label="Meta Ads" color="blue" onClick={() => addToast('Chạy /ads-content-creator trong Claude Code', 'info')} />
-          <ActionBtn icon={Globe} label="Google Ads" color="emerald" onClick={() => addToast('Chạy /ads-content-creator trong Claude Code', 'info')} />
-          <ActionBtn icon={Video} label="TikTok Ads" color="rose" onClick={() => addToast('Chạy /ads-content-creator trong Claude Code', 'info')} />
-        </div>
-      </div>
-      <TaskSection />
-    </div>
-  );
-
-  if (activeTab === 'social') return (
-    <div className="space-y-5">
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Tạo nội dung</p>
-        <div className="space-y-1.5">
-          <ActionBtn icon={FileText} label="Bài đăng mới" color="indigo" onClick={() => addToast('Chạy /social-content-creator trong Claude Code', 'info')} />
-          <ActionBtn icon={Image} label="Tạo prompt hình" color="purple" onClick={() => addToast('Chạy /social-content-creator trong Claude Code', 'info')} />
-          <ActionBtn icon={Video} label="Ý tưởng video" color="rose" onClick={() => addToast('Chạy /social-content-creator trong Claude Code', 'info')} />
-        </div>
-      </div>
-      <TaskSection />
-    </div>
-  );
-
-  if (activeTab === 'winning-products') return (
-    <div className="space-y-5">
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Công cụ nghiên cứu</p>
-        <div className="space-y-1.5">
-          <ActionBtn icon={TrendingUp} label="Quét Trend" color="emerald" onClick={() => addToast('Chạy /winning-product-hunter trong Claude Code', 'info')} />
-          <ActionBtn icon={Eye} label="Spy Ads đối thủ" color="blue" onClick={() => addToast('Chạy /winning-product-hunter trong Claude Code', 'info')} />
-          <ActionBtn icon={ShoppingBag} label="Chấm điểm SP" color="amber" onClick={() => addToast('Chạy /winning-product-hunter trong Claude Code', 'info')} />
-        </div>
-      </div>
-      <TaskSection />
-    </div>
-  );
-
-  if (activeTab === 'pipeline-auto' || activeTab === 'pipeline-custom') return (
-    <div className="space-y-5">
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Pipeline</p>
-        <div className="space-y-1.5">
-          <ActionBtn icon={Rocket} label="Chạy Full Pipeline" color="purple" onClick={() => addToast('Gõ /shopify-pipeline trong Claude Code', 'info')} />
-          <ActionBtn icon={Eye} label="Crawl đối thủ" color="blue" onClick={() => addToast('Gõ /shopify-pipeline trong Claude Code', 'info')} />
-          <ActionBtn icon={Palette} label="Convert Theme" color="rose" onClick={() => addToast('Gõ /shopify-pipeline trong Claude Code', 'info')} />
-          {/* Đồng bộ store tạm gỡ */}
-        </div>
-      </div>
-      <TaskSection />
-      <ActivitySection />
-    </div>
-  );
-
-  if (activeTab === 'stores-manage') return (
-    <div className="space-y-5">
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Quản lý</p>
-        <div className="space-y-1.5">
-          <ActionBtn icon={Plus} label="Thêm Niche mới" color="purple" onClick={() => addToast('Bấm "Thêm Niche" ở cột giữa', 'info')} />
-          <ActionBtn icon={Plus} label="Thêm Store mới" color="indigo" onClick={() => addToast('Bấm "Thêm Store" ở cột giữa', 'info')} />
-          {/* Đồng bộ tất cả tạm gỡ */}
-        </div>
-      </div>
-      <TaskSection />
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Tổng quan</p>
-        <div className="space-y-2 p-3 bg-white/[0.08] dark:bg-slate-800/[0.1] rounded-[16px] border border-white/[0.1] dark:border-white/[0.04]">
-          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Niches</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{nicheList.length}</span></div>
-          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Stores</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{storeList.length}</span></div>
-          <div className="flex justify-between"><span className="text-[11px] text-slate-500">Tổng SP</span><span className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{storeList.reduce((s,st) => s + (st.productCount||0), 0)}</span></div>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Default: themes or any other tab
+  // === MAIN LAYOUT - Unified for all tabs ===
   return (
-    <div className="space-y-5">
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Thao tác nhanh</p>
-        <div className="space-y-1.5">
-          <ActionBtn icon={Package} label="Tối ưu sản phẩm" color="indigo" onClick={() => handleQuickAction('optimize', 'Tối ưu sản phẩm')} />
-          {/* Đồng bộ cửa hàng tạm gỡ */}
-        </div>
+    <div className="space-y-4">
+      {/* Tab switcher - Linear style */}
+      <div className="flex items-center bg-white/[0.06] dark:bg-slate-800/[0.06] rounded-[12px] p-0.5">
+        <button
+          onClick={() => setRightTab('monitor')}
+          className={`flex-1 flex items-center justify-center space-x-1.5 py-1.5 rounded-[10px] text-[10px] font-semibold transition-all ${
+            rightTab === 'monitor'
+              ? 'bg-white/[0.12] dark:bg-slate-700/[0.2] text-slate-800 dark:text-slate-100 shadow-sm'
+              : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+          }`}
+        >
+          <Activity size={12} />
+          <span>Giám sát</span>
+          {runningTasks.length > 0 && (
+            <span className="w-4 h-4 rounded-full bg-blue-500 text-white text-[8px] font-bold flex items-center justify-center animate-pulse">{runningTasks.length}</span>
+          )}
+        </button>
+        <button
+          onClick={() => setRightTab('history')}
+          className={`flex-1 flex items-center justify-center space-x-1.5 py-1.5 rounded-[10px] text-[10px] font-semibold transition-all ${
+            rightTab === 'history'
+              ? 'bg-white/[0.12] dark:bg-slate-700/[0.2] text-slate-800 dark:text-slate-100 shadow-sm'
+              : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+          }`}
+        >
+          <History size={12} />
+          <span>Lịch sử</span>
+          {totalRuns > 0 && (
+            <span className="px-1.5 h-4 rounded-full bg-slate-200/60 dark:bg-slate-700/40 text-slate-600 dark:text-slate-400 text-[8px] font-bold flex items-center justify-center">{totalRuns}</span>
+          )}
+        </button>
       </div>
-      <TaskSection />
-      <ActivitySection />
+
+      {/* KPI summary */}
+      <KPICards />
+
+      {/* Tab content */}
+      {rightTab === 'monitor' ? (
+        <div className="space-y-4">
+          {/* Live task feed */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Tác vụ đang chạy</p>
+              {runningTasks.length > 0 && <span className="text-[8px] text-blue-500 font-medium">{runningTasks.length} đang xử lý</span>}
+            </div>
+            <LiveMonitor />
+          </div>
+
+          {/* Context actions */}
+          <div>
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Thao tác nhanh</p>
+            <ContextActions />
+          </div>
+        </div>
+      ) : (
+        <ActivityHistory />
+      )}
     </div>
   );
 };
