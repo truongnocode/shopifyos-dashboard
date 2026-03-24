@@ -45,11 +45,11 @@ const fallbackStores = [
 ];
 
 const fallbackProducts = [
-  { id: 1, title: 'Infinity Love Necklace', productType: 'Necklace', priceMin: '39.99', compareAtPrice: '59.99', tags: 8, imageCount: 5, lastOptimizedAt: '2024-01-01', store: { name: 'Heart To Soul' }, image: 'https://images.unsplash.com/photo-1515562141589-67f0d569b6fc?w=400&h=400&fit=crop', badge: 'Only a few left' },
-  { id: 2, title: 'Eternal Bond Bracelet', productType: 'Bracelet', priceMin: '29.99', compareAtPrice: '44.99', tags: 6, imageCount: 4, lastOptimizedAt: '2024-01-01', store: { name: 'Heart To Soul' }, image: 'https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=400&h=400&fit=crop', badge: 'Edition of 250' },
-  { id: 3, title: 'Soulmate Ring Set', productType: 'Ring', priceMin: '49.99', compareAtPrice: '74.99', tags: 10, imageCount: 6, lastOptimizedAt: '2024-01-01', store: { name: 'Heart To Soul' }, image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=400&fit=crop', badge: 'Edition of 250' },
-  { id: 4, title: 'Heart Pendant Collection', productType: 'Pendant', priceMin: '34.99', compareAtPrice: '49.99', tags: 7, imageCount: 3, lastOptimizedAt: null, store: { name: 'Heart To Soul' }, image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=400&fit=crop', badge: 'Only a few left' },
-  { id: 5, title: 'Promise Earrings', productType: 'Earrings', priceMin: '24.99', compareAtPrice: '39.99', tags: 5, imageCount: 4, lastOptimizedAt: null, store: { name: 'Heart To Soul' }, image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&h=400&fit=crop', badge: 'Edition of 250' },
+  { id: 1, title: 'Infinity Love Necklace', productType: 'Necklace', priceMin: '39.99', tags: 8, imageCount: 5, lastOptimizedAt: '2024-01-01', store: { name: 'Heart To Soul' } },
+  { id: 2, title: 'Eternal Bond Bracelet', productType: 'Bracelet', priceMin: '29.99', tags: 6, imageCount: 4, lastOptimizedAt: '2024-01-01', store: { name: 'Heart To Soul' } },
+  { id: 3, title: 'Soulmate Ring Set', productType: 'Ring', priceMin: '49.99', tags: 10, imageCount: 6, lastOptimizedAt: '2024-01-01', store: { name: 'Heart To Soul' } },
+  { id: 4, title: 'Heart Pendant Collection', productType: 'Pendant', priceMin: '34.99', tags: 7, imageCount: 3, lastOptimizedAt: null, store: { name: 'Heart To Soul' } },
+  { id: 5, title: 'Promise Earrings', productType: 'Earrings', priceMin: '24.99', tags: 5, imageCount: 4, lastOptimizedAt: null, store: { name: 'Heart To Soul' } },
 ];
 
 const fallbackRuns = [
@@ -83,99 +83,6 @@ const skillsConfig = [
   { id: 'winning-product-hunter', name: 'Winning Products', icon: TrendingUp, color: 'amber', desc: 'Tìm SP trend, spy ads đối thủ' },
   { id: 'shopify-pipeline', name: 'Pipeline Manager', icon: Rocket, color: 'purple', desc: 'Quản lý toàn bộ: crawl, optimize, setup' },
 ];
-
-// --- BEST SELLER SECTION (styled like ledmansion.art) ---
-const BestSellerSection = ({ products }) => {
-  const productList = (products?.data || fallbackProducts).slice(0, 4);
-
-  return (
-    <section className="relative -mx-4 md:-mx-8 lg:-mx-10 px-4 md:px-8 lg:px-10 py-12 md:py-16" style={{ backgroundColor: '#f5f0eb' }}>
-      <div className="max-w-6xl mx-auto">
-        {/* Heading */}
-        <h2 className="text-center text-xl md:text-[28px] font-normal tracking-[5px] uppercase mb-10 md:mb-14" style={{ color: '#161529', fontFamily: "'Poppins', sans-serif", letterSpacing: '5.04px' }}>
-          BEST SELLER
-        </h2>
-
-        {/* Product Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-[30px]">
-          {productList.map((product) => {
-            const salePrice = parseFloat(product.priceMin || product.price || 0);
-            const originalPrice = parseFloat(product.compareAtPrice || 0);
-            const hasDiscount = originalPrice > salePrice;
-
-            return (
-              <div key={product.id} className="group cursor-pointer text-center">
-                {/* Product Image with Gold Frame */}
-                <div className="relative mx-auto mb-4 overflow-hidden" style={{ maxWidth: '280px' }}>
-                  <div className="relative aspect-[3/4] overflow-hidden rounded-sm" style={{
-                    border: '8px solid transparent',
-                    borderImage: 'linear-gradient(135deg, #c9a84c, #f0d78c, #a67c32, #f0d78c, #c9a84c) 1',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.15), inset 0 0 10px rgba(201,168,76,0.2)'
-                  }}>
-                    {product.image ? (
-                      <img
-                        src={product.image}
-                        alt={product.title || product.name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
-                        <Gem size={40} className="text-slate-400" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Product Info */}
-                <h3 className="text-sm md:text-base font-normal italic mb-1.5" style={{ color: '#161529', fontFamily: "'Poppins', sans-serif" }}>
-                  {product.title || product.name}
-                </h3>
-
-                {/* Price */}
-                <div className="flex items-center justify-center gap-2 text-sm">
-                  {hasDiscount ? (
-                    <>
-                      <span className="font-medium" style={{ color: '#161529' }}>
-                        From ${salePrice.toFixed(2)}
-                      </span>
-                      <span className="line-through text-gray-400" style={{ fontSize: '13px' }}>
-                        ${originalPrice.toFixed(2)}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="font-medium" style={{ color: '#161529' }}>
-                      From ${salePrice.toFixed(2)}
-                    </span>
-                  )}
-                </div>
-
-                {/* Badge */}
-                {product.badge && (
-                  <p className="mt-1.5 text-xs md:text-sm" style={{ color: '#c45e4f', fontFamily: "'Poppins', sans-serif" }}>
-                    {product.badge}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* VIEW ALL Button */}
-        <div className="text-center mt-10 md:mt-14">
-          <button className="inline-block px-7 py-2.5 text-xs font-normal uppercase tracking-[2.3px] border transition-all duration-300 hover:opacity-80" style={{
-            backgroundColor: '#161529',
-            color: '#ffffff',
-            borderColor: '#161529',
-            letterSpacing: '2.34px',
-            fontSize: '13px'
-          }}>
-            VIEW ALL
-          </button>
-        </div>
-      </div>
-    </section>
-  );
-};
 
 // --- TOAST SYSTEM ---
 const Toast = ({ toasts, removeToast }) => (
@@ -306,9 +213,6 @@ const CommandCenter = ({ stores, dashboard, runs, insights, addToast, tasks, han
           </GlassCard>
         ))}
       </div>
-
-      {/* Best Seller Section - styled like ledmansion.art */}
-      <BestSellerSection products={{ data: null }} />
 
       {/* Quick Actions - shown on mobile/tablet only (right panel on desktop) */}
       <div className="lg:hidden">
@@ -586,12 +490,7 @@ const ProductsView = ({ products, addToast }) => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <p className="font-bold text-sm text-slate-800 dark:text-white truncate pr-2">{prod.title || prod.name}</p>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">${prod.priceMin || prod.price}</span>
-                      {prod.compareAtPrice && parseFloat(prod.compareAtPrice) > parseFloat(prod.priceMin || prod.price || 0) && (
-                        <span className="text-xs text-slate-400 line-through">${prod.compareAtPrice}</span>
-                      )}
-                    </div>
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 flex-shrink-0">${prod.priceMin || prod.price}</span>
                   </div>
                   <div className="flex items-center justify-between mt-1.5">
                     <p className="text-[11px] text-slate-500">{prod.productType || prod.type} &middot; {typeof prod.tags === 'number' ? prod.tags : Array.isArray(prod.tags) ? prod.tags.length : 0} tags &middot; {prod.imageCount || prod.images} ảnh</p>
