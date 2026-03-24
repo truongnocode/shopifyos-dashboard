@@ -1355,7 +1355,9 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
               <div className="flex items-center space-x-2 mb-3 p-2.5 bg-emerald-50/40 dark:bg-emerald-500/8 rounded-[12px] border border-emerald-200/20 dark:border-emerald-500/10">
                 <Sparkles size={12} className="text-emerald-500 flex-shrink-0" />
                 <span className="text-[10px] text-emerald-600 dark:text-emerald-300 font-medium">Tiếp theo:</span>
-                <button onClick={() => { setSkillResult(null); const s = pipelineSkills.find(s => s.id === 'import-crawled'); if (s) { setSelectedSkill(s); setSkillFormData({}); } }} className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer">Import vào Store</button>
+                <button onClick={() => addToast('Mở Claude Code và chạy /ads-content-creator', 'info')} className="text-[10px] font-bold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer">Tạo Ads</button>
+                <span className="text-[10px] text-slate-400">hoặc</span>
+                <button onClick={() => addToast('Mở Claude Code và chạy /social-content-creator', 'info')} className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer">Tạo Content MXH</button>
               </div>
             )}
 
