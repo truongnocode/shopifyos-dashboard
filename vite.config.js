@@ -7,7 +7,8 @@ export default defineConfig({
   base: '/shopifyos-dashboard/',
   server: {
     proxy: {
-      '/api': 'http://localhost:3000'
+      '/api': 'http://localhost:3000',
+      '/generated': 'http://localhost:3000'
     }
   }
 })

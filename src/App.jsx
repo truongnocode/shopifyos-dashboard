@@ -2383,11 +2383,13 @@ const ImageEnhancementView = ({ stores, addToast }) => {
         productType: productType || undefined,
         productIds: Array.from(selectedProductIds),
       });
-      addToast(`Enhancement run đã tạo cho ${selectedProductIds.size} sản phẩm — ${result.jobsCreated} jobs`, 'success');
+      addToast(`Enhancement run đã tạo cho ${selectedProductIds.size} sản phẩm — ${result.jobsCreated} jobs. Đang xử lý...`, 'success');
       stats.refetch();
       setSelectedProductIds(new Set());
       // Navigate to run detail
       openRunDetail(result.run.id);
+      // Auto-trigger processing in background
+      api.processImages({ runId: result.run.id, limit: result.jobsCreated }).catch(() => {});
     } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
     setStarting(false);
   };
@@ -2468,7 +2470,6 @@ const ImageEnhancementView = ({ stores, addToast }) => {
                 <select value={aiProvider} onChange={e => setAiProvider(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-xl bg-white/[0.08] dark:bg-white/[0.04] border border-white/[0.12] dark:border-white/[0.06] text-sm text-slate-700 dark:text-slate-200">
                   <option value="BANANA_PRO">{'\uD83C\uDF4C'} Banana Pro (Gemini 3 Pro Image)</option>
                   <option value="GEMINI_FLASH">{'\u26A1'} Banana 2 (Gemini 3.1 Flash Image)</option>
-                  <option value="IDEOGRAM">{'\uD83C\uDFA8'} Ideogram 2.0 (Text-heavy)</option>
                 </select>
               </div>
               <div>
@@ -2552,9 +2553,23 @@ const ImageEnhancementView = ({ stores, addToast }) => {
                     <p className="text-[10px] text-slate-400">{runDetail.run?.approvalMode} · ID: {activeRunId?.slice(-8)}</p>
                   </div>
                 </div>
-                <Badge type={runDetail.run?.status === 'PUBLISHED' ? 'success' : runDetail.run?.status === 'FAILED' ? 'danger' : runDetail.run?.status === 'GENERATING' ? 'info' : 'warning'}>
-                  {runDetail.run?.status}
-                </Badge>
+                <div className="flex items-center space-x-2">
+                  {runDetail.progress?.pending > 0 && (
+                    <GlassButton variant="primary" className="!py-1.5 !px-3 !text-xs" onClick={async () => {
+                      addToast('Đang xử lý ảnh bằng AI...', 'info');
+                      try {
+                        const r = await api.processImages({ runId: activeRunId, limit: runDetail.progress.pending });
+                        addToast(`Đã xử lý ${r.processed} ảnh`, 'success');
+                        loadRunDetail(activeRunId);
+                      } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
+                    }}>
+                      <Zap size={13} className="mr-1" /> Xử lý ảnh ({runDetail.progress.pending})
+                    </GlassButton>
+                  )}
+                  <Badge type={runDetail.run?.status === 'PUBLISHED' ? 'success' : runDetail.run?.status === 'FAILED' ? 'danger' : runDetail.run?.status === 'GENERATING' ? 'info' : 'warning'}>
+                    {runDetail.run?.status}
+                  </Badge>
+                </div>
               </div>
 
               {/* Progress Bar */}
@@ -2580,7 +2595,7 @@ const ImageEnhancementView = ({ stores, addToast }) => {
               )}
 
               {/* Job Cards */}
-              <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+              <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
                 {(runDetail.jobs || []).map(job => {
                   const statusConfig = {
                     PENDING: { color: 'text-slate-400', bg: 'bg-slate-400/10', label: 'Chờ xử lý', icon: Clock },
@@ -2592,27 +2607,64 @@ const ImageEnhancementView = ({ stores, addToast }) => {
                     FAILED: { color: 'text-red-600', bg: 'bg-red-600/10', label: 'Lỗi', icon: AlertCircle },
                   }[job.status] || { color: 'text-slate-400', bg: 'bg-slate-400/10', label: job.status, icon: Clock };
                   const StatusIcon = statusConfig.icon;
+                  const hasResult = job.compositedPath || job.compositedUrl;
+                  const originalSrc = job.originalImageUrl || job.originalImagePath || '';
+                  const aiSrc = job.compositedUrl || job.compositedPath || '';
 
                   return (
-                    <div key={job.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.04] dark:bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.06] transition-colors">
-                      <div className="flex items-center space-x-3 min-w-0 flex-1">
-                        {/* Product thumbnail */}
-                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
-                          {job.originalImageUrl || job.originalImagePath ? (
-                            <img src={job.originalImageUrl || job.originalImagePath} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center"><Image size={14} className="text-slate-300" /></div>
+                    <div key={job.id} className="rounded-xl bg-white/[0.04] dark:bg-white/[0.02] border border-white/[0.06] overflow-hidden">
+                      {/* Header row */}
+                      <div className="flex items-center justify-between p-3">
+                        <div className="flex items-center space-x-3 min-w-0 flex-1">
+                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
+                            {originalSrc ? (
+                              <img src={originalSrc} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center"><Image size={14} className="text-slate-300" /></div>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate">{job.product?.title || 'Product'}</p>
+                            <p className="text-[10px] text-slate-400">
+                              Pos {job.position} · {job.imageClassification}
+                              {job.generationTimeMs ? ` · ${(job.generationTimeMs / 1000).toFixed(1)}s` : ''}
+                              {job.qualityScore != null ? ` · Q:${(job.qualityScore * 100).toFixed(0)}%` : ''}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {/* Review actions for REVIEW status */}
+                          {job.status === 'REVIEW' && (
+                            <>
+                              <button onClick={async () => {
+                                await api.reviewImage({ jobId: job.id, action: 'approve' });
+                                addToast('Đã duyệt', 'success');
+                                loadRunDetail(activeRunId);
+                              }} className="px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 text-[10px] font-bold transition-colors">
+                                <ThumbsUp size={11} className="inline mr-1" />Duyệt
+                              </button>
+                              <button onClick={async () => {
+                                await api.reviewImage({ jobId: job.id, action: 'reject', reason: 'Chất lượng chưa đạt' });
+                                addToast('Đã từ chối', 'success');
+                                loadRunDetail(activeRunId);
+                              }} className="px-2 py-1 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 text-[10px] font-bold transition-colors">
+                                <ThumbsDown size={11} className="inline mr-1" />Từ chối
+                              </button>
+                            </>
                           )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate">{job.product?.title || 'Product'}</p>
-                          <p className="text-[10px] text-slate-400">Pos {job.position} · {job.imageClassification}</p>
+                          <div className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-full ${statusConfig.bg}`}>
+                            <StatusIcon size={12} className={`${statusConfig.color} ${job.status === 'GENERATING' ? 'animate-spin' : ''}`} />
+                            <span className={`text-[10px] font-bold ${statusConfig.color}`}>{statusConfig.label}</span>
+                          </div>
                         </div>
                       </div>
-                      <div className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-full ${statusConfig.bg}`}>
-                        <StatusIcon size={12} className={`${statusConfig.color} ${job.status === 'GENERATING' ? 'animate-spin' : ''}`} />
-                        <span className={`text-[10px] font-bold ${statusConfig.color}`}>{statusConfig.label}</span>
-                      </div>
+
+                      {/* Before/After comparison when image is generated */}
+                      {hasResult && originalSrc && aiSrc && (
+                        <div className="border-t border-white/[0.06]">
+                          <BeforeAfterSlider beforeSrc={originalSrc} afterSrc={aiSrc} height={200} />
+                        </div>
+                      )}
                     </div>
                   );
                 })}

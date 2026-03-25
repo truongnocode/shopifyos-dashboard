@@ -61,6 +61,7 @@ export const api = {
   getImageLearning: (storeId) => fetchJSON(`/api/shopify/images/learning${storeId ? `?storeId=${storeId}` : ''}`),
   createImageRun: (data) => postJSON('/api/shopify/images', data),
   getImageRun: (runId) => fetchJSON(`/api/shopify/images/${runId}`),
+  processImages: (data) => postJSON('/api/shopify/images/process', data),
   reviewImage: (data) => postJSON('/api/shopify/images/review', data),
   reviewBulk: (data) => postJSON('/api/shopify/images/review', data),
   publishImages: (data) => postJSON('/api/shopify/images/publish', data),
