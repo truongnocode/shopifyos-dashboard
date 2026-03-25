@@ -2262,7 +2262,7 @@ const ProductSelectionGrid = ({ products, selectedIds, onToggle, onSelectAll, on
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 max-h-[420px] overflow-y-auto pr-1 hide-scrollbar">
         {products.map(p => {
           const isSelected = selectedIds.has(p.id);
-          const imgSrc = p.images?.[0]?.src || p.imageSrc || '';
+          const imgSrc = p.images?.[0]?.src || p.imageBackups?.[0]?.originalSrc || p.imageSrc || '';
           return (
             <div key={p.id} onClick={() => onToggle(p.id)}
               className={`relative group cursor-pointer rounded-xl overflow-hidden border-2 transition-all duration-200 ${isSelected ? 'border-indigo-500 shadow-lg shadow-indigo-500/20 scale-[1.02]' : 'border-transparent hover:border-white/20'}`}>
@@ -2317,7 +2317,7 @@ const ImageEnhancementView = ({ stores, addToast }) => {
   const loadProducts = async (storeId) => {
     setLoadingProducts(true);
     try {
-      const data = await api.getProducts(storeId);
+      const data = await api.getProducts(storeId, true);
       setProducts(data.products || data || []);
     } catch (e) { addToast('Lỗi tải SP: ' + e.message, 'error'); }
     setLoadingProducts(false);

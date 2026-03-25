@@ -29,7 +29,13 @@ async function putJSON(path, data) {
 export const api = {
   getDashboard: () => fetchJSON('/api/shopify'),
   getStores: () => fetchJSON('/api/shopify/stores'),
-  getProducts: (storeId) => fetchJSON(`/api/shopify/products${storeId ? `?storeId=${storeId}` : ''}`),
+  getProducts: (storeId, withImages = false) => {
+    const params = new URLSearchParams();
+    if (storeId) params.set('storeId', storeId);
+    if (withImages) params.set('withImages', 'true');
+    const qs = params.toString();
+    return fetchJSON(`/api/shopify/products${qs ? `?${qs}` : ''}`);
+  },
   getProduct: (id) => fetchJSON(`/api/shopify/products/${id}`),
   updateProduct: (id, data) => putJSON(`/api/shopify/products/${id}`, data),
   getRuns: () => fetchJSON('/api/shopify/runs'),
