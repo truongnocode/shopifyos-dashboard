@@ -11,7 +11,7 @@ import {
   Store, Gem, Menu, X, ChevronRight,
   ChevronDown, Timer, CircleDot, Layers, History,
   Upload, FileUp, Database, ImagePlus, ScanEye, GraduationCap, RotateCcw,
-  CheckSquare, Square, MinusSquare, ChevronLeft, XCircle, ThumbsUp, ThumbsDown, Undo2, ZoomIn
+  CheckSquare, Square, MinusSquare, ChevronLeft, XCircle, ThumbsUp, ThumbsDown, Undo2, ZoomIn, Copy
 } from 'lucide-react';
 import { GlassCard, GlassButton, Badge, colorMap, LoadingSkeleton } from './components/ui';
 import { api } from './api';
@@ -19,32 +19,7 @@ import { useApi } from './hooks/useApi';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 // --- FALLBACK DATA ---
-const fallbackStores = [
-  {
-    id: 'heart-to-soul',
-    name: 'Heart To Soul',
-    domain: 'beyond-love.com',
-    niche: { name: 'Jewelry & Accessories' },
-    productCount: 48,
-    isActive: true,
-    lastSyncAt: null,
-    gradient: 'from-rose-400 to-pink-600',
-    icon: '\u{1F48E}',
-    skills: ['optimize-products', 'ads-content-creator', 'social-content-creator']
-  },
-  {
-    id: 'lume-vibe',
-    name: 'Lume Vibe',
-    domain: 'lumevibe.com',
-    niche: { name: 'LED Art & Decor' },
-    productCount: 0,
-    isActive: false,
-    lastSyncAt: null,
-    gradient: 'from-violet-400 to-indigo-600',
-    icon: '\u{1F4A1}',
-    skills: ['optimize-products', 'ads-content-creator']
-  }
-];
+const fallbackStores = [];
 
 const fallbackProducts = [
   { id: 1, title: 'Infinity Love Necklace', productType: 'Necklace', priceMin: '39.99', tags: 8, imageCount: 5, lastOptimizedAt: '2024-01-01', store: { name: 'Heart To Soul' } },
@@ -1594,6 +1569,313 @@ const PipelineView = ({ mode = 'auto', stores, runs, addToast, handleQuickAction
 };
 
 // --- STORES MANAGE VIEW ---
+const StoreCloneView = ({ stores, addToast }) => {
+  const storeList = stores.data || [];
+  const [cloneForm, setCloneForm] = useState({
+    competitorUrl: '', targetStore: '', designMode: 'auto',
+    styleKeywords: '', sourceReactCode: '', autoApprove: false
+  });
+  const [sessions, setSessions] = useState([]);
+  const [loadingSessions, setLoadingSessions] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [activeSession, setActiveSession] = useState(null); // Session being tracked
+
+  const inputClass = "w-full bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.12] dark:border-white/[0.04] rounded-[16px] py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-[8px] text-slate-800 dark:text-slate-200 placeholder-slate-400";
+  const selectClass = inputClass + " appearance-none cursor-pointer";
+
+  const PIPELINE_STEPS = [
+    { key: 'PENDING', label: 'Chờ xử lý', icon: Clock },
+    { key: 'SCRAPING', label: 'Đang crawl', icon: Globe },
+    { key: 'ANALYZING', label: 'Phân tích', icon: Search },
+    { key: 'DESIGNING', label: 'Thiết kế', icon: Palette },
+    { key: 'CONVERTING', label: 'Chuyển Liquid', icon: Layers },
+    { key: 'COMPLETED', label: 'Hoàn tất', icon: CheckCircle2 },
+  ];
+
+  const statusIndex = (s) => {
+    const idx = PIPELINE_STEPS.findIndex(p => p.key === s);
+    return idx >= 0 ? idx : 0;
+  };
+
+  // Fetch clone sessions
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        const data = await api.getCloneSessions();
+        const list = data.sessions || [];
+        setSessions(list);
+        // Auto-select active session (not completed/failed)
+        const running = list.find(s => !['COMPLETED', 'FAILED'].includes(s.status));
+        if (running) setActiveSession(running);
+      } catch (e) { /* API not available */ }
+      setLoadingSessions(false);
+    };
+    fetchSessions();
+  }, []);
+
+  // Poll active session every 5s
+  useEffect(() => {
+    if (!activeSession || ['COMPLETED', 'FAILED'].includes(activeSession.status)) return;
+    const interval = setInterval(async () => {
+      try {
+        const data = await api.getCloneSessions();
+        const list = data.sessions || [];
+        setSessions(list);
+        const updated = list.find(s => s.id === activeSession.id);
+        if (updated) setActiveSession(updated);
+      } catch (e) {}
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [activeSession]);
+
+  const handleStartClone = async () => {
+    if (!cloneForm.competitorUrl) return addToast('Vui lòng nhập URL đối thủ', 'error');
+    if (!cloneForm.competitorUrl.includes('.')) return addToast('URL không hợp lệ', 'error');
+    setSubmitting(true);
+    try {
+      const data = await api.createCloneSession(cloneForm);
+      const session = data.session || data;
+      setSessions(prev => [session, ...prev]);
+      setActiveSession(session);
+      setCloneForm({ ...cloneForm, competitorUrl: '', styleKeywords: '', sourceReactCode: '' });
+      addToast('Session đã tạo — đang chờ xử lý...', 'success');
+    } catch (e) {
+      addToast('💡 Chạy: /shopify-store-cloner ' + cloneForm.competitorUrl, 'info');
+    }
+    setSubmitting(false);
+  };
+
+  const statusColors = {
+    PENDING: 'bg-slate-400', SCRAPING: 'bg-blue-500 animate-pulse', ANALYZING: 'bg-indigo-500 animate-pulse',
+    DESIGNING: 'bg-purple-500 animate-pulse', CONVERTING: 'bg-amber-500 animate-pulse',
+    PREVIEWING: 'bg-cyan-500', COMPLETED: 'bg-emerald-500', FAILED: 'bg-red-500'
+  };
+
+  return (
+    <div className="space-y-6 md:space-y-8 animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-indigo-600 dark:from-white dark:to-indigo-400 tracking-tight">Clone Store</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Clone 100% cấu trúc trang web đối thủ → Shopify Liquid theme</p>
+        </div>
+        <button onClick={async () => { try { const d = await api.getCloneSessions(); setSessions(d.sessions || []); } catch(e){} }} className="p-2.5 rounded-[16px] bg-white/[0.08] border border-white/[0.1] hover:bg-white/[0.15] transition-all active:scale-95">
+          <RefreshCw size={18} className="text-slate-500" />
+        </button>
+      </div>
+
+      {/* ===== ACTIVE SESSION TRACKER ===== */}
+      {activeSession && (
+        <GlassCard className="!border-indigo-500/20">
+          {/* Progress Pipeline */}
+          <div className="flex items-center gap-3 mb-5">
+            <div className={`w-10 h-10 rounded-[14px] flex items-center justify-center text-white shadow-lg ${activeSession.status === 'COMPLETED' ? 'bg-gradient-to-br from-emerald-500 to-green-600' : activeSession.status === 'FAILED' ? 'bg-gradient-to-br from-red-500 to-rose-600' : 'bg-gradient-to-br from-indigo-500 to-purple-600'}`}>
+              {activeSession.status === 'COMPLETED' ? <CheckCircle2 size={20} /> : activeSession.status === 'FAILED' ? <AlertCircle size={20} /> : <Activity size={20} className="animate-pulse" />}
+            </div>
+            <div className="flex-1">
+              <h2 className="text-base font-bold text-slate-800 dark:text-white truncate">{activeSession.competitorUrl}</h2>
+              <p className="text-xs text-slate-400">{activeSession.competitorTheme ? `Theme: ${activeSession.competitorTheme}` : activeSession.status === 'PENDING' ? 'Đang chờ Claude xử lý...' : 'Đang xử lý...'}</p>
+            </div>
+            <button onClick={() => setActiveSession(null)} className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400"><X size={16} /></button>
+          </div>
+
+          {/* Step Progress Bar */}
+          <div className="flex items-center gap-1 mb-4">
+            {PIPELINE_STEPS.map((step, i) => {
+              const current = statusIndex(activeSession.status);
+              const done = i < current;
+              const active = i === current;
+              return (
+                <div key={step.key} className="flex-1 flex flex-col items-center gap-1.5">
+                  <div className={`w-full h-1.5 rounded-full transition-all ${done ? 'bg-emerald-500' : active ? 'bg-indigo-500 animate-pulse' : 'bg-white/[0.08]'}`} />
+                  <div className="flex items-center gap-1">
+                    <step.icon size={10} className={done ? 'text-emerald-500' : active ? 'text-indigo-500' : 'text-slate-400/50'} />
+                    <span className={`text-[9px] font-semibold ${done ? 'text-emerald-600 dark:text-emerald-400' : active ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400/50'}`}>{step.label}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Section Progress */}
+          {(activeSession.totalSections > 0) && (
+            <div className="mb-4">
+              <div className="flex justify-between text-xs mb-1.5">
+                <span className="text-slate-500 font-medium">Sections</span>
+                <span className="text-slate-400">{activeSession.completedSections || 0} / {activeSession.totalSections}</span>
+              </div>
+              <div className="w-full h-2 bg-white/[0.06] rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500" style={{ width: `${((activeSession.completedSections || 0) / activeSession.totalSections) * 100}%` }} />
+              </div>
+            </div>
+          )}
+
+          {/* Sections detail (if available) */}
+          {activeSession.sections?.length > 0 && (
+            <div className="space-y-1.5 max-h-48 overflow-y-auto hide-scrollbar">
+              {activeSession.sections.map(sec => (
+                <div key={sec.id} className="flex items-center gap-2 px-3 py-1.5 rounded-[10px] bg-white/[0.03] border border-white/[0.04]">
+                  <div className={`w-1.5 h-1.5 rounded-full ${sec.status === 'CONVERTED' || sec.status === 'APPROVED' ? 'bg-emerald-500' : sec.status === 'DESIGNED' ? 'bg-purple-500' : sec.status === 'EXTRACTED' ? 'bg-blue-500' : 'bg-slate-400'}`} />
+                  <span className="text-[11px] font-medium text-slate-600 dark:text-slate-300 flex-1">{sec.sectionType}</span>
+                  <span className="text-[9px] text-slate-400 uppercase">{sec.pageType}</span>
+                  <span className="text-[9px] text-slate-400/60">{sec.status?.toLowerCase()}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Structure Map Preview */}
+          {activeSession.structureMap && (
+            <div className="mt-4 p-3 rounded-[14px] bg-white/[0.04] border border-white/[0.06]">
+              <h3 className="text-xs font-bold text-slate-600 dark:text-slate-300 mb-2">📋 Structure Map</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {activeSession.structureMap.stats && Object.entries(activeSession.structureMap.stats).map(([k, v]) => (
+                  <div key={k} className="text-center p-2 rounded-[10px] bg-white/[0.04]">
+                    <div className="text-lg font-bold text-slate-700 dark:text-slate-200">{v}</div>
+                    <div className="text-[9px] text-slate-400 capitalize">{k.replace(/_/g, ' ')}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Output Path */}
+          {activeSession.outputPath && (
+            <div className="mt-3 p-3 rounded-[14px] bg-emerald-500/[0.06] border border-emerald-500/[0.1]">
+              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                ✅ Theme hoàn tất: <code className="bg-white/10 px-1.5 py-0.5 rounded">{activeSession.outputPath}</code>
+              </p>
+            </div>
+          )}
+
+          {/* Error */}
+          {activeSession.status === 'FAILED' && activeSession.errorLog && (
+            <div className="mt-3 p-3 rounded-[14px] bg-red-500/[0.06] border border-red-500/[0.1]">
+              <p className="text-xs text-red-500 font-mono">{activeSession.errorLog}</p>
+            </div>
+          )}
+
+          {/* Pending hint */}
+          {activeSession.status === 'PENDING' && (
+            <div className="mt-3 p-3 rounded-[14px] bg-amber-500/[0.06] border border-amber-500/[0.1]">
+              <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                ⏳ Session đang chờ. Chạy trong Claude: <code className="bg-white/10 px-1.5 py-0.5 rounded cursor-pointer" onClick={() => { navigator.clipboard.writeText('/shopify-store-cloner'); addToast('Đã copy lệnh!', 'success'); }}>/shopify-store-cloner</code> <span className="text-slate-400">(click để copy)</span>
+              </p>
+            </div>
+          )}
+        </GlassCard>
+      )}
+
+      {/* ===== NEW CLONE FORM ===== */}
+      <GlassCard>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Tạo Clone mới</h2>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">URL đối thủ *</label>
+            <input className={inputClass} placeholder="https://competitor.myshopify.com hoặc custom domain" value={cloneForm.competitorUrl} onChange={e => setCloneForm({...cloneForm, competitorUrl: e.target.value})} />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Áp dụng cho cửa hàng</label>
+              <select className={selectClass} value={cloneForm.targetStore} onChange={e => setCloneForm({...cloneForm, targetStore: e.target.value})}>
+                <option value="">— Chưa chọn (chỉ phân tích) —</option>
+                {storeList.map(s => <option key={s.id} value={s.id}>{s.name} ({s.domain})</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Design Mode</label>
+              <select className={selectClass} value={cloneForm.designMode} onChange={e => setCloneForm({...cloneForm, designMode: e.target.value})}>
+                <option value="auto">🤖 Auto — AI tạo design mới</option>
+                <option value="manual">✏️ Manual — Cung cấp React/HTML</option>
+              </select>
+            </div>
+          </div>
+
+          {cloneForm.designMode === 'auto' && (
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Style Keywords (auto mode)</label>
+              <input className={inputClass} placeholder="cyberpunk dark neon, minimalist elegant, rustic warm..." value={cloneForm.styleKeywords} onChange={e => setCloneForm({...cloneForm, styleKeywords: e.target.value})} />
+            </div>
+          )}
+
+          {cloneForm.designMode === 'manual' && (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Source Design (manual mode)</label>
+                <div className="flex gap-2 mb-2">
+                  {['github', 'code'].map(t => (
+                    <button key={t} onClick={() => setCloneForm({...cloneForm, sourceType: t})}
+                      className={`px-3 py-1.5 rounded-[12px] text-xs font-semibold transition-all border ${(cloneForm.sourceType || 'github') === t ? 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border-indigo-500/30' : 'bg-white/[0.06] text-slate-400 border-white/[0.08] hover:bg-white/[0.1]'}`}>
+                      {t === 'code' ? '📋 Paste Code' : '🔗 GitHub Repo URL'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(cloneForm.sourceType || 'github') === 'github' ? (
+                <input className={inputClass} placeholder="https://github.com/user/repo hoặc GitHub repo URL..." value={cloneForm.sourceReactCode} onChange={e => setCloneForm({...cloneForm, sourceReactCode: e.target.value})} />
+              ) : (
+                <textarea className={inputClass + " h-32 resize-y font-mono text-xs"} placeholder="Paste React/HTML code từ Lovable hoặc Gemini Canvas..." value={cloneForm.sourceReactCode} onChange={e => setCloneForm({...cloneForm, sourceReactCode: e.target.value})} />
+              )}
+              <p className="text-[10px] text-slate-400/70">
+                {(cloneForm.sourceType || 'github') === 'github'
+                  ? '💡 Claude sẽ tự clone repo, đọc code và map components vào cấu trúc đối thủ'
+                  : '💡 Paste trực tiếp React/HTML code từ Lovable, Gemini Canvas, hoặc bất kỳ source nào'}
+              </p>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between pt-2">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" className="w-4 h-4 rounded accent-indigo-500" checked={cloneForm.autoApprove} onChange={e => setCloneForm({...cloneForm, autoApprove: e.target.checked})} />
+              <span className="text-sm text-slate-600 dark:text-slate-300">Auto-approve (bỏ qua preview)</span>
+            </label>
+            <GlassButton variant="primary" icon={Play} onClick={handleStartClone} disabled={submitting}>
+              {submitting ? 'Đang tạo...' : 'Bắt đầu Clone'}
+            </GlassButton>
+          </div>
+        </div>
+      </GlassCard>
+
+      {/* ===== SESSION HISTORY ===== */}
+      <GlassCard>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white">Lịch sử Clone</h2>
+          <Badge color="slate">{sessions.length}</Badge>
+        </div>
+        {sessions.length === 0 && !loadingSessions ? (
+          <div className="text-center py-8">
+            <Copy size={40} className="mx-auto text-slate-300 dark:text-slate-600 mb-3" />
+            <p className="text-slate-400 text-sm">Chưa có clone session nào</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {sessions.map(session => (
+              <div key={session.id} onClick={() => setActiveSession(session)}
+                className={`flex items-center gap-3 p-3 rounded-[14px] border transition-colors cursor-pointer ${activeSession?.id === session.id ? 'bg-indigo-500/[0.06] border-indigo-500/20' : 'bg-white/[0.04] dark:bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.08]'}`}>
+                <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${statusColors[session.status] || 'bg-slate-400'}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">{session.competitorUrl}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-[10px] font-medium text-slate-400 uppercase">{session.designMode}</span>
+                    <span className="text-[10px] text-slate-400/60">•</span>
+                    <span className="text-[10px] text-slate-400">{session.completedSections || 0}/{session.totalSections || 0} sections</span>
+                    <span className="text-[10px] text-slate-400/60">•</span>
+                    <span className="text-[10px] text-slate-400">{new Date(session.createdAt).toLocaleDateString('vi')}</span>
+                  </div>
+                </div>
+                <Badge color={session.status === 'COMPLETED' ? 'green' : session.status === 'FAILED' ? 'red' : 'blue'}>
+                  {session.status?.toLowerCase() || 'pending'}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        )}
+      </GlassCard>
+    </div>
+  );
+};
+
 const StoresManageView = ({ niches, stores, addToast }) => {
   const nicheList = niches.data || [];
   const storeList = stores.data || [];
@@ -2286,6 +2568,8 @@ const ImageEnhancementView = ({ stores, addToast }) => {
   const [runDetail, setRunDetail] = useState(null);
   const [loadingRun, setLoadingRun] = useState(false);
   const pollingRef = useRef(null);
+  const [selectedPublishIds, setSelectedPublishIds] = useState(new Set());
+  const userEditedSelectionRef = useRef(false);
 
   const s = stats.data?.stats || { totalRuns: 0, totalJobs: 0, pendingReview: 0, published: 0, approved: 0, rejected: 0, approvalRate: 0 };
   const runs = stats.data?.runs || [];
@@ -2349,6 +2633,62 @@ const ImageEnhancementView = ({ stores, addToast }) => {
     }
     return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
   }, [step]);
+
+  // Auto-populate selectedPublishIds with all APPROVED jobs (only on first load or when approved count changes)
+  useEffect(() => {
+    if (!runDetail?.jobs || userEditedSelectionRef.current) return;
+    const approvedIds = runDetail.jobs.filter(j => j.status === 'APPROVED').map(j => j.id);
+    setSelectedPublishIds(new Set(approvedIds));
+  }, [runDetail?.jobs?.filter(j => j.status === 'APPROVED').length]);
+
+  // Reset selection editing flag when switching runs
+  useEffect(() => { userEditedSelectionRef.current = false; }, [activeRunId]);
+
+  const togglePublishSelection = (id) => {
+    userEditedSelectionRef.current = true;
+    setSelectedPublishIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const handleSelectivePublish = async () => {
+    if (selectedPublishIds.size === 0) return;
+    addToast(`Publishing ${selectedPublishIds.size} ảnh...`, 'info');
+    try {
+      let published = 0, failed = 0;
+      for (const jobId of selectedPublishIds) {
+        try { await api.publishImages({ jobId }); published++; } catch { failed++; }
+      }
+      addToast(`Published ${published} ảnh${failed ? ` (${failed} lỗi)` : ''}`, published > 0 ? 'success' : 'error');
+      userEditedSelectionRef.current = false;
+      loadRunDetail(activeRunId);
+      stats.refetch();
+    } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
+  };
+
+  const handleRetryJob = async (jobId) => {
+    addToast('Đang retry...', 'info');
+    try {
+      const r = await api.retryImage({ jobId });
+      await api.processImages({ runId: r.runId, limit: 1 });
+      addToast('Job đang được xử lý lại', 'success');
+      loadRunDetail(activeRunId);
+    } catch (e) { addToast('Lỗi retry: ' + e.message, 'error'); }
+  };
+
+  const handleRetryAllFailed = async () => {
+    const failedIds = (runDetail?.jobs || []).filter(j => j.status === 'FAILED').map(j => j.id);
+    if (failedIds.length === 0) return;
+    addToast(`Retry ${failedIds.length} ảnh lỗi...`, 'info');
+    try {
+      const r = await api.retryImage({ jobIds: failedIds });
+      await api.processImages({ runId: r.runId, limit: failedIds.length });
+      addToast(`Đã reset ${r.reset} jobs, đang xử lý lại`, 'success');
+      loadRunDetail(activeRunId);
+    } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
+  };
 
   const handleStartRun = async () => {
     if (!selectedStore) { addToast('Chọn store trước', 'warning'); return; }
@@ -2545,18 +2885,28 @@ const ImageEnhancementView = ({ stores, addToast }) => {
                       <Zap size={13} className="mr-1" /> Xử lý ảnh ({runDetail.progress.pending})
                     </GlassButton>
                   )}
+                  {runDetail.progress?.failed > 0 && (
+                    <button onClick={handleRetryAllFailed} className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/20 text-xs font-bold transition-colors">
+                      <RefreshCw size={13} className="mr-1" /> Retry lỗi ({runDetail.progress.failed})
+                    </button>
+                  )}
                   {runDetail.progress?.approved > 0 && runDetail.run?.status !== 'PUBLISHED' && (
-                    <GlassButton variant="primary" className="!py-1.5 !px-3 !text-xs !bg-gradient-to-r !from-emerald-500 !to-teal-500" onClick={async () => {
-                      addToast('Đang publish ảnh lên Shopify...', 'info');
-                      try {
-                        const r = await api.publishImages({ runId: activeRunId });
-                        addToast(`Đã publish ${r.published} ảnh lên Shopify${r.failed ? ` (${r.failed} lỗi)` : ''}`, r.failed ? 'warning' : 'success');
-                        loadRunDetail(activeRunId);
-                        stats.refetch();
-                      } catch (e) { addToast('Lỗi publish: ' + e.message, 'error'); }
-                    }}>
-                      <Rocket size={13} className="mr-1" /> Publish ({runDetail.progress.approved})
-                    </GlassButton>
+                    <>
+                      <button onClick={() => {
+                        const approvedIds = (runDetail.jobs || []).filter(j => j.status === 'APPROVED').map(j => j.id);
+                        const allSelected = approvedIds.length > 0 && approvedIds.every(id => selectedPublishIds.has(id));
+                        userEditedSelectionRef.current = true;
+                        setSelectedPublishIds(allSelected ? new Set() : new Set(approvedIds));
+                      }} className="px-2 py-1.5 rounded-lg text-[10px] font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 bg-white/[0.06] hover:bg-white/[0.12] transition-colors">
+                        {(() => {
+                          const approvedIds = (runDetail.jobs || []).filter(j => j.status === 'APPROVED').map(j => j.id);
+                          return approvedIds.length > 0 && approvedIds.every(id => selectedPublishIds.has(id)) ? 'Bỏ chọn hết' : 'Chọn hết';
+                        })()}
+                      </button>
+                      <GlassButton variant="primary" className="!py-1.5 !px-3 !text-xs !bg-gradient-to-r !from-emerald-500 !to-teal-500" onClick={handleSelectivePublish} disabled={selectedPublishIds.size === 0}>
+                        <Rocket size={13} className="mr-1" /> Publish ({selectedPublishIds.size}/{runDetail.progress.approved})
+                      </GlassButton>
+                    </>
                   )}
                   {(runDetail.progress?.published > 0 || runDetail.run?.status === 'PUBLISHED') && (
                     <button className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 text-xs font-bold transition-colors" onClick={async () => {
@@ -2635,10 +2985,18 @@ const ImageEnhancementView = ({ stores, addToast }) => {
                   const aiSrc = job.compositedUrl || job.compositedPath || '';
 
                   return (
-                    <div key={job.id} className="rounded-xl bg-white/[0.04] dark:bg-white/[0.02] border border-white/[0.06] overflow-hidden">
+                    <div key={job.id} className={`rounded-xl bg-white/[0.04] dark:bg-white/[0.02] border border-white/[0.06] overflow-hidden transition-opacity ${job.status === 'APPROVED' && !selectedPublishIds.has(job.id) ? 'opacity-40' : ''}`}>
                       {/* Header row */}
                       <div className="flex items-center justify-between p-3">
                         <div className="flex items-center space-x-3 min-w-0 flex-1">
+                          {/* Checkbox for APPROVED jobs */}
+                          {job.status === 'APPROVED' && (
+                            <button onClick={() => togglePublishSelection(job.id)} className="flex-shrink-0 p-0.5">
+                              {selectedPublishIds.has(job.id)
+                                ? <CheckSquare size={16} className="text-emerald-500" />
+                                : <Square size={16} className="text-slate-400" />}
+                            </button>
+                          )}
                           <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
                             {originalSrc ? (
                               <img src={originalSrc} alt="" className="w-full h-full object-cover" />
@@ -2656,7 +3014,7 @@ const ImageEnhancementView = ({ stores, addToast }) => {
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          {/* Review actions for REVIEW status */}
+                          {/* Review actions */}
                           {job.status === 'REVIEW' && (
                             <>
                               <button onClick={async () => {
@@ -2675,17 +3033,16 @@ const ImageEnhancementView = ({ stores, addToast }) => {
                               </button>
                             </>
                           )}
-                          {/* Publish single approved job */}
+                          {/* Retry for FAILED/REJECTED */}
+                          {(job.status === 'FAILED' || job.status === 'REJECTED') && (
+                            <button onClick={() => handleRetryJob(job.id)} className="px-2 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 text-[10px] font-bold transition-colors">
+                              <RefreshCw size={11} className="inline mr-1" />Retry
+                            </button>
+                          )}
+                          {/* Redo for APPROVED (secondary, less prominent) */}
                           {job.status === 'APPROVED' && (
-                            <button onClick={async () => {
-                              addToast('Publishing...', 'info');
-                              try {
-                                await api.publishImages({ jobId: job.id });
-                                addToast('Đã publish lên Shopify', 'success');
-                                loadRunDetail(activeRunId);
-                              } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
-                            }} className="px-2 py-1 rounded-lg bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20 text-[10px] font-bold transition-colors">
-                              <Rocket size={11} className="inline mr-1" />Publish
+                            <button onClick={() => handleRetryJob(job.id)} className="px-2 py-1 rounded-lg bg-slate-500/10 text-slate-500 hover:bg-slate-500/20 text-[10px] font-medium transition-colors" title="Tạo lại ảnh mới">
+                              <RefreshCw size={11} className="inline mr-1" />Redo
                             </button>
                           )}
                           {/* Rollback single published job */}
@@ -3331,6 +3688,8 @@ export default function App() {
                 <SidebarItem icon={Rocket} label="Setup tự động" active={activeTab === 'pipeline-auto'} onClick={() => setActiveTab('pipeline-auto')} compact />
                 <div className="mx-2.5 border-b border-white/[0.06] dark:border-white/[0.03]" />
                 <SidebarItem icon={Settings} label="Niche & Store" active={activeTab === 'stores-manage'} onClick={() => setActiveTab('stores-manage')} compact />
+                <div className="mx-2.5 border-b border-white/[0.06] dark:border-white/[0.03]" />
+                <SidebarItem icon={Copy} label="Clone Store" active={activeTab === 'store-clone'} onClick={() => setActiveTab('store-clone')} compact />
               </div>
 
               {/* Bento Block: Ảnh sản phẩm */}
@@ -3394,6 +3753,7 @@ export default function App() {
             {activeTab === 'winning-products' && <WinningProductsView competitors={competitors} skillOutputs={winningOutputs} insights={insights} addToast={addToast} />}
             {activeTab === 'pipeline-auto' && <PipelineView mode="auto" stores={stores} runs={runs} addToast={addToast} handleQuickAction={handleQuickAction} addTask={addTask} updateTask={updateTask} />}
             {activeTab === 'pipeline-custom' && <PipelineView mode="custom" stores={stores} runs={runs} addToast={addToast} handleQuickAction={handleQuickAction} addTask={addTask} updateTask={updateTask} />}
+            {activeTab === 'store-clone' && <StoreCloneView stores={stores} addToast={addToast} />}
             {activeTab === 'stores-manage' && <StoresManageView niches={niches} stores={stores} addToast={addToast} />}
             {activeTab === 'image-enhance' && <ImageEnhancementView stores={stores} addToast={addToast} />}
             {activeTab === 'image-review' && <ImageReviewView addToast={addToast} />}

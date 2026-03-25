@@ -66,6 +66,10 @@ export const api = {
   reviewBulk: (data) => postJSON('/api/shopify/images/review', data),
   publishImages: (data) => postJSON('/api/shopify/images/publish', data),
   rollbackImages: (data) => postJSON('/api/shopify/images/rollback', data),
+  retryImage: (data) => postJSON('/api/shopify/images/retry', data),
+  // Clone Store
+  getCloneSessions: () => fetchJSON('/api/shopify/clone'),
+  createCloneSession: (data) => postJSON('/api/shopify/clone', data),
   exportCrawl: (sessionId, format = 'json') => fetchJSON(`/api/shopify/crawl-export?sessionId=${sessionId}&format=${format}`),
   downloadCrawlCsv: async (sessionId) => {
     const res = await fetch(`${API_BASE}/api/shopify/crawl-export?sessionId=${sessionId}&format=csv`);
