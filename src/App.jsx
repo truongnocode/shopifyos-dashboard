@@ -2180,48 +2180,27 @@ const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction,
 // ============================================
 // Before/After Image Comparison Slider (pure CSS/React, no deps)
 // ============================================
-const BeforeAfterSlider = ({ beforeSrc, afterSrc, beforeLabel = 'Gốc', afterLabel = 'AI', height = 280 }) => {
-  const [position, setPosition] = useState(50);
-  const containerRef = useRef(null);
-  const dragging = useRef(false);
-
-  const handleMove = useCallback((clientX) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-    setPosition((x / rect.width) * 100);
-  }, []);
-
-  useEffect(() => {
-    const onMove = (e) => { if (dragging.current) handleMove(e.touches ? e.touches[0].clientX : e.clientX); };
-    const onUp = () => { dragging.current = false; };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-    window.addEventListener('touchmove', onMove);
-    window.addEventListener('touchend', onUp);
-    return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); window.removeEventListener('touchmove', onMove); window.removeEventListener('touchend', onUp); };
-  }, [handleMove]);
-
+const BeforeAfterSlider = ({ beforeSrc, afterSrc, beforeLabel = 'Gốc', afterLabel = 'AI', height = 220 }) => {
   return (
-    <div ref={containerRef} className="relative select-none cursor-col-resize rounded-xl overflow-hidden" style={{ height }}
-      onMouseDown={(e) => { dragging.current = true; handleMove(e.clientX); }}
-      onTouchStart={(e) => { dragging.current = true; handleMove(e.touches[0].clientX); }}>
-      {/* After (full width behind) */}
-      <img src={afterSrc} alt="After" className="absolute inset-0 w-full h-full object-contain bg-slate-100 dark:bg-slate-800" />
-      {/* Before (clipped) */}
-      <div className="absolute inset-0 overflow-hidden" style={{ width: `${position}%` }}>
-        <img src={beforeSrc} alt="Before" className="w-full h-full object-contain bg-slate-50 dark:bg-slate-900" style={{ width: containerRef.current?.offsetWidth || '100%', maxWidth: 'none' }} />
+    <div className="flex items-stretch gap-0 rounded-xl overflow-hidden" style={{ height }}>
+      {/* Before */}
+      <div className="relative flex-1 bg-slate-50 dark:bg-slate-900">
+        <img src={beforeSrc} alt="Before" className="w-full h-full object-contain" />
+        <span className="absolute top-2 left-2 px-2 py-0.5 bg-slate-600/80 text-white text-[10px] font-bold rounded-full">{beforeLabel}</span>
       </div>
-      {/* Divider line */}
-      <div className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg z-10" style={{ left: `${position}%`, transform: 'translateX(-50%)' }}>
-        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center">
-          <ChevronLeft size={12} className="text-slate-600 -mr-1" />
-          <ChevronRight size={12} className="text-slate-600 -ml-1" />
+      {/* Arrow divider */}
+      <div className="flex flex-col items-center justify-center px-2 bg-white/[0.06] dark:bg-white/[0.03]">
+        <div className="w-7 h-7 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 flex items-center justify-center shadow-lg">
+          <ArrowUpRight size={14} className="text-white rotate-0" style={{ transform: 'rotate(0deg)' }} />
         </div>
       </div>
-      {/* Labels */}
-      <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/60 text-white text-[10px] font-bold rounded-full z-20">{beforeLabel}</span>
-      <span className="absolute top-2 right-2 px-2 py-0.5 bg-indigo-600/80 text-white text-[10px] font-bold rounded-full z-20">{afterLabel}</span>
+      {/* After */}
+      <div className="relative flex-1 bg-slate-100 dark:bg-slate-800">
+        <img src={afterSrc} alt="After" className="w-full h-full object-contain" />
+        <span className="absolute top-2 right-2 px-2 py-0.5 bg-indigo-600/80 text-white text-[10px] font-bold rounded-full flex items-center gap-1">
+          <Sparkles size={10} />{afterLabel}
+        </span>
+      </div>
     </div>
   );
 };
@@ -2518,7 +2497,7 @@ const ImageEnhancementView = ({ stores, addToast }) => {
                 />
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/[0.06]">
                   <p className="text-xs text-slate-400">
-                    {selectedProductIds.size} sản phẩm, ~{selectedProductIds.size * 3} ảnh sẽ được xử lý
+                    {selectedProductIds.size} sản phẩm, {selectedProductIds.size} ảnh chính sẽ được xử lý
                   </p>
                   <GlassButton variant="primary" onClick={handleStartRun} disabled={starting || selectedProductIds.size === 0}>
                     {starting ? <RefreshCw size={14} className="animate-spin mr-2" /> : <Play size={14} className="mr-2" />}
