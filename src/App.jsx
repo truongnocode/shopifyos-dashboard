@@ -2338,7 +2338,7 @@ const ImageEnhancementView = ({ stores, addToast }) => {
     loadRunDetail(runId).then(() => setLoadingRun(false));
     // Start polling
     if (pollingRef.current) clearInterval(pollingRef.current);
-    pollingRef.current = setInterval(() => loadRunDetail(runId), 5000);
+    pollingRef.current = setInterval(() => loadRunDetail(runId), 3000);
   }, [loadRunDetail]);
 
   // Cleanup polling on unmount or step change
@@ -2552,26 +2552,43 @@ const ImageEnhancementView = ({ stores, addToast }) => {
               </div>
 
               {/* Progress Bar */}
-              {runDetail.progress && (
-                <div className="mb-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Tiến trình: {runDetail.progress.percent}%</span>
-                    <span className="text-[10px] text-slate-400">{runDetail.progress.completed} / {runDetail.progress.total} ảnh</span>
+              {runDetail.progress && (() => {
+                const p = runDetail.progress;
+                const isProcessing = p.generating > 0 || p.pending > 0;
+                const formatTime = (s) => s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${s}s`;
+                return (
+                  <div className="mb-5">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Tiến trình: {p.percent}%</span>
+                        {isProcessing && p.etaSeconds > 0 && (
+                          <span className="text-[10px] text-indigo-500 bg-indigo-500/10 px-2 py-0.5 rounded-full font-bold">
+                            ETA ~{formatTime(p.etaSeconds)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-3 text-[10px] text-slate-400">
+                        {p.elapsedSeconds > 0 && <span>Elapsed: {formatTime(p.elapsedSeconds)}</span>}
+                        {p.avgTimeMs > 0 && p.completed > 0 && <span>Avg: {(p.avgTimeMs / 1000).toFixed(1)}s/ảnh</span>}
+                        {p.totalCost > 0 && <span>${p.totalCost.toFixed(3)}</span>}
+                        <span className="font-medium">{p.completed} / {p.total} ảnh</span>
+                      </div>
+                    </div>
+                    <div className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full transition-all duration-500 ${isProcessing ? 'bg-gradient-to-r from-indigo-500 to-violet-500 animate-pulse' : 'bg-gradient-to-r from-emerald-500 to-teal-500'}`} style={{ width: `${p.percent}%` }} />
+                    </div>
+                    <div className="flex items-center space-x-4 mt-2 text-[10px]">
+                      {p.pending > 0 && <span className="text-slate-400">Chờ: {p.pending}</span>}
+                      {p.generating > 0 && <span className="text-blue-500 font-bold animate-pulse">Đang tạo: {p.generating}</span>}
+                      {p.review > 0 && <span className="text-amber-500">Cần duyệt: {p.review}</span>}
+                      {p.approved > 0 && <span className="text-emerald-500">Đã duyệt: {p.approved}</span>}
+                      {p.rejected > 0 && <span className="text-red-400">Từ chối: {p.rejected}</span>}
+                      {p.published > 0 && <span className="text-indigo-500">Publish: {p.published}</span>}
+                      {p.failed > 0 && <span className="text-red-600">Lỗi: {p.failed}</span>}
+                    </div>
                   </div>
-                  <div className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-500" style={{ width: `${runDetail.progress.percent}%` }} />
-                  </div>
-                  <div className="flex items-center space-x-4 mt-2 text-[10px]">
-                    <span className="text-slate-400">Chờ: {runDetail.progress.pending}</span>
-                    <span className="text-blue-500">Đang tạo: {runDetail.progress.generating}</span>
-                    <span className="text-amber-500">Cần duyệt: {runDetail.progress.review}</span>
-                    <span className="text-emerald-500">Đã duyệt: {runDetail.progress.approved}</span>
-                    <span className="text-red-400">Từ chối: {runDetail.progress.rejected}</span>
-                    <span className="text-indigo-500">Publish: {runDetail.progress.published}</span>
-                    {runDetail.progress.failed > 0 && <span className="text-red-600">Lỗi: {runDetail.progress.failed}</span>}
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Job Cards */}
               <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
