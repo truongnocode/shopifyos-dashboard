@@ -2298,11 +2298,15 @@ const ImageEnhancementView = ({ stores, addToast }) => {
   const [aiProvider, setAiProvider] = useState('BANANA_PRO');
   const [productType, setProductType] = useState('');
   const [starting, setStarting] = useState(false);
-  const [step, setStep] = useState(1); // 1=config, 2=select products, 3=running
+  const [step, setStep] = useState(1); // 1=config, 2=select products, 3=run detail
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [selectedProductIds, setSelectedProductIds] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeRunId, setActiveRunId] = useState(null);
+  const [runDetail, setRunDetail] = useState(null);
+  const [loadingRun, setLoadingRun] = useState(false);
+  const pollingRef = useRef(null);
 
   const s = stats.data?.stats || { totalRuns: 0, totalJobs: 0, pendingReview: 0, published: 0, approved: 0, rejected: 0, approvalRate: 0 };
   const runs = stats.data?.runs || [];
@@ -2339,22 +2343,51 @@ const ImageEnhancementView = ({ stores, addToast }) => {
     });
   };
 
+  const loadRunDetail = useCallback(async (runId) => {
+    try {
+      const data = await api.getImageRun(runId);
+      setRunDetail(data);
+      return data;
+    } catch (e) { console.error('Load run detail error:', e); }
+    return null;
+  }, []);
+
+  const openRunDetail = useCallback((runId) => {
+    setActiveRunId(runId);
+    setStep(3);
+    setLoadingRun(true);
+    loadRunDetail(runId).then(() => setLoadingRun(false));
+    // Start polling
+    if (pollingRef.current) clearInterval(pollingRef.current);
+    pollingRef.current = setInterval(() => loadRunDetail(runId), 5000);
+  }, [loadRunDetail]);
+
+  // Cleanup polling on unmount or step change
+  useEffect(() => {
+    if (step !== 3 && pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+    return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
+  }, [step]);
+
   const handleStartRun = async () => {
     if (!selectedStore) { addToast('Chọn store trước', 'warning'); return; }
     if (selectedProductIds.size === 0) { addToast('Chọn ít nhất 1 sản phẩm', 'warning'); return; }
     setStarting(true);
     try {
-      await api.createImageRun({
+      const result = await api.createImageRun({
         storeId: selectedStore,
         approvalMode,
         aiProvider,
         productType: productType || undefined,
         productIds: Array.from(selectedProductIds),
       });
-      addToast(`Enhancement run đã tạo cho ${selectedProductIds.size} sản phẩm`, 'success');
+      addToast(`Enhancement run đã tạo cho ${selectedProductIds.size} sản phẩm — ${result.jobsCreated} jobs`, 'success');
       stats.refetch();
-      setStep(1);
       setSelectedProductIds(new Set());
+      // Navigate to run detail
+      openRunDetail(result.run.id);
     } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
     setStarting(false);
   };
@@ -2393,14 +2426,17 @@ const ImageEnhancementView = ({ stores, addToast }) => {
       <GlassCard className="!p-5">
         {/* Step indicators */}
         <div className="flex items-center space-x-2 mb-5">
-          {[{ n: 1, label: 'Cấu hình' }, { n: 2, label: 'Chọn sản phẩm' }].map(({ n, label }) => (
-            <button key={n} onClick={() => n <= (selectedStore ? 2 : 1) && setStep(n)}
+          {[{ n: 1, label: 'Cấu hình' }, { n: 2, label: 'Chọn sản phẩm' }, { n: 3, label: 'Tiến trình' }].map(({ n, label }) => (
+            <button key={n} onClick={() => {
+              if (n === 3 && !activeRunId) return;
+              if (n <= (selectedStore ? 2 : 1) || (n === 3 && activeRunId)) setStep(n);
+            }}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${step === n ? 'bg-indigo-500 text-white' : step > n ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-white/[0.06] text-slate-400'}`}>
               {step > n ? <CheckCircle2 size={14} /> : <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px]">{n}</span>}
               <span>{label}</span>
             </button>
           ))}
-          {selectedProductIds.size > 0 && (
+          {selectedProductIds.size > 0 && step === 2 && (
             <span className="ml-auto text-xs font-bold text-indigo-500">
               {selectedProductIds.size} SP sẵn sàng
             </span>
@@ -2494,6 +2530,100 @@ const ImageEnhancementView = ({ stores, addToast }) => {
         )}
       </GlassCard>
 
+      {/* Step 3: Run Detail with Progress */}
+      {step === 3 && (
+        <GlassCard className="!p-5">
+          {loadingRun ? (
+            <div className="flex items-center justify-center py-12">
+              <RefreshCw size={24} className="animate-spin text-indigo-500 mr-3" />
+              <span className="text-slate-400">Đang tải chi tiết run...</span>
+            </div>
+          ) : runDetail ? (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-2">
+                  <button onClick={() => { setStep(1); setActiveRunId(null); setRunDetail(null); }} className="p-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] transition-colors">
+                    <ChevronLeft size={16} className="text-slate-400" />
+                  </button>
+                  <div>
+                    <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                      {runDetail.run?.store?.name || 'Run'} — {runDetail.run?.aiProvider}
+                    </h2>
+                    <p className="text-[10px] text-slate-400">{runDetail.run?.approvalMode} · ID: {activeRunId?.slice(-8)}</p>
+                  </div>
+                </div>
+                <Badge type={runDetail.run?.status === 'PUBLISHED' ? 'success' : runDetail.run?.status === 'FAILED' ? 'danger' : runDetail.run?.status === 'GENERATING' ? 'info' : 'warning'}>
+                  {runDetail.run?.status}
+                </Badge>
+              </div>
+
+              {/* Progress Bar */}
+              {runDetail.progress && (
+                <div className="mb-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Tiến trình: {runDetail.progress.percent}%</span>
+                    <span className="text-[10px] text-slate-400">{runDetail.progress.completed} / {runDetail.progress.total} ảnh</span>
+                  </div>
+                  <div className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-500" style={{ width: `${runDetail.progress.percent}%` }} />
+                  </div>
+                  <div className="flex items-center space-x-4 mt-2 text-[10px]">
+                    <span className="text-slate-400">Chờ: {runDetail.progress.pending}</span>
+                    <span className="text-blue-500">Đang tạo: {runDetail.progress.generating}</span>
+                    <span className="text-amber-500">Cần duyệt: {runDetail.progress.review}</span>
+                    <span className="text-emerald-500">Đã duyệt: {runDetail.progress.approved}</span>
+                    <span className="text-red-400">Từ chối: {runDetail.progress.rejected}</span>
+                    <span className="text-indigo-500">Publish: {runDetail.progress.published}</span>
+                    {runDetail.progress.failed > 0 && <span className="text-red-600">Lỗi: {runDetail.progress.failed}</span>}
+                  </div>
+                </div>
+              )}
+
+              {/* Job Cards */}
+              <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+                {(runDetail.jobs || []).map(job => {
+                  const statusConfig = {
+                    PENDING: { color: 'text-slate-400', bg: 'bg-slate-400/10', label: 'Chờ xử lý', icon: Clock },
+                    GENERATING: { color: 'text-blue-500', bg: 'bg-blue-500/10', label: 'Đang tạo...', icon: RefreshCw },
+                    REVIEW: { color: 'text-amber-500', bg: 'bg-amber-500/10', label: 'Cần duyệt', icon: Eye },
+                    APPROVED: { color: 'text-emerald-500', bg: 'bg-emerald-500/10', label: 'Đã duyệt', icon: CheckCircle2 },
+                    REJECTED: { color: 'text-red-500', bg: 'bg-red-500/10', label: 'Từ chối', icon: XCircle },
+                    PUBLISHED: { color: 'text-indigo-500', bg: 'bg-indigo-500/10', label: 'Đã publish', icon: Rocket },
+                    FAILED: { color: 'text-red-600', bg: 'bg-red-600/10', label: 'Lỗi', icon: AlertCircle },
+                  }[job.status] || { color: 'text-slate-400', bg: 'bg-slate-400/10', label: job.status, icon: Clock };
+                  const StatusIcon = statusConfig.icon;
+
+                  return (
+                    <div key={job.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.04] dark:bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.06] transition-colors">
+                      <div className="flex items-center space-x-3 min-w-0 flex-1">
+                        {/* Product thumbnail */}
+                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
+                          {job.originalImageUrl || job.originalImagePath ? (
+                            <img src={job.originalImageUrl || job.originalImagePath} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center"><Image size={14} className="text-slate-300" /></div>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate">{job.product?.title || 'Product'}</p>
+                          <p className="text-[10px] text-slate-400">Pos {job.position} · {job.imageClassification}</p>
+                        </div>
+                      </div>
+                      <div className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-full ${statusConfig.bg}`}>
+                        <StatusIcon size={12} className={`${statusConfig.color} ${job.status === 'GENERATING' ? 'animate-spin' : ''}`} />
+                        <span className={`text-[10px] font-bold ${statusConfig.color}`}>{statusConfig.label}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-400 text-center py-8">Không tìm thấy run</p>
+          )}
+        </GlassCard>
+      )}
+
       {/* Enhancement Runs History */}
       <GlassCard className="!p-5">
         <h2 className="text-base font-bold text-slate-900 dark:text-white mb-4">Enhancement Runs</h2>
@@ -2502,7 +2632,8 @@ const ImageEnhancementView = ({ stores, addToast }) => {
         ) : (
           <div className="space-y-2">
             {runs.map(run => (
-              <div key={run.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.04] dark:bg-white/[0.02] border border-white/[0.06]">
+              <div key={run.id} onClick={() => openRunDetail(run.id)}
+                className="flex items-center justify-between p-3 rounded-xl bg-white/[0.04] dark:bg-white/[0.02] border border-white/[0.06] cursor-pointer hover:bg-white/[0.08] hover:border-indigo-500/30 transition-all">
                 <div className="flex items-center space-x-3">
                   <Badge type={run.status === 'PUBLISHED' ? 'success' : run.status === 'FAILED' ? 'danger' : 'warning'}>{run.status}</Badge>
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{run.store?.name || 'Store'}</span>
@@ -2514,6 +2645,7 @@ const ImageEnhancementView = ({ stores, addToast }) => {
                   <span className="text-red-400">Reject: {run.imagesRejected}</span>
                   <span className="text-indigo-400">Pub: {run.imagesPublished}</span>
                   <span>${run.totalCost?.toFixed(2)}</span>
+                  <ChevronRight size={14} className="text-slate-300" />
                 </div>
               </div>
             ))}
