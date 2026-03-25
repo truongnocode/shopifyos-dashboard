@@ -2497,7 +2497,7 @@ const ImageEnhancementView = ({ stores, addToast }) => {
                 />
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/[0.06]">
                   <p className="text-xs text-slate-400">
-                    {selectedProductIds.size} sản phẩm, {selectedProductIds.size} ảnh chính sẽ được xử lý
+                    {selectedProductIds.size} sản phẩm, {filteredProducts.filter(p => selectedProductIds.has(p.id)).reduce((sum, p) => sum + (p.imageCount || p.images?.length || 1), 0)} ảnh sẽ được xử lý
                   </p>
                   <GlassButton variant="primary" onClick={handleStartRun} disabled={starting || selectedProductIds.size === 0}>
                     {starting ? <RefreshCw size={14} className="animate-spin mr-2" /> : <Play size={14} className="mr-2" />}
