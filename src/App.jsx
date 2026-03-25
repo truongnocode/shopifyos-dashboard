@@ -2545,7 +2545,34 @@ const ImageEnhancementView = ({ stores, addToast }) => {
                       <Zap size={13} className="mr-1" /> Xử lý ảnh ({runDetail.progress.pending})
                     </GlassButton>
                   )}
-                  <Badge type={runDetail.run?.status === 'PUBLISHED' ? 'success' : runDetail.run?.status === 'FAILED' ? 'danger' : runDetail.run?.status === 'GENERATING' ? 'info' : 'warning'}>
+                  {runDetail.progress?.approved > 0 && runDetail.run?.status !== 'PUBLISHED' && (
+                    <GlassButton variant="primary" className="!py-1.5 !px-3 !text-xs !bg-gradient-to-r !from-emerald-500 !to-teal-500" onClick={async () => {
+                      addToast('Đang publish ảnh lên Shopify...', 'info');
+                      try {
+                        const r = await api.publishImages({ runId: activeRunId });
+                        addToast(`Đã publish ${r.published} ảnh lên Shopify${r.failed ? ` (${r.failed} lỗi)` : ''}`, r.failed ? 'warning' : 'success');
+                        loadRunDetail(activeRunId);
+                        stats.refetch();
+                      } catch (e) { addToast('Lỗi publish: ' + e.message, 'error'); }
+                    }}>
+                      <Rocket size={13} className="mr-1" /> Publish ({runDetail.progress.approved})
+                    </GlassButton>
+                  )}
+                  {(runDetail.progress?.published > 0 || runDetail.run?.status === 'PUBLISHED') && (
+                    <button className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 text-xs font-bold transition-colors" onClick={async () => {
+                      if (!confirm('Rollback sẽ khôi phục ảnh gốc trên Shopify. Tiếp tục?')) return;
+                      addToast('Đang rollback...', 'info');
+                      try {
+                        const r = await api.rollbackImages({ runId: activeRunId });
+                        addToast(`Đã rollback ${r.rolledBack} ảnh`, 'success');
+                        loadRunDetail(activeRunId);
+                        stats.refetch();
+                      } catch (e) { addToast('Lỗi rollback: ' + e.message, 'error'); }
+                    }}>
+                      <RotateCcw size={13} className="mr-1" /> Rollback
+                    </button>
+                  )}
+                  <Badge type={runDetail.run?.status === 'PUBLISHED' ? 'success' : runDetail.run?.status === 'FAILED' ? 'danger' : runDetail.run?.status === 'GENERATING' ? 'info' : runDetail.run?.status === 'ROLLED_BACK' ? 'neutral' : 'warning'}>
                     {runDetail.run?.status}
                   </Badge>
                 </div>
@@ -2647,6 +2674,31 @@ const ImageEnhancementView = ({ stores, addToast }) => {
                                 <ThumbsDown size={11} className="inline mr-1" />Từ chối
                               </button>
                             </>
+                          )}
+                          {/* Publish single approved job */}
+                          {job.status === 'APPROVED' && (
+                            <button onClick={async () => {
+                              addToast('Publishing...', 'info');
+                              try {
+                                await api.publishImages({ jobId: job.id });
+                                addToast('Đã publish lên Shopify', 'success');
+                                loadRunDetail(activeRunId);
+                              } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
+                            }} className="px-2 py-1 rounded-lg bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20 text-[10px] font-bold transition-colors">
+                              <Rocket size={11} className="inline mr-1" />Publish
+                            </button>
+                          )}
+                          {/* Rollback single published job */}
+                          {job.status === 'PUBLISHED' && (
+                            <button onClick={async () => {
+                              try {
+                                await api.rollbackImages({ jobId: job.id });
+                                addToast('Đã rollback', 'success');
+                                loadRunDetail(activeRunId);
+                              } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
+                            }} className="px-2 py-1 rounded-lg bg-orange-500/10 text-orange-500 hover:bg-orange-500/20 text-[10px] font-bold transition-colors">
+                              <RotateCcw size={11} className="inline mr-1" />Rollback
+                            </button>
                           )}
                           <div className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-full ${statusConfig.bg}`}>
                             <StatusIcon size={12} className={`${statusConfig.color} ${job.status === 'GENERATING' ? 'animate-spin' : ''}`} />
@@ -2779,6 +2831,44 @@ const ImageReviewView = ({ addToast }) => {
     } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
   };
 
+  const handleBulkPublish = async () => {
+    const approvedIds = Array.from(selectedJobIds).filter(id => {
+      const job = jobs.find(j => j.id === id);
+      return job?.status === 'APPROVED';
+    });
+    if (approvedIds.length === 0) { addToast('Không có ảnh approved nào được chọn', 'warning'); return; }
+    setProcessing(true);
+    try {
+      let published = 0, failed = 0;
+      for (const jid of approvedIds) {
+        try {
+          await api.publishImages({ jobId: jid });
+          published++;
+        } catch { failed++; }
+      }
+      addToast(`Publish: ${published} thành công${failed ? `, ${failed} lỗi` : ''}`, published > 0 ? 'success' : 'error');
+      setSelectedJobIds(new Set());
+      review.refetch();
+    } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
+    setProcessing(false);
+  };
+
+  const handleSinglePublish = async (jobId) => {
+    try {
+      await api.publishImages({ jobId });
+      addToast('Đã publish lên Shopify', 'success');
+      review.refetch();
+    } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
+  };
+
+  const handleSingleRollback = async (jobId) => {
+    try {
+      await api.rollbackImages({ jobId });
+      addToast('Đã rollback', 'success');
+      review.refetch();
+    } catch (e) { addToast('Lỗi: ' + e.message, 'error'); }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -2828,15 +2918,18 @@ const ImageReviewView = ({ addToast }) => {
                         ))}
                       </div>
                     </div>
+                    <GlassButton variant="primary" onClick={handleBulkPublish} disabled={processing} className="!py-1.5 !px-3 !text-xs !bg-gradient-to-r !from-emerald-500 !to-teal-500">
+                      <Rocket size={13} className="mr-1" /> Publish Approved
+                    </GlassButton>
                   </>
                 )}
               </div>
 
               <div className="flex items-center space-x-1">
-                {['all', 'pending', 'approved', 'rejected'].map(f => (
+                {['all', 'pending', 'approved', 'rejected', 'published'].map(f => (
                   <button key={f} onClick={() => setFilterStatus(f)}
                     className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase transition-all ${filterStatus === f ? 'bg-indigo-500 text-white' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}>
-                    {f === 'all' ? 'Tất cả' : f === 'pending' ? 'Chờ duyệt' : f === 'approved' ? 'Đã duyệt' : 'Từ chối'}
+                    {f === 'all' ? 'Tất cả' : f === 'pending' ? 'Chờ duyệt' : f === 'approved' ? 'Đã duyệt' : f === 'published' ? 'Published' : 'Từ chối'}
                   </button>
                 ))}
               </div>
@@ -2895,21 +2988,35 @@ const ImageReviewView = ({ addToast }) => {
                   {/* Card Actions */}
                   <div className="flex items-center justify-between px-3 py-2 border-t border-white/[0.06]">
                     <div className="flex items-center space-x-1.5">
-                      <button onClick={() => handleSingleApprove(job.id)} className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 text-xs font-medium transition-colors">
-                        <ThumbsUp size={12} /> <span>Duyệt</span>
-                      </button>
-                      <div className="relative group/rej">
-                        <button className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 text-xs font-medium transition-colors">
-                          <ThumbsDown size={12} /> <span>Từ chối</span>
-                        </button>
-                        <div className="absolute bottom-full left-0 mb-1 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-white/20 dark:border-white/10 py-1 z-50 hidden group-hover/rej:block">
-                          {rejectionReasons.map(reason => (
-                            <button key={reason} onClick={() => handleSingleReject(job.id, reason)} className="w-full text-left px-3 py-1.5 text-[11px] hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors">
-                              {reason}
+                      {(job.status === 'REVIEW' || job.status === 'PENDING') && (
+                        <>
+                          <button onClick={() => handleSingleApprove(job.id)} className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 text-xs font-medium transition-colors">
+                            <ThumbsUp size={12} /> <span>Duyệt</span>
+                          </button>
+                          <div className="relative group/rej">
+                            <button className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 text-xs font-medium transition-colors">
+                              <ThumbsDown size={12} /> <span>Từ chối</span>
                             </button>
-                          ))}
-                        </div>
-                      </div>
+                            <div className="absolute bottom-full left-0 mb-1 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-white/20 dark:border-white/10 py-1 z-50 hidden group-hover/rej:block">
+                              {rejectionReasons.map(reason => (
+                                <button key={reason} onClick={() => handleSingleReject(job.id, reason)} className="w-full text-left px-3 py-1.5 text-[11px] hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors">
+                                  {reason}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      {job.status === 'APPROVED' && (
+                        <button onClick={() => handleSinglePublish(job.id)} className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20 text-xs font-medium transition-colors">
+                          <Rocket size={12} /> <span>Publish</span>
+                        </button>
+                      )}
+                      {job.status === 'PUBLISHED' && (
+                        <button onClick={() => handleSingleRollback(job.id)} className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-500 hover:bg-orange-500/20 text-xs font-medium transition-colors">
+                          <RotateCcw size={12} /> <span>Rollback</span>
+                        </button>
+                      )}
                     </div>
                     <button onClick={() => setExpandedJobId(isExpanded ? null : job.id)} className="p-1 rounded-lg hover:bg-white/10 transition-colors text-slate-400">
                       <ZoomIn size={14} />
