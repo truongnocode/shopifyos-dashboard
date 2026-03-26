@@ -651,6 +651,254 @@ const SocialView = ({ stores, skillOutputs }) => {
   );
 };
 
+const SocialPublisherView = ({ addToast }) => {
+  const [accounts, setAccounts] = useState([]);
+  const [tokenExpires, setTokenExpires] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [postType, setPostType] = useState('facebook_text');
+  const [selectedPage, setSelectedPage] = useState('');
+  const [message, setMessage] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [linkUrl, setLinkUrl] = useState('');
+  const [igAccountId, setIgAccountId] = useState('');
+  const [publishing, setPublishing] = useState(false);
+  const [results, setResults] = useState([]);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [localFilePath, setLocalFilePath] = useState('');
+  const [imageMode, setImageMode] = useState('url'); // 'url' or 'file'
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const resp = await fetch('/api/publisher/accounts');
+        const data = await resp.json();
+        if (data.error) setError(data.error);
+        else { setAccounts(data.accounts || []); setTokenExpires(data.tokenExpires || ''); }
+      } catch (err) { setError(err.message); }
+      setLoading(false);
+    })();
+  }, []);
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const resp = await fetch('/api/publisher/upload', { method: 'POST', body: formData });
+      const data = await resp.json();
+      if (data.success) {
+        setUploadedFile({ name: file.name, size: file.size, preview: URL.createObjectURL(file) });
+        setLocalFilePath(data.localPath);
+        setImageUrl(data.publicUrl);
+        addToast(`File uploaded: ${file.name}`, 'success');
+      } else { addToast(data.error || 'Upload failed', 'error'); }
+    } catch (err) { addToast(err.message, 'error'); }
+    setUploading(false);
+  };
+
+  const handlePublish = async () => {
+    setPublishing(true);
+    try {
+      const body = { platform: postType, pageId: selectedPage, message };
+      if (postType === 'facebook_image' || postType === 'instagram') {
+        body.imageUrl = imageUrl;
+        if (localFilePath) body.localFilePath = localFilePath;
+      }
+      if (postType === 'facebook_link') body.link = linkUrl;
+      if (postType === 'instagram') body.igUserId = igAccountId;
+      const resp = await fetch('/api/publisher/publish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const result = await resp.json();
+      setResults(prev => [result, ...prev]);
+      if (result.success) { addToast(`Published to ${result.platform}!`, 'success'); setMessage(''); setImageUrl(''); setLinkUrl(''); }
+      else addToast(result.error || 'Publish failed', 'error');
+    } catch (err) { addToast(err.message, 'error'); }
+    setPublishing(false);
+  };
+
+  const igAccounts = accounts.filter(a => a.instagram).map(a => a.instagram);
+  const daysLeft = tokenExpires ? Math.max(0, Math.floor((new Date(tokenExpires).getTime() - Date.now()) / 86400000)) : 0;
+
+  return (
+    <div className="space-y-6 md:space-y-8 animate-fade-in">
+      <div>
+        <h1 className="text-2xl md:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">Social Publisher</h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm md:text-lg">Publish content to Facebook, Instagram & more via official API</p>
+      </div>
+
+      {error && (
+        <GlassCard className="!p-4 !border-rose-300/30 dark:!border-rose-500/20">
+          <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
+            <AlertCircle size={16} />
+            <p className="text-sm font-medium">{error}</p>
+          </div>
+          <p className="text-xs text-slate-500 mt-1">Run /social-publisher auth --platform meta to reconnect</p>
+        </GlassCard>
+      )}
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+        {[
+          { icon: Globe, label: 'Pages connected', value: accounts.length, color: 'indigo' },
+          { icon: Heart, label: 'Instagram accounts', value: igAccounts.length, color: 'rose' },
+          { icon: CheckCircle2, label: 'Published (session)', value: results.filter(r => r.success).length, color: 'emerald' },
+          { icon: Clock, label: 'Token expires', value: `${daysLeft}d`, color: daysLeft < 7 ? 'amber' : 'blue' },
+        ].map((s, i) => (
+          <GlassCard key={i} className="!p-4 md:!p-6">
+            <div className={`p-2.5 rounded-[14px] w-fit mb-2 ${colorMap[s.color].pill}`}>
+              <s.icon size={18} className={colorMap[s.color].text} />
+            </div>
+            <p className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white">{s.value}</p>
+            <p className="text-[11px] md:text-sm text-slate-500 mt-0.5">{s.label}</p>
+          </GlassCard>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+        <GlassCard>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Create Post</h2>
+          <p className="text-xs text-slate-500 mb-4">Publish directly via Meta Graph API</p>
+          <div className="space-y-3">
+            <div>
+              <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1 block">Post type</label>
+              <select value={postType} onChange={e => setPostType(e.target.value)} className="w-full p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] text-sm text-slate-700 dark:text-slate-200">
+                <option value="facebook_text">Facebook — Text post</option>
+                <option value="facebook_image">Facebook — Image post</option>
+                <option value="facebook_link">Facebook — Link share</option>
+                <option value="instagram">Instagram — Photo</option>
+              </select>
+            </div>
+            {postType.startsWith('facebook') && (
+              <div>
+                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1 block">Facebook Page</label>
+                <select value={selectedPage} onChange={e => setSelectedPage(e.target.value)} className="w-full p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] text-sm text-slate-700 dark:text-slate-200">
+                  <option value="">Select a page</option>
+                  {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                </select>
+              </div>
+            )}
+            {postType === 'instagram' && (
+              <div>
+                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1 block">Instagram Account</label>
+                <select value={igAccountId} onChange={e => setIgAccountId(e.target.value)} className="w-full p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] text-sm text-slate-700 dark:text-slate-200">
+                  <option value="">Select account</option>
+                  {igAccounts.map(ig => <option key={ig.id} value={ig.id}>@{ig.username}</option>)}
+                </select>
+              </div>
+            )}
+            <div>
+              <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1 block">Message / Caption</label>
+              <textarea value={message} onChange={e => setMessage(e.target.value)} rows={3} placeholder="Write your post content here..." className="w-full p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] text-sm text-slate-700 dark:text-slate-200 resize-none" />
+            </div>
+            {(postType === 'facebook_image' || postType === 'instagram') && (
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Image</label>
+                  <div className="flex bg-white/[0.06] dark:bg-slate-800/[0.06] rounded-[10px] p-0.5">
+                    <button type="button" onClick={() => { setImageMode('file'); setImageUrl(''); setUploadedFile(null); setLocalFilePath(''); }} className={`px-2.5 py-1 rounded-[8px] text-[10px] font-semibold transition-all ${imageMode === 'file' ? 'bg-white/[0.12] dark:bg-slate-700/[0.2] text-slate-800 dark:text-slate-100 shadow-sm' : 'text-slate-500'}`}>
+                      <FileUp size={10} className="inline mr-1" />Upload file
+                    </button>
+                    <button type="button" onClick={() => { setImageMode('url'); setUploadedFile(null); setLocalFilePath(''); }} className={`px-2.5 py-1 rounded-[8px] text-[10px] font-semibold transition-all ${imageMode === 'url' ? 'bg-white/[0.12] dark:bg-slate-700/[0.2] text-slate-800 dark:text-slate-100 shadow-sm' : 'text-slate-500'}`}>
+                      <Globe size={10} className="inline mr-1" />Paste URL
+                    </button>
+                  </div>
+                </div>
+                {imageMode === 'url' ? (
+                  <input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://example.com/image.jpg" className="w-full p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] text-sm text-slate-700 dark:text-slate-200" />
+                ) : (
+                  <div>
+                    <label className="flex items-center justify-center w-full p-4 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border-2 border-dashed border-white/[0.15] dark:border-white/[0.06] cursor-pointer hover:bg-white/[0.12] dark:hover:bg-slate-700/[0.1] transition-all">
+                      {uploading ? (
+                        <span className="flex items-center gap-2 text-sm text-slate-500"><RefreshCw size={14} className="animate-spin" /> Uploading...</span>
+                      ) : uploadedFile ? (
+                        <div className="flex items-center gap-3 w-full">
+                          <img src={uploadedFile.preview} alt="preview" className="w-16 h-16 object-cover rounded-[10px]" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">{uploadedFile.name}</p>
+                            <p className="text-[10px] text-slate-400">{(uploadedFile.size / 1024).toFixed(0)} KB</p>
+                          </div>
+                          <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+                        </div>
+                      ) : (
+                        <span className="flex flex-col items-center gap-1 text-slate-500"><Upload size={20} /><span className="text-xs">Click to select image or video</span></span>
+                      )}
+                      <input type="file" accept="image/*,video/*" onChange={handleFileUpload} className="hidden" />
+                    </label>
+                  </div>
+                )}
+              </div>
+            )}
+            {postType === 'facebook_link' && (
+              <div>
+                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1 block">Link URL</label>
+                <input value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://your-store.com/products/..." className="w-full p-2.5 rounded-[14px] bg-white/[0.08] dark:bg-slate-800/[0.1] border border-white/[0.1] dark:border-white/[0.04] text-sm text-slate-700 dark:text-slate-200" />
+              </div>
+            )}
+            <GlassButton variant="primary" onClick={handlePublish} disabled={publishing || !message}>
+              {publishing ? <><RefreshCw size={14} className="animate-spin" /> Publishing...</> : <><Upload size={14} /> Publish now</>}
+            </GlassButton>
+          </div>
+        </GlassCard>
+
+        <GlassCard>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Connected Accounts</h2>
+          <p className="text-xs text-slate-500 mb-4">Token expires {tokenExpires ? new Date(tokenExpires).toLocaleDateString() : 'unknown'}</p>
+          <div className="space-y-2">
+            {loading ? <LoadingSkeleton rows={3} /> : accounts.length === 0 ? (
+              <p className="text-sm text-slate-500 dark:text-slate-400">No accounts connected. Run OAuth flow first.</p>
+            ) : accounts.map(acc => (
+              <div key={acc.id} className="flex items-center justify-between p-3 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[18px] border border-white/[0.12] dark:border-white/[0.04]">
+                <div className="flex items-center space-x-3">
+                  <div className={`p-2 rounded-[12px] ${colorMap.indigo.pill}`}><Globe size={14} className={colorMap.indigo.text} /></div>
+                  <div>
+                    <p className="font-bold text-sm text-slate-700 dark:text-slate-200">{acc.name}</p>
+                    <p className="text-[10px] text-slate-500">{acc.category} · ID: {acc.id}</p>
+                  </div>
+                </div>
+                <Badge type="active" text="FB Page" />
+              </div>
+            ))}
+            {igAccounts.length > 0 && igAccounts.map(ig => (
+              <div key={ig.id} className="flex items-center justify-between p-3 bg-white/[0.1] dark:bg-slate-800/[0.12] rounded-[18px] border border-white/[0.12] dark:border-white/[0.04]">
+                <div className="flex items-center space-x-3">
+                  <div className={`p-2 rounded-[12px] ${colorMap.rose.pill}`}><Heart size={14} className={colorMap.rose.text} /></div>
+                  <div>
+                    <p className="font-bold text-sm text-slate-700 dark:text-slate-200">@{ig.username}</p>
+                    <p className="text-[10px] text-slate-500">Instagram · ID: {ig.id}</p>
+                  </div>
+                </div>
+                <Badge type="active" text="Instagram" />
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+      </div>
+
+      {results.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white">Publish Log</h2>
+          {results.map((r, i) => (
+            <GlassCard key={i} className="!p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Badge type={r.success ? 'success' : 'failed'} text={r.success ? 'SUCCESS' : 'FAILED'} />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{r.platform || 'Error'} — {r.type || ''}</span>
+                </div>
+                {r.postUrl && <a href={r.postUrl} target="_blank" rel="noopener" className="text-xs text-indigo-500 hover:underline flex items-center gap-1"><ExternalLink size={12} /> View</a>}
+              </div>
+              {r.error && <p className="text-xs text-rose-500 mt-1">{r.error}</p>}
+              {r.postId && <p className="text-[10px] text-slate-400 mt-1">Post ID: {r.postId}</p>}
+            </GlassCard>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const WinningProductsView = ({ competitors, skillOutputs, insights, addToast }) => {
   const competitorList = competitors.data || fallbackCompetitors;
   const outputs = skillOutputs?.data || [];
@@ -1766,6 +2014,88 @@ const StoreCloneView = ({ stores, addToast }) => {
         </GlassCard>
       )}
 
+      {/* ===== LIVE PREVIEW ===== */}
+      {activeSession?.status === 'COMPLETED' && (
+        <GlassCard className="!border-emerald-500/20">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-[12px] bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white">
+                <Eye size={16} />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-800 dark:text-white">Live Preview</h2>
+                <p className="text-[10px] text-slate-400">Xem trực tiếp theme đã clone — hover section để xem tên</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Viewport toggle */}
+              {['desktop', 'tablet', 'mobile'].map(vp => (
+                <button key={vp} onClick={() => {
+                  const iframe = document.getElementById('preview-iframe');
+                  if (!iframe) return;
+                  if (vp === 'desktop') iframe.style.width = '100%';
+                  else if (vp === 'tablet') iframe.style.width = '768px';
+                  else iframe.style.width = '375px';
+                }}
+                  className="px-2.5 py-1 rounded-[10px] text-[10px] font-semibold bg-white/[0.06] border border-white/[0.08] text-slate-400 hover:text-white hover:bg-white/[0.12] transition-all">
+                  {vp === 'desktop' ? '🖥' : vp === 'tablet' ? '📱' : '📲'} {vp}
+                </button>
+              ))}
+              {/* Open in new tab */}
+              <a href={`http://localhost:3000/api/shopify/clone/${activeSession.id}/preview`} target="_blank" rel="noopener"
+                className="px-2.5 py-1 rounded-[10px] text-[10px] font-semibold bg-indigo-500/20 border border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 transition-all">
+                ↗ Mở tab mới
+              </a>
+              {/* Compare with original */}
+              <a href={activeSession.competitorUrl} target="_blank" rel="noopener"
+                className="px-2.5 py-1 rounded-[10px] text-[10px] font-semibold bg-amber-500/20 border border-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition-all">
+                👁 Xem gốc
+              </a>
+            </div>
+          </div>
+
+          {/* Page selector */}
+          {activeSession.structureMap?.pages && (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {Object.keys(activeSession.structureMap.pages).map(page => (
+                <button key={page} onClick={() => {
+                  const iframe = document.getElementById('preview-iframe');
+                  if (iframe) iframe.src = `http://localhost:3000/api/shopify/clone/${activeSession.id}/preview?page=${page}`;
+                }}
+                  className="px-2.5 py-1 rounded-[8px] text-[10px] font-semibold bg-white/[0.06] border border-white/[0.06] text-slate-400 hover:text-indigo-400 hover:border-indigo-500/30 hover:bg-indigo-500/10 transition-all">
+                  {page}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Preview iframe */}
+          <div className="rounded-[16px] overflow-hidden border border-white/[0.08] bg-white" style={{ display: 'flex', justifyContent: 'center' }}>
+            <iframe
+              id="preview-iframe"
+              src={`http://localhost:3000/api/shopify/clone/${activeSession.id}/preview`}
+              className="w-full transition-all duration-300"
+              style={{ height: '700px', border: 'none' }}
+              title="Theme Preview"
+            />
+          </div>
+
+          {/* Section list */}
+          {activeSession.sectionFiles?.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Liquid Sections ({activeSession.sectionFiles.length})</h3>
+              <div className="flex flex-wrap gap-1.5">
+                {activeSession.sectionFiles.map(f => (
+                  <span key={f} className="px-2 py-0.5 rounded-[6px] bg-white/[0.06] border border-white/[0.06] text-[10px] text-slate-400 font-mono">
+                    {f.replace('.liquid', '')}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </GlassCard>
+      )}
+
       {/* ===== NEW CLONE FORM ===== */}
       <GlassCard>
         <h2 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Tạo Clone mới</h2>
@@ -2036,6 +2366,248 @@ const SidebarItem = ({ icon: Icon, label, active, onClick, compact }) => (
 );
 
 // --- RIGHT PANEL (Column 3) - Redesigned with Vercel/Linear/GitHub patterns ---
+const OverviewRightPanel = () => {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetch('http://localhost:3000/api/dashboard/summary')
+      .then(r => r.json())
+      .then(setData)
+      .catch(() => {});
+  }, []);
+
+  if (!data) return (
+    <div className="flex-1 flex items-center justify-center">
+      <div className="text-center text-slate-400">
+        <Activity size={24} className="mx-auto mb-2 animate-pulse" />
+        <p className="text-xs">Loading...</p>
+      </div>
+    </div>
+  );
+
+  const fmt = (n) => {
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+    if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
+    return n?.toString() || '0';
+  };
+
+  const channels = data.channels || [];
+  const posts = data.posts || [];
+
+  const pColors = { TIKTOK: '#00f2ea', INSTAGRAM: '#c026d3', YOUTUBE: '#ef4444', FACEBOOK: '#3b82f6' };
+
+  // 1. Engagement Rate by platform — unique insight not in main dashboard
+  const platformEngagement = {};
+  channels.forEach(ch => {
+    if (!platformEngagement[ch.platform]) platformEngagement[ch.platform] = { views: 0, likes: 0, comments: 0 };
+    platformEngagement[ch.platform].views += ch.totalViews;
+    platformEngagement[ch.platform].likes += ch.totalLikes;
+    platformEngagement[ch.platform].comments += ch.totalComments;
+  });
+  const engagementData = Object.entries(platformEngagement)
+    .map(([p, d]) => ({ platform: p, name: p.charAt(0) + p.slice(1).toLowerCase(), rate: d.views > 0 ? ((d.likes + d.comments) / d.views * 100) : 0, color: pColors[p] }))
+    .sort((a, b) => b.rate - a.rate);
+  const maxRate = Math.max(...engagementData.map(d => d.rate), 1);
+
+  // 2. Sync Health — categorize channels
+  const now = Date.now();
+  const healthy = channels.filter(ch => ch.lastSyncedAt && (now - new Date(ch.lastSyncedAt).getTime()) < 24 * 60 * 60 * 1000);
+  const stale = channels.filter(ch => ch.lastSyncedAt && (now - new Date(ch.lastSyncedAt).getTime()) >= 24 * 60 * 60 * 1000 && (now - new Date(ch.lastSyncedAt).getTime()) < 72 * 60 * 60 * 1000);
+  const critical = channels.filter(ch => !ch.lastSyncedAt || (now - new Date(ch.lastSyncedAt).getTime()) >= 72 * 60 * 60 * 1000);
+  const healthPct = channels.length > 0 ? Math.round(healthy.length / channels.length * 100) : 0;
+
+  // 3. Content Gap — channels with most followers but fewest posts
+  const channelPostCounts = {};
+  posts.forEach(p => { channelPostCounts[p.channelName] = (channelPostCounts[p.channelName] || 0) + 1; });
+  const contentGaps = [...channels]
+    .map(ch => ({ ...ch, postCount: channelPostCounts[ch.channelName] || 0, ratio: ch.followerCount / Math.max(channelPostCounts[ch.channelName] || 0, 1) }))
+    .sort((a, b) => b.ratio - a.ratio)
+    .slice(0, 4);
+
+  // 4. Inactive channels
+  const inactiveChannels = channels.filter(ch => !ch.isActive);
+
+  return (
+    <div className="space-y-5">
+      {/* Engagement Rate by Platform */}
+      <div>
+        <p className="text-[9px] font-bold text-slate-400/70 uppercase tracking-[0.1em] mb-1">Engagement Rate</p>
+        <p className="text-[8px] text-slate-400/50 mb-2">(Likes + Comments) / Views</p>
+        <div className="space-y-2">
+          {engagementData.map(d => (
+            <div key={d.platform}>
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: d.color }} />
+                <span className="text-[10px] font-medium text-slate-600 dark:text-slate-300 flex-1">{d.name}</span>
+                <span className="text-[10px] font-bold" style={{ color: d.color }}>{d.rate.toFixed(1)}%</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-slate-200/30 dark:bg-white/[0.04] overflow-hidden">
+                <div className="h-full rounded-full transition-all" style={{ width: `${Math.max(4, (d.rate / maxRate) * 100)}%`, background: d.color }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Sync Health */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[9px] font-bold text-slate-400/70 uppercase tracking-[0.1em]">Sync Health</p>
+          <span className={`text-[10px] font-bold ${healthPct >= 80 ? 'text-emerald-500' : healthPct >= 50 ? 'text-amber-500' : 'text-red-500'}`}>{healthPct}%</span>
+        </div>
+        {/* Health bar */}
+        <div className="h-2 rounded-full bg-slate-200/30 dark:bg-white/[0.04] overflow-hidden flex">
+          {healthy.length > 0 && <div className="h-full bg-emerald-500" style={{ width: `${healthy.length / channels.length * 100}%` }} />}
+          {stale.length > 0 && <div className="h-full bg-amber-500" style={{ width: `${stale.length / channels.length * 100}%` }} />}
+          {critical.length > 0 && <div className="h-full bg-red-500" style={{ width: `${critical.length / channels.length * 100}%` }} />}
+        </div>
+        <div className="flex items-center gap-3 mt-1.5">
+          <span className="flex items-center gap-1 text-[9px] text-slate-400"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />{healthy.length} OK</span>
+          <span className="flex items-center gap-1 text-[9px] text-slate-400"><span className="w-1.5 h-1.5 rounded-full bg-amber-500" />{stale.length} Stale</span>
+          <span className="flex items-center gap-1 text-[9px] text-slate-400"><span className="w-1.5 h-1.5 rounded-full bg-red-500" />{critical.length} Critical</span>
+        </div>
+        {/* Critical channels list */}
+        {critical.length > 0 && (
+          <div className="mt-2 space-y-1">
+            {critical.slice(0, 3).map(ch => (
+              <div key={ch.id} className="flex items-center gap-2 px-2 py-1 rounded-lg bg-red-500/[0.06] border border-red-500/[0.08]">
+                <AlertCircle size={9} className="text-red-400 flex-shrink-0" />
+                <span className="text-[9px] text-slate-600 dark:text-slate-400 truncate flex-1">{ch.channelName}</span>
+                <span className="text-[8px] text-red-400/70">{ch.lastSyncedAt ? new Date(ch.lastSyncedAt).toLocaleDateString('en', { month: 'short', day: 'numeric' }) : 'Never'}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Content Gap — Opportunity */}
+      <div>
+        <p className="text-[9px] font-bold text-slate-400/70 uppercase tracking-[0.1em] mb-1">Content Opportunity</p>
+        <p className="text-[8px] text-slate-400/50 mb-2">High followers, few posts</p>
+        <div className="space-y-1.5">
+          {contentGaps.map(ch => (
+            <div key={ch.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-white/[0.04] dark:bg-white/[0.02]">
+              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: pColors[ch.platform] || '#666' }} />
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-semibold text-slate-700 dark:text-slate-300 truncate">{ch.channelName}</p>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="text-[10px] font-bold text-indigo-500">{fmt(ch.followerCount)}</p>
+                <p className="text-[8px] text-slate-400/60">{ch.postCount} posts</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Paused Channels */}
+      {inactiveChannels.length > 0 && (
+        <div>
+          <p className="text-[9px] font-bold text-slate-400/70 uppercase tracking-[0.1em] mb-1.5">Paused Channels</p>
+          <div className="space-y-1">
+            {inactiveChannels.map(ch => (
+              <div key={ch.id} className="flex items-center gap-2 px-2 py-1 rounded-lg bg-slate-500/[0.06]">
+                <span className="w-2 h-2 rounded-full bg-slate-400 flex-shrink-0" />
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{ch.channelName}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Follower Distribution Mini Donut */}
+      <div>
+        <p className="text-[9px] font-bold text-slate-400/70 uppercase tracking-[0.1em] mb-1">Follower Share</p>
+        {(() => {
+          const platformFollowers = {};
+          channels.forEach(ch => { platformFollowers[ch.platform] = (platformFollowers[ch.platform] || 0) + ch.followerCount; });
+          const donutData = Object.entries(platformFollowers).map(([p, v]) => ({ name: p.charAt(0) + p.slice(1).toLowerCase(), value: v, fill: pColors[p] || '#666' })).sort((a, b) => b.value - a.value);
+          const total = donutData.reduce((s, d) => s + d.value, 0);
+          return (
+            <div className="flex items-center gap-3">
+              <div className="w-[64px] h-[64px] flex-shrink-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={donutData} dataKey="value" cx="50%" cy="50%" innerRadius={18} outerRadius={28} strokeWidth={0}>
+                      {donutData.map((e, i) => <Cell key={i} fill={e.fill} />)}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex-1 space-y-0.5">
+                {donutData.map(d => (
+                  <div key={d.name} className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: d.fill }} />
+                    <span className="text-[9px] text-slate-500 dark:text-slate-400 flex-1">{d.name}</span>
+                    <span className="text-[9px] font-bold text-slate-600 dark:text-slate-300">{total ? Math.round(d.value / total * 100) : 0}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+
+      {/* Trending Hashtags — Future: crawl from TikTok/Insta public trending API */}
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <p className="text-[9px] font-bold text-slate-400/70 uppercase tracking-[0.1em]">Trending Tags</p>
+          <span className="text-[7px] font-semibold text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded-full uppercase">Soon</span>
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {['#dropshipping', '#viralproduct', '#tiktokmademebuyit', '#petlovers', '#fitnessgear', '#ledlights', '#homedecor', '#gadgets'].map(tag => (
+            <span key={tag} className="text-[9px] font-medium text-slate-500 dark:text-slate-400 bg-white/[0.06] dark:bg-white/[0.03] border border-white/[0.08] dark:border-white/[0.04] px-2 py-0.5 rounded-full">{tag}</span>
+          ))}
+        </div>
+        <p className="text-[8px] text-slate-400/50 mt-1.5">Auto-crawl from TikTok & Instagram public APIs</p>
+      </div>
+
+      {/* Competitor Watch — Future: track competitor channels via public data */}
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <p className="text-[9px] font-bold text-slate-400/70 uppercase tracking-[0.1em]">Competitor Watch</p>
+          <span className="text-[7px] font-semibold text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded-full uppercase">Soon</span>
+        </div>
+        <div className="space-y-1.5">
+          {[
+            { name: 'Add competitor channels', desc: 'Track their public metrics' },
+            { name: 'Compare growth rates', desc: 'Your channels vs theirs' },
+            { name: 'Content strategy alerts', desc: 'When competitors post viral content' },
+          ].map((item, i) => (
+            <div key={i} className="flex items-start gap-2 px-2 py-1.5 rounded-lg bg-white/[0.04] dark:bg-white/[0.02]">
+              <Target size={10} className="text-indigo-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-[10px] font-semibold text-slate-600 dark:text-slate-300">{item.name}</p>
+                <p className="text-[8px] text-slate-400/60">{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="text-[8px] text-slate-400/50 mt-1.5">Via public profiles — no API keys needed</p>
+      </div>
+
+      {/* Quick Links */}
+      <div>
+        <p className="text-[9px] font-bold text-slate-400/70 uppercase tracking-[0.1em] mb-1.5">Quick Actions</p>
+        <div className="space-y-1">
+          {[
+            { label: 'Open DropBoard', url: 'http://localhost:3000', icon: ExternalLink },
+            { label: 'Add Channel', url: 'http://localhost:3000/channels', icon: Plus },
+            { label: 'Manage Topics', url: 'http://localhost:3000/topics', icon: Layers },
+            { label: 'API Ingestion', url: 'http://localhost:3000/ingestion', icon: Database },
+          ].map(link => (
+            <a key={link.label} href={link.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white/[0.06] dark:bg-white/[0.02] border border-white/[0.08] dark:border-white/[0.03] hover:bg-white/[0.12] dark:hover:bg-white/[0.05] transition-colors text-[11px] font-medium text-slate-600 dark:text-slate-300 no-underline">
+              <link.icon size={12} className="text-indigo-400" />
+              {link.label}
+              <ChevronRight size={10} className="ml-auto text-slate-400/50" />
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const RightPanel = ({ activeTab, tasks, runs, stores, niches, handleQuickAction, addToast }) => {
   const storeList = stores.data || [];
   const runList = runs.data || [];
@@ -3519,6 +4091,7 @@ export default function App() {
       { id: 'products', icon: Sparkles, label: 'Tối ưu SP' },
       { id: 'ads', icon: Megaphone, label: 'Quảng cáo' },
       { id: 'social', icon: Share2, label: 'Mạng xã hội' },
+      { id: 'social-publisher', icon: Upload, label: 'Publisher' },
       { id: 'winning-products', icon: TrendingUp, label: 'Nghiên cứu SP' },
     ]},
     { group: 'Ảnh sản phẩm', items: [
@@ -3673,6 +4246,11 @@ export default function App() {
             {/* Scrollable nav */}
             <div className="flex-1 overflow-y-auto hide-scrollbar px-3 pb-3 space-y-2">
 
+              {/* Social Overview */}
+              <div className="rounded-[16px] bg-gradient-to-br from-indigo-500/[0.08] to-purple-500/[0.08] dark:from-indigo-500/[0.06] dark:to-purple-500/[0.06] border border-indigo-500/[0.15] dark:border-indigo-500/[0.08] p-1.5">
+                <SidebarItem icon={Activity} label="Overview" active={activeTab === 'social-overview'} onClick={() => setActiveTab('social-overview')} compact />
+              </div>
+
               {/* Pinned / Favorites */}
               <div className="rounded-[16px] bg-white/[0.06] dark:bg-white/[0.02] border border-white/[0.08] dark:border-white/[0.03] p-1.5">
                 <p className="text-[9px] font-bold text-slate-400/70 uppercase tracking-[0.1em] px-2.5 pt-1 pb-1.5">Ghim</p>
@@ -3710,6 +4288,7 @@ export default function App() {
                 <SidebarItem icon={Megaphone} label="Quảng cáo" active={activeTab === 'ads'} onClick={() => setActiveTab('ads')} compact />
                 <div className="mx-2.5 border-b border-white/[0.06] dark:border-white/[0.03]" />
                 <SidebarItem icon={Share2} label="Mạng xã hội" active={activeTab === 'social'} onClick={() => setActiveTab('social')} compact />
+                <SidebarItem icon={Upload} label="Publisher" active={activeTab === 'social-publisher'} onClick={() => setActiveTab('social-publisher')} compact />
                 <div className="mx-2.5 border-b border-white/[0.06] dark:border-white/[0.03]" />
                 <SidebarItem icon={TrendingUp} label="Nghiên cứu SP" active={activeTab === 'winning-products'} onClick={() => setActiveTab('winning-products')} compact />
               </div>
@@ -3746,10 +4325,16 @@ export default function App() {
         {/* Col 2: Main Content - SCROLLABLE */}
         <div className="flex-1 pt-16 md:pt-0 pb-20 md:pb-0 p-4 md:p-6 overflow-y-auto hide-scrollbar">
           <div className="max-w-5xl mx-auto">
+            {activeTab === 'social-overview' && (
+              <div className="w-full rounded-[20px] overflow-hidden" style={{ height: 'calc(100vh - 48px)' }}>
+                <iframe src="http://localhost:3000/embed" className="w-full h-full border-0" title="DropBoard Overview" />
+              </div>
+            )}
             {activeTab === 'command-center' && <CommandCenter stores={stores} dashboard={dashboard} runs={runs} insights={insights} addToast={addToast} tasks={tasks} handleQuickAction={handleQuickAction} />}
             {activeTab === 'products' && <ProductsView products={products} addToast={addToast} />}
             {activeTab === 'ads' && <AdsView skillOutputs={adsOutputs} addToast={addToast} />}
             {activeTab === 'social' && <SocialView stores={stores} skillOutputs={socialOutputs} />}
+            {activeTab === 'social-publisher' && <SocialPublisherView addToast={addToast} />}
             {activeTab === 'winning-products' && <WinningProductsView competitors={competitors} skillOutputs={winningOutputs} insights={insights} addToast={addToast} />}
             {activeTab === 'pipeline-auto' && <PipelineView mode="auto" stores={stores} runs={runs} addToast={addToast} handleQuickAction={handleQuickAction} addTask={addTask} updateTask={updateTask} />}
             {activeTab === 'pipeline-custom' && <PipelineView mode="custom" stores={stores} runs={runs} addToast={addToast} handleQuickAction={handleQuickAction} addTask={addTask} updateTask={updateTask} />}
@@ -3762,9 +4347,9 @@ export default function App() {
         </div>
 
         {/* Col 3: Right Panel - STICKY (lg+ only) */}
-        <div className="hidden lg:flex my-6 mr-6 flex-col w-72 xl:w-80">
+        <div className="hidden lg:flex my-3 mr-3 flex-col w-72 xl:w-80">
           <GlassCard className="h-full flex flex-col !p-5 shadow-2xl overflow-y-auto hide-scrollbar">
-            <RightPanel activeTab={activeTab} tasks={tasks} runs={runs} stores={stores} niches={niches} handleQuickAction={handleQuickAction} addToast={addToast} />
+            {activeTab === 'social-overview' ? <OverviewRightPanel /> : <RightPanel activeTab={activeTab} tasks={tasks} runs={runs} stores={stores} niches={niches} handleQuickAction={handleQuickAction} addToast={addToast} />}
           </GlassCard>
         </div>
       </div>
